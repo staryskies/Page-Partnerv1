@@ -1,10 +1,10 @@
 const db = require('../db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs'); // Use bcryptjs instead of bcrypt
 
 module.exports = {
   registerUser: async (req, res) => {
     const { username, password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = bcrypt.hashSync(password, 10); // Use hashSync
     try {
       await db.query(
         'INSERT INTO users (username, password) VALUES ($1, $2)',
@@ -25,7 +25,7 @@ module.exports = {
       }
 
       const user = result.rows[0];
-      const isValidPassword = await bcrypt.compare(password, user.password);
+      const isValidPassword = bcrypt.compareSync(password, user.password); // Use compareSync
       if (!isValidPassword) {
         return res.status(401).json({ error: 'Invalid username or password' });
       }
