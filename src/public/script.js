@@ -16,7 +16,7 @@ if (
   window.location.pathname !== '/login.html' &&
   window.location.pathname !== '/signup.html'
 ) {
-  window.location.href = '/login.html';
+  window.location.href = '/homepage.html';
 }
 
 // Display username and load books on index page
