@@ -28,7 +28,15 @@ module.exports = {
           email VARCHAR(255) UNIQUE NOT NULL,
           name VARCHAR(255) NOT NULL,
           age INT NOT NULL,
-          password VARCHAR(255) NOT NULL
+          password VARCHAR(255) NOT NULL,
+          profile_picture TEXT,
+          user_location VARCHAR(255),
+          genres TEXT[],
+          favorite_authors TEXT[],
+          reading_pace INT,
+          goals TEXT[],
+          to_read_list TEXT[],
+          book_length VARCHAR(50)
         )
       `);
       console.log('Users table created');
