@@ -29,33 +29,13 @@ const requireLogin = async (req, res, next) => {
 };
 
 // Routes
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'homepage.html'));
-});
-
-app.get('/index.html', requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.get('/circles.html', requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'circles.html'));
-});
-
-app.get('/add-book.html', requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'add-book.html'));
-});
-
-app.get('/achievements.html', requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'achievements.html'));
-});
-
-app.get('/read.html', requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'read.html'));
-});
-
-app.get('/discover.html', requireLogin, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'discover.html'));
-});
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'homepage.html')));
+app.get('/index.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
+app.get('/circles.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'circles.html')));
+app.get('/add-book.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'add-book.html')));
+app.get('/achievements.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'achievements.html')));
+app.get('/read.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'read.html')));
+app.get('/discover.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'discover.html')));
 
 // Authentication Routes
 app.post('/api/auth/register', userController.signup);
@@ -75,9 +55,9 @@ app.get('/api/user', requireLogin, async (req, res) => {
       readingStreak: user.reading_streak || 0,
       badges: parseInt(achievementsResult.rows[0].count, 10),
       hasRecommendations: user.genres && user.genres.length > 0,
-      hasPreviews: false,
+      hasPreviews: user.currently_reading > 0 || user.completed_books > 0,
       hasCircles: parseInt(circlesResult.rows[0].count, 10) > 0,
-      hasFriends: false, // Placeholder
+      hasFriends: false,
       hasPoints: user.points > 0,
     });
   } catch (err) {
@@ -112,14 +92,14 @@ app.get('/api/books', requireLogin, async (req, res) => {
 });
 
 app.post('/api/book', requireLogin, async (req, res) => {
-  const { title, genre } = req.body;
+  const { title, genre, excerpt } = req.body;
   if (!title || !genre) {
     return res.status(400).json({ error: 'Title and genre are required' });
   }
   try {
     const result = await query(
-      'INSERT INTO books (title, genre, user_id) VALUES ($1, $2, $3) RETURNING id',
-      [title, genre, req.user.id]
+      'INSERT INTO books (title, genre, user_id, excerpt) VALUES ($1, $2, $3, $4) RETURNING id',
+      [title, genre, req.user.id, excerpt || null]
     );
     await query('UPDATE users SET currently_reading = COALESCE(currently_reading, 0) + 1 WHERE id = $1', [req.user.id]);
     res.status(201).json({ success: true, bookId: result.rows[0].id });
@@ -290,11 +270,29 @@ app.post('/api/onboarding', requireLogin, async (req, res) => {
   }
 });
 
-// Error Handling
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+// Preview Generation Route
+app.post('/api/generate-preview', requireLogin, async (req, res) => {
+  const { excerpt } = req.body;
+  if (!excerpt || excerpt.split(' ').length < 300) {
+    return res.status(400).json({ error: 'Excerpt must be provided and at least 300 words' });
+  }
+  try {
+    const response = await fetch('https://magicloops.dev/api/loop/cd17eed2-c28d-4960-bed5-087ab13ba3d5/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ excerpt }),
+    });
+    if (!response.ok) throw new Error(`MagicLoops API failed: ${response.status}`);
+    const data = await response.json();
+    res.json({ preview: data.preview || 'Preview not available' });
+  } catch (err) {
+    console.error('Preview Generation Error:', err);
+    res.status(500).json({ error: 'Failed to generate preview' });
+  }
 });
 
+// Error Handling
+app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 app.use((err, req, res, next) => {
   console.error('Server Error:', err.stack);
   res.status(500).json({ error: 'Something went wrong on the server' });
@@ -325,7 +323,8 @@ const startServer = async () => {
 
     await query(`
       ALTER TABLE books
-      ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id)
+      ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id),
+      ADD COLUMN IF NOT EXISTS excerpt TEXT
     `);
 
     await query(`
@@ -355,9 +354,7 @@ const startServer = async () => {
 
     console.log('Database schema updated');
     const port = process.env.PORT || 3000;
-    app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
-    });
+    app.listen(port, () => console.log(`Server running on port ${port}`));
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);

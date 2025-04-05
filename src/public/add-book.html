@@ -7,12 +7,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    :root { /* Copy root vars from index.html */ }
+    :root { /* Assuming same vars as index.html */ }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #121212; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
     .container { background: #1e1e1e; padding: 40px; border-radius: 10px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); width: 100%; max-width: 400px; }
     h1 { font-size: 2rem; margin-bottom: 20px; color: #38b2ac; }
-    input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #2a2a2a; border-radius: 5px; background: #121212; color: #ffffff; }
+    input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #2a2a2a; border-radius: 5px; background: #121212; color: #ffffff; }
+    textarea { height: 150px; resize: vertical; }
     button { background: #38b2ac; color: #ffffff; border: none; border-radius: 5px; padding: 12px; cursor: pointer; width: 100%; margin-top: 10px; }
     button:hover { background: #2a9d98; }
     .error { color: #ff6b6b; margin-top: 10px; }
@@ -23,30 +24,68 @@
     <h1>Add a New Book</h1>
     <input type="text" id="title" placeholder="Book Title" required>
     <input type="text" id="genre" placeholder="Genre" required>
+    <textarea id="excerpt" placeholder="Book Excerpt (optional, 300+ words for preview)"></textarea>
     <button onclick="addBook()">Add Book</button>
     <p id="error" class="error"></p>
   </div>
   <script>
     const baseUrl = window.location.origin;
+
     async function addBook() {
       const title = document.getElementById('title').value;
       const genre = document.getElementById('genre').value;
+      const excerpt = document.getElementById('excerpt').value || '';
       const errorElement = document.getElementById('error');
       errorElement.textContent = '';
+
+      const username = localStorage.getItem('username');
+      if (!username) {
+        errorElement.textContent = 'You must be logged in to add a book.';
+        return;
+      }
+
+      if (!title || !genre) {
+        errorElement.textContent = 'Title and genre are required.';
+        return;
+      }
+
       try {
-        const response = await fetch(`${baseUrl}/api/book`, {
+        const bookResponse = await fetch(`${baseUrl}/api/book`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Username': localStorage.getItem('username') },
-          body: JSON.stringify({ title, genre }),
+          headers: { 
+            'Content-Type': 'application/json', 
+            'X-Username': username 
+          },
+          body: JSON.stringify({ title, genre, excerpt }),
         });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Failed to add book');
+        const bookResult = await bookResponse.json();
+        if (!bookResponse.ok) throw new Error(bookResult.error || 'Failed to add book');
+
         window.location.href = '/index.html';
       } catch (err) {
         console.error('Add Book Error:', err);
         errorElement.textContent = err.message;
       }
     }
+
+    const createBook = async (req, res) => {
+      const { title, genre, excerpt } = req.body;
+
+      if (!title || !genre) {
+        return res.status(400).json({ error: 'Title and genre are required.' });
+      }
+
+      try {
+        const result = await db.query(
+          'INSERT INTO books (title, genre, excerpt) VALUES ($1, $2, $3) RETURNING id',
+          [title, genre, excerpt]
+        );
+        res.status(201).json({ success: true, bookId: result.rows[0].id });
+      } catch (err) {
+        console.error('Create Book Error:', err);
+        res.status(500).json({ error: 'Failed to add book.' });
+      }
+    };
   </script>
 </body>
 </html>

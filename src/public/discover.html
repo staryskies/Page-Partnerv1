@@ -6,25 +6,24 @@
   <title>Discover - PagePartner</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* Reuse styles from index.html */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    :root { /* Copy root vars from index.html */ }
+    :root { /* Assuming same vars as index.html */ }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background: #121212; color: #ffffff; display: flex; min-height: 100vh; overflow-x: hidden; }
-    .sidebar { /* Copy sidebar styles */ }
+    .sidebar { width: 260px; background: #1e1e1e; padding: 20px; position: fixed; height: 100%; }
     .main-content { flex: 1; padding: 30px; margin-left: 260px; }
-    .topics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-    .topic-card { background: #1e1e1e; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; border: 1px solid #2a2a2a; }
-    .topic-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4); border-color: #38b2ac; }
+    .topics-grid, .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+    .topic-card, .book-card { background: #1e1e1e; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; border: 1px solid #2a2a2a; }
+    .topic-card:hover, .book-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4); border-color: #38b2ac; }
     .topic-icon { font-size: 2rem; color: #38b2ac; margin-bottom: 15px; }
-    .topic-name { font-weight: 600; }
+    .topic-name, .book-title { font-weight: 600; }
+    .preview-text { margin-top: 10px; font-size: 0.9rem; color: #a0a0a0; }
     @media (max-width: 992px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } }
   </style>
 </head>
 <body>
   <button class="mobile-nav-toggle"><i class="fas fa-bars"></i></button>
   <div class="sidebar">
-    <!-- Copy sidebar from index.html, set Discover as active -->
     <div class="logo">
       <img src="logo.png" alt="PagePartner Logo">
       <span class="logo-text">PagePartner</span>
@@ -66,45 +65,44 @@
       <h2 class="section-title">Discover New Books</h2>
     </div>
     <div class="topics-grid" id="topics-grid">
-      <div class="topic-card">
+      <div class="topic-card" data-genre="Fantasy">
         <div class="topic-icon"><i class="fas fa-dragon"></i></div>
         <div class="topic-name">Fantasy</div>
       </div>
-      <div class="topic-card">
+      <div class="topic-card" data-genre="Romance">
         <div class="topic-icon"><i class="fas fa-heart"></i></div>
         <div class="topic-name">Romance</div>
       </div>
-      <div class="topic-card">
+      <div class="topic-card" data-genre="Sci-Fi">
         <div class="topic-icon"><i class="fas fa-rocket"></i></div>
         <div class="topic-name">Sci-Fi</div>
       </div>
-      <div class="topic-card">
+      <div class="topic-card" data-genre="Non-Fiction">
         <div class="topic-icon"><i class="fas fa-microscope"></i></div>
         <div class="topic-name">Non-Fiction</div>
       </div>
-      <div class="topic-card">
+      <div class="topic-card" data-genre="Mystery">
         <div class="topic-icon"><i class="fas fa-mask"></i></div>
         <div class="topic-name">Mystery</div>
       </div>
-      <div class="topic-card">
+      <div class="topic-card" data-genre="Historical">
         <div class="topic-icon"><i class="fas fa-landmark"></i></div>
         <div class="topic-name">Historical</div>
       </div>
     </div>
+    <div class="books-grid" id="books-grid" style="margin-top: 20px;"></div>
   </div>
   <script>
     const baseUrl = window.location.origin;
+
     document.addEventListener('DOMContentLoaded', async () => {
       const username = localStorage.getItem('username');
       const userResponse = await fetch(`${baseUrl}/api/user`, { headers: { 'X-Username': username } });
       const userData = await userResponse.json();
       updateUserProfile(userData);
 
-      // Add click events to explore genres
       document.querySelectorAll('.topic-card').forEach(card => {
-        card.addEventListener('click', () => {
-          alert(`Explore ${card.querySelector('.topic-name').textContent} books! (Feature coming soon)`);
-        });
+        card.addEventListener('click', () => loadBooksByGenre(card.dataset.genre));
       });
     });
 
@@ -117,6 +115,61 @@
         userAvatar.textContent = initials;
         userName.textContent = data.displayName;
         userStats.textContent = `${data.completedBooks} books • ${data.badges} badges`;
+      }
+    }
+
+    async function loadBooksByGenre(genre) {
+      try {
+        const response = await fetch(`${baseUrl}/api/books`, {
+          headers: { 'X-Username': localStorage.getItem('username') },
+        });
+        const books = await response.json();
+        const filteredBooks = books.filter(book => book.genre.toLowerCase() === genre.toLowerCase());
+        renderBooks(filteredBooks);
+      } catch (err) {
+        console.error('Load Books Error:', err);
+      }
+    }
+
+    function renderBooks(books) {
+      const booksGrid = document.getElementById('books-grid');
+      booksGrid.innerHTML = '';
+      books.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        card.innerHTML = `
+          <div class="book-title">${book.title}</div>
+          <div class="preview-text" id="preview-${book.id}"></div>
+        `;
+        card.addEventListener('click', () => showPreview(book.id));
+        booksGrid.appendChild(card);
+      });
+    }
+
+    async function showPreview(bookId) {
+      const previewElement = document.getElementById(`preview-${bookId}`);
+      if (previewElement.innerText) return; // Avoid fetching again if already shown
+
+      try {
+        const bookResponse = await fetch(`${baseUrl}/api/book/${bookId}`, {
+          headers: { 'X-Username': localStorage.getItem('username') },
+        });
+        const book = await bookResponse.json();
+
+        if (book.excerpt && book.excerpt.split(' ').length >= 300) {
+          const previewResponse = await fetch(`${baseUrl}/api/generate-preview`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Username': localStorage.getItem('username') },
+            body: JSON.stringify({ excerpt: book.excerpt }),
+          });
+          const { preview } = await previewResponse.json();
+          previewElement.innerText = preview;
+        } else {
+          previewElement.innerText = 'No preview available (excerpt too short or missing)';
+        }
+      } catch (err) {
+        console.error('Preview Error:', err);
+        previewElement.innerText = 'Failed to load preview';
       }
     }
   </script>

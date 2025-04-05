@@ -47,6 +47,7 @@ module.exports = {
           title VARCHAR(255) NOT NULL,
           genre VARCHAR(255) NOT NULL,
           user_id INT REFERENCES users(id),
+          excerpt TEXT, -- Added excerpt column
           groups TEXT[] DEFAULT '{}',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -67,6 +68,16 @@ module.exports = {
           name VARCHAR(255) NOT NULL,
           book_id INT REFERENCES books(id),
           member_ids INT[] DEFAULT '{}'
+        )
+      `);
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS achievements (
+          id SERIAL PRIMARY KEY,
+          user_id INT REFERENCES users(id),
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          icon VARCHAR(255),
+          earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
       console.log('Database initialized');
