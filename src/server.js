@@ -44,7 +44,7 @@ connectDB()
   .catch(err => console.error('Failed to start server:', err));
 
 // filepath: c:\Users\Yichen zuo\Downloads\Artemis-main\Page-Partnerv1\src\routes\auth.js
-const express = require('express');
+
 const { registerUser, loginUser } = require('../controllers/authController');
 const router = express.Router();
 
