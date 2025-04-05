@@ -35,7 +35,8 @@ body {
   }
   
   input[type="text"],
-  input[type="password"] {
+  input[type="password"],
+  select {
     padding: 8px;
     margin: 5px 0;
     width: 70%;

@@ -13,15 +13,36 @@
       <span>Logged in as: <span id="username"></span></span>
       <button onclick="logout()">Logout</button>
     </div>
-    <h2>Book Details (ID: 1)</h2>
-    <div id="book-details">Loading...</div>
 
-    <h2>Group Comments (Book ID: 1, Group ID: 1)</h2>
-    <div id="comments" class="comments">Loading...</div>
+    <h2>Add a New Book</h2>
+    <input type="text" id="book-title" placeholder="Book Title">
+    <input type="text" id="book-genre" placeholder="Genre">
+    <button onclick="addBook()">Add Book</button>
+
+    <h2>Books</h2>
+    <select id="book-select" onchange="loadGroups()">
+      <option value="">Select a book</option>
+    </select>
+
+    <h2>Groups</h2>
+    <select id="group-select" onchange="loadComments()">
+      <option value="">Select a group</option>
+    </select>
+    <div>
+      <input type="text" id="new-group" placeholder="New Group Name">
+      <button onclick="addGroup()">Add Group</button>
+    </div>
+
+    <h2>Book Details</h2>
+    <div id="book-details">Select a book to view details</div>
+
+    <h2>Group Comments</h2>
+    <div id="comments" class="comments">Select a book and group to view comments</div>
 
     <h3>Add a Comment</h3>
     <input type="text" id="new-comment" placeholder="Add a comment">
     <button onclick="postComment()">Post</button>
+
     <div id="error" class="error"></div>
   </div>
   <script src="/script.js"></script>
