@@ -7,13 +7,20 @@ const pool = new Pool({
 
 module.exports = {
   connectDB: async () => {
-    await pool.connect();
-    console.log('Connected to PostgreSQL on Render');
+    try {
+      await pool.connect();
+      console.log('Connected to PostgreSQL on Render');
+    } catch (err) {
+      console.error('DB Connection Error:', err);
+      throw err;
+    }
   },
-  query: (text, params) => pool.query(text, params),
+  query: (text, params) => {
+    console.log('Executing query:', text, params);
+    return pool.query(text, params);
+  },
   initDB: async () => {
     try {
-      // Create books table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
@@ -21,8 +28,8 @@ module.exports = {
           genre VARCHAR(100)
         )
       `);
+      console.log('Books table created');
 
-      // Create comments table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS comments (
           id SERIAL PRIMARY KEY,
@@ -32,17 +39,22 @@ module.exports = {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
+      console.log('Comments table created');
 
-      // Create users table
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS users (
-          id SERIAL PRIMARY KEY,
-          username VARCHAR(100) UNIQUE NOT NULL,
-          password VARCHAR(255) NOT NULL
-        )
-      `);
-
-      console.log('Database initialized');
+      const booksCount = await pool.query('SELECT COUNT(*) FROM books');
+      if (booksCount.rows[0].count == 0) {
+        await pool.query(
+          'INSERT INTO books (title, genre) VALUES ($1, $2)',
+          ['Test Book', 'Fiction']
+        );
+        await pool.query(
+          'INSERT INTO comments (book_id, group_id, message) VALUES ($1, $2, $3)',
+          [1, 1, 'Great book!']
+        );
+        console.log('Database initialized with sample data');
+      } else {
+        console.log('Database already initialized');
+      }
     } catch (err) {
       console.error('Error initializing database:', err);
       throw err;

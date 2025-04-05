@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reading App</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Reading App</h1>
+    <h2>Book Details (ID: 1)</h2>
+    <div id="book-details">Loading...</div>
+
+    <h2>Group Comments (Book ID: 1, Group ID: 1)</h2>
+    <div id="comments" class="comments">Loading...</div>
+
+    <h3>Add a Comment</h3>
+    <input type="text" id="new-comment" placeholder="Add a comment">
+    <button onclick="postComment()">Post</button>
+    <div id="error" class="error"></div>
+  </div>
+  <script src="/script.js"></script>
+</body>
+</html>
