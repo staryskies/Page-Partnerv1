@@ -1,17 +1,33 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import LoginScreen from '../screens/LoginScreen';
-import DashboardScreen from '../screens/DashboardScreen';
-
-const Stack = createStackNavigator();
+import React, { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
+import WebView from 'react-native-webview';
+import LoginScreen from './screens/LoginScreen';
 
 export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLogin = (username, password) => {
+    // Replace this with actual authentication logic
+    if (username === 'admin' && password === 'password') {
+      setIsLoggedIn(true);
+    } else {
+      alert('Invalid username or password');
+    }
+  };
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Dashboard" component={DashboardScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+      {isLoggedIn ? (
+        <WebView source={{ uri: 'https://page-partnerv1.onrender.com/' }} />
+      ) : (
+        <LoginScreen onLogin={handleLogin} />
+      )}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
