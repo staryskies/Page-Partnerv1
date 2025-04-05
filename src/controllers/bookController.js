@@ -28,6 +28,7 @@ module.exports = {
   addGroup: async (req, res) => {
     const { bookId } = req.params;
     const { name } = req.body;
+    console.log('Adding group:', { bookId, name });
     try {
       await addGroup(bookId, name);
       res.status(201).json({ success: true });
