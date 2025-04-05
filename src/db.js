@@ -21,11 +21,14 @@ module.exports = {
   },
   initDB: async () => {
     try {
-      // Create users table
+      // Create users table with email, name, and age
       await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           username VARCHAR(255) UNIQUE NOT NULL,
+          email VARCHAR(255) UNIQUE NOT NULL,
+          name VARCHAR(255) NOT NULL,
+          age INT NOT NULL,
           password VARCHAR(255) NOT NULL
         )
       `);
@@ -42,7 +45,7 @@ module.exports = {
       `);
       console.log('Books table created');
 
-      // Create comments table (group_id replaced with group_name)
+      // Create comments table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS comments (
           id SERIAL PRIMARY KEY,
@@ -57,14 +60,12 @@ module.exports = {
       // Seed sample data
       const booksCount = await pool.query('SELECT COUNT(*) FROM books');
       if (booksCount.rows[0].count == 0) {
-        // Add a book with a group
         const bookResult = await pool.query(
           "INSERT INTO books (title, genre, groups) VALUES ($1, $2, $3) RETURNING id",
           ['Test Book', 'Fiction', ['Test Group']]
         );
         const bookId = bookResult.rows[0].id;
 
-        // Add a comment
         await pool.query(
           'INSERT INTO comments (book_id, group_name, message) VALUES ($1, $2, $3)',
           [bookId, 'Test Group', 'Great book!']

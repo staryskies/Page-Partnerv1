@@ -67,44 +67,12 @@
 <body>
     <div class="login-container">
         <h1>Login</h1>
-        <input type="text" id="username" placeholder="Username" required>
+        <input type="text" id="identifier" placeholder="Username or Email" required>
         <input type="password" id="password" placeholder="Password" required>
         <button onclick="handleLogin()">Login</button>
         <p id="error" class="error"></p>
     </div>
 
-    <script>
-        async function handleLogin() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorElement = document.getElementById('error');
-
-            // Clear previous error messages
-            errorElement.textContent = '';
-
-            if (!username || !password) {
-                errorElement.textContent = 'Please enter both username and password.';
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password }),
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to log in.');
-                }
-
-                // On successful login, redirect to the homepage
-                window.location.href = '/';
-            } catch (err) {
-                errorElement.textContent = err.message;
-            }
-        }
-    </script>
+    <script src="/script.js"></script>
 </body>
 </html>

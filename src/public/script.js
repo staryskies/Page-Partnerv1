@@ -11,7 +11,8 @@ if (window.location.pathname === '/homepage.html' && localStorage.getItem('usern
 if (
   !localStorage.getItem('username') &&
   window.location.pathname !== '/homepage.html' &&
-  window.location.pathname !== '/login.html'
+  window.location.pathname !== '/login.html' &&
+  window.location.pathname !== '/signup.html'
 ) {
   window.location.href = '/login.html';
 }
@@ -26,40 +27,65 @@ if (window.location.pathname === '/index.html') {
 }
 
 // Login function
-async function login() {
-  const username = document.getElementById('login-username').value;
-  const password = document.getElementById('login-password').value;
+async function handleLogin() {
+  const identifier = document.getElementById('identifier').value;
+  const password = document.getElementById('password').value;
+  const errorElement = document.getElementById('error');
+
+  // Clear previous error messages
+  errorElement.textContent = '';
+
+  if (!identifier || !password) {
+    errorElement.textContent = 'Please enter both username/email and password.';
+    return;
+  }
+
   try {
-    const response = await fetch(`${baseUrl}/api/login`, {
+    const response = await fetch(`${baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ identifier, password }),
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Login failed');
-    localStorage.setItem('username', username);
+    localStorage.setItem('username', result.username);
     window.location.href = '/index.html';
   } catch (err) {
-    document.getElementById('error').innerText = err.message;
+    console.error('Login Error:', err);
+    errorElement.textContent = err.message;
   }
 }
 
 // Signup function
-async function signup() {
-  const username = document.getElementById('signup-username').value;
-  const password = document.getElementById('signup-password').value;
+async function handleSignup() {
+  const username = document.getElementById('username').value;
+  const email = document.getElementById('email').value;
+  const name = document.getElementById('name').value;
+  const age = document.getElementById('age').value;
+  const password = document.getElementById('password').value;
+  const errorElement = document.getElementById('error');
+
+  // Clear previous error messages
+  errorElement.textContent = '';
+
+  if (!username || !email || !name || !age || !password) {
+    errorElement.textContent = 'Please fill in all fields.';
+    return;
+  }
+
   try {
-    const response = await fetch(`${baseUrl}/api/signup`, {
+    const response = await fetch(`${baseUrl}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, email, name, age, password }),
     });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Signup failed');
-    localStorage.setItem('username', username);
-    window.location.href = '/index.html';
+    alert('Sign up successful! Please log in.');
+    window.location.href = '/login.html';
   } catch (err) {
-    document.getElementById('error').innerText = err.message;
+    console.error('Signup Error:', err);
+    errorElement.textContent = err.message;
   }
 }
 
@@ -84,6 +110,7 @@ async function loadBooks() {
       bookSelect.appendChild(option);
     });
   } catch (err) {
+    console.error('Load Books Error:', err);
     document.getElementById('error').innerText = err.message;
   }
 }
@@ -104,6 +131,7 @@ async function addBook() {
     document.getElementById('book-genre').value = '';
     loadBooks();
   } catch (err) {
+    console.error('Add Book Error:', err);
     document.getElementById('error').innerText = err.message;
   }
 }
@@ -120,13 +148,11 @@ async function loadGroups() {
   }
 
   try {
-    // Fetch book details
     const bookResponse = await fetch(`${baseUrl}/api/book/${bookId}`);
     if (!bookResponse.ok) throw new Error(`Failed to fetch book: ${bookResponse.status}`);
     const book = await bookResponse.json();
     document.getElementById('book-details').innerText = `${book.title} (${book.genre})`;
 
-    // Load groups from the book's groups array
     const groupSelect = document.getElementById('group-select');
     groupSelect.innerHTML = '<option value="">Select a group</option>';
     book.groups.forEach(group => {
@@ -136,9 +162,9 @@ async function loadGroups() {
       groupSelect.appendChild(option);
     });
 
-    // Clear comments until a group is selected
     document.getElementById('comments').innerHTML = 'Select a group to view comments';
   } catch (err) {
+    console.error('Load Groups Error:', err);
     document.getElementById('error').innerText = err.message;
   }
 }
@@ -161,6 +187,7 @@ async function addGroup() {
     document.getElementById('new-group').value = '';
     loadGroups();
   } catch (err) {
+    console.error('Add Group Error:', err);
     document.getElementById('error').innerText = err.message;
   }
 }
@@ -187,6 +214,7 @@ async function loadComments() {
       commentsDiv.appendChild(p);
     });
   } catch (err) {
+    console.error('Load Comments Error:', err);
     document.getElementById('error').innerText = err.message;
   }
 }
@@ -209,6 +237,7 @@ async function postComment() {
     document.getElementById('new-comment').value = '';
     loadComments();
   } catch (err) {
+    console.error('Post Comment Error:', err);
     document.getElementById('error').innerText = err.message;
   }
 }
