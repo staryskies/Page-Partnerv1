@@ -1,4 +1,4 @@
-const { createBook, getBooks, getBook, createGroup, getGroups, getComments, addComment } = require('../models/book');
+const { createBook, getBooks, getBook, addGroup, getComments, addComment } = require('../models/book');
 
 module.exports = {
   createBook: async (req, res) => {
@@ -25,33 +25,28 @@ module.exports = {
     }
     res.json(book);
   },
-  createGroup: async (req, res) => {
+  addGroup: async (req, res) => {
     const { bookId } = req.params;
     const { name } = req.body;
     try {
-      const groupId = await createGroup(bookId, name);
-      res.status(201).json({ success: true, groupId });
+      await addGroup(bookId, name);
+      res.status(201).json({ success: true });
     } catch (err) {
-      console.error('Create Group Error:', err);
-      res.status(500).json({ error: 'Failed to create group' });
+      console.error('Add Group Error:', err);
+      res.status(500).json({ error: 'Failed to add group' });
     }
   },
-  getGroups: async (req, res) => {
-    const { bookId } = req.params;
-    const groups = await getGroups(bookId);
-    res.json(groups);
-  },
   getGroupComments: async (req, res) => {
-    const { bookId, groupId } = req.params;
-    console.log('Fetching comments for book:', bookId, 'group:', groupId);
-    const comments = await getComments(bookId, groupId);
+    const { bookId, groupName } = req.params;
+    console.log('Fetching comments for book:', bookId, 'group:', groupName);
+    const comments = await getComments(bookId, groupName);
     res.json(comments);
   },
   postGroupComment: async (req, res) => {
-    const { bookId, groupId } = req.params;
+    const { bookId, groupName } = req.params;
     const { message } = req.body;
-    console.log('Posting comment:', { bookId, groupId, message });
-    await addComment(bookId, groupId, message);
+    console.log('Posting comment:', { bookId, groupName, message });
+    await addComment(bookId, groupName, message);
     res.status(201).json({ success: true });
   },
 };

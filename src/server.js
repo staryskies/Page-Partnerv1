@@ -10,6 +10,11 @@ app.use(express.json());
 // Serve static files from the public folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Serve homepage.html as the default route
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'homepage.html'));
+});
+
 // API routes
 connectDB()
   .then(() => initDB())

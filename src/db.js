@@ -31,22 +31,23 @@ module.exports = {
       `);
       console.log('Users table created');
 
-      // Create books table
+      // Create books table with groups array
       await pool.query(`
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
           title VARCHAR(255) NOT NULL,
-          genre VARCHAR(100)
+          genre VARCHAR(100),
+          groups TEXT[] DEFAULT '{}'
         )
       `);
       console.log('Books table created');
 
-      // Create comments table
+      // Create comments table (group_id replaced with group_name)
       await pool.query(`
         CREATE TABLE IF NOT EXISTS comments (
           id SERIAL PRIMARY KEY,
           book_id INT REFERENCES books(id),
-          group_id INT NOT NULL,
+          group_name TEXT NOT NULL,
           message TEXT NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -56,13 +57,17 @@ module.exports = {
       // Seed sample data
       const booksCount = await pool.query('SELECT COUNT(*) FROM books');
       if (booksCount.rows[0].count == 0) {
-        await pool.query(
-          'INSERT INTO books (title, genre) VALUES ($1, $2)',
-          ['Test Book', 'Fiction']
+        // Add a book with a group
+        const bookResult = await pool.query(
+          "INSERT INTO books (title, genre, groups) VALUES ($1, $2, $3) RETURNING id",
+          ['Test Book', 'Fiction', ['Test Group']]
         );
+        const bookId = bookResult.rows[0].id;
+
+        // Add a comment
         await pool.query(
-          'INSERT INTO comments (book_id, group_id, message) VALUES ($1, $2, $3)',
-          [1, 1, 'Great book!']
+          'INSERT INTO comments (book_id, group_name, message) VALUES ($1, $2, $3)',
+          [bookId, 'Test Group', 'Great book!']
         );
         console.log('Database initialized with sample data');
       } else {

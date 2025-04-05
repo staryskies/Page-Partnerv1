@@ -18,6 +18,19 @@ body {
     color: #333;
   }
   
+  p {
+    color: #666;
+    line-height: 1.6;
+  }
+  
+  .button-group {
+    margin-top: 20px;
+  }
+  
+  .button-group button {
+    margin-right: 10px;
+  }
+  
   .user-info {
     display: flex;
     justify-content: space-between;

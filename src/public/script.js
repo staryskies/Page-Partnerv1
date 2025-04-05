@@ -1,9 +1,18 @@
 const baseUrl = window.location.origin;
 let selectedBookId = null;
-let selectedGroupId = null;
+let selectedGroupName = null;
 
-// Redirect to login if not logged in
-if (!localStorage.getItem('username') && window.location.pathname !== '/login.html') {
+// Redirect to index if logged in and on homepage
+if (window.location.pathname === '/homepage.html' && localStorage.getItem('username')) {
+  window.location.href = '/index.html';
+}
+
+// Redirect to login if not logged in and not on homepage or login page
+if (
+  !localStorage.getItem('username') &&
+  window.location.pathname !== '/homepage.html' &&
+  window.location.pathname !== '/login.html'
+) {
   window.location.href = '/login.html';
 }
 
@@ -57,7 +66,7 @@ async function signup() {
 // Logout function
 function logout() {
   localStorage.removeItem('username');
-  window.location.href = '/login.html';
+  window.location.href = '/homepage.html';
 }
 
 // Load all books
@@ -117,16 +126,13 @@ async function loadGroups() {
     const book = await bookResponse.json();
     document.getElementById('book-details').innerText = `${book.title} (${book.genre})`;
 
-    // Fetch groups
-    const groupsResponse = await fetch(`${baseUrl}/api/book/${bookId}/groups`);
-    if (!groupsResponse.ok) throw new Error(`Failed to fetch groups: ${groupsResponse.status}`);
-    const groups = await groupsResponse.json();
+    // Load groups from the book's groups array
     const groupSelect = document.getElementById('group-select');
     groupSelect.innerHTML = '<option value="">Select a group</option>';
-    groups.forEach(group => {
+    book.groups.forEach(group => {
       const option = document.createElement('option');
-      option.value = group.id;
-      option.innerText = group.name;
+      option.value = group;
+      option.innerText = group;
       groupSelect.appendChild(option);
     });
 
@@ -161,15 +167,15 @@ async function addGroup() {
 
 // Load comments for the selected group
 async function loadComments() {
-  const groupId = document.getElementById('group-select').value;
-  selectedGroupId = groupId;
-  if (!selectedBookId || !groupId) {
+  const groupName = document.getElementById('group-select').value;
+  selectedGroupName = groupName;
+  if (!selectedBookId || !groupName) {
     document.getElementById('comments').innerHTML = 'Select a book and group to view comments';
     return;
   }
 
   try {
-    const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group/${groupId}/comments`);
+    const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group/${encodeURIComponent(groupName)}/comments`);
     if (!response.ok) throw new Error(`Failed to fetch comments: ${response.status}`);
     const comments = await response.json();
     const commentsDiv = document.getElementById('comments');
@@ -187,14 +193,14 @@ async function loadComments() {
 
 // Post a comment
 async function postComment() {
-  if (!selectedBookId || !selectedGroupId) {
+  if (!selectedBookId || !selectedGroupName) {
     document.getElementById('error').innerText = 'Please select a book and group';
     return;
   }
   const message = document.getElementById('new-comment').value;
   if (!message) return;
   try {
-    const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group/${selectedGroupId}/comments`, {
+    const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group/${encodeURIComponent(selectedGroupName)}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message }),

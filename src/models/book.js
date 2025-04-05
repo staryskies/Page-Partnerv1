@@ -3,8 +3,8 @@ const db = require('../db');
 module.exports = {
   createBook: async (title, genre) => {
     const result = await db.query(
-      'INSERT INTO books (title, genre) VALUES ($1, $2) RETURNING id',
-      [title, genre]
+      'INSERT INTO books (title, genre, groups) VALUES ($1, $2, $3) RETURNING id',
+      [title, genre, []] // Start with an empty groups array
     );
     return result.rows[0].id;
   },
@@ -16,31 +16,23 @@ module.exports = {
     const result = await db.query('SELECT * FROM books WHERE id = $1', [bookId]);
     return result.rows[0];
   },
-  createGroup: async (bookId, name) => {
-    const result = await db.query(
-      'INSERT INTO book_groups (book_id, name) VALUES ($1, $2) RETURNING id',
-      [bookId, name]
-    );
-    return result.rows[0].id;
-  },
-  getGroups: async (bookId) => {
-    const result = await db.query(
-      'SELECT * FROM book_groups WHERE book_id = $1',
-      [bookId]
-    );
-    return result.rows;
-  },
-  getComments: async (bookId, groupId) => {
-    const result = await db.query(
-      'SELECT * FROM comments WHERE book_id = $1 AND group_id = $2 ORDER BY created_at',
-      [bookId, groupId]
-    );
-    return result.rows;
-  },
-  addComment: async (bookId, groupId, message) => {
+  addGroup: async (bookId, groupName) => {
     await db.query(
-      'INSERT INTO comments (book_id, group_id, message) VALUES ($1, $2, $3)',
-      [bookId, groupId, message]
+      'UPDATE books SET groups = array_append(groups, $1) WHERE id = $2',
+      [groupName, bookId]
+    );
+  },
+  getComments: async (bookId, groupName) => {
+    const result = await db.query(
+      'SELECT * FROM comments WHERE book_id = $1 AND group_name = $2 ORDER BY created_at',
+      [bookId, groupName]
+    );
+    return result.rows;
+  },
+  addComment: async (bookId, groupName, message) => {
+    await db.query(
+      'INSERT INTO comments (book_id, group_name, message) VALUES ($1, $2, $3)',
+      [bookId, groupName, message]
     );
   },
 };
