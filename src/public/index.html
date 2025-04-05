@@ -7,6 +7,16 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <script>
+    if (
+      !localStorage.getItem('username') &&
+      window.location.pathname !== '/homepage.html' &&
+      window.location.pathname !== '/login.html' &&
+      window.location.pathname !== '/signup.html'
+    ) {
+      window.location.href = '/login.html';
+    }
+  </script>
   <div class="container">
     <h1>Reading App</h1>
     <div class="user-info">

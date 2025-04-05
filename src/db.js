@@ -21,7 +21,6 @@ module.exports = {
   },
   initDB: async () => {
     try {
-      // Create users table with email, name, and age
       await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -34,7 +33,6 @@ module.exports = {
       `);
       console.log('Users table created');
 
-      // Create books table with groups array
       await pool.query(`
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
@@ -45,7 +43,6 @@ module.exports = {
       `);
       console.log('Books table created');
 
-      // Create comments table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS comments (
           id SERIAL PRIMARY KEY,
@@ -57,7 +54,6 @@ module.exports = {
       `);
       console.log('Comments table created');
 
-      // Seed sample data
       const booksCount = await pool.query('SELECT COUNT(*) FROM books');
       if (booksCount.rows[0].count == 0) {
         const bookResult = await pool.query(
