@@ -1,6 +1,66 @@
+const baseUrl = window.location.origin;
 const bookId = 1;
 const groupId = 1;
-const baseUrl = window.location.origin; // Dynamically use the Render URL
+
+// Redirect to login if not logged in
+if (!localStorage.getItem('username') && window.location.pathname !== '/login.html') {
+  window.location.href = '/login.html';
+}
+
+// Display username on index page
+if (window.location.pathname === '/index.html') {
+  const username = localStorage.getItem('username');
+  if (username) {
+    document.getElementById('username').innerText = username;
+    fetchBook();
+    fetchComments();
+    setInterval(fetchComments, 5000);
+  }
+}
+
+// Login function
+async function login() {
+  const username = document.getElementById('login-username').value;
+  const password = document.getElementById('login-password').value;
+  try {
+    const response = await fetch(`${baseUrl}/api/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Login failed');
+    localStorage.setItem('username', username);
+    window.location.href = '/index.html';
+  } catch (err) {
+    document.getElementById('error').innerText = err.message;
+  }
+}
+
+// Signup function
+async function signup() {
+  const username = document.getElementById('signup-username').value;
+  const password = document.getElementById('signup-password').value;
+  try {
+    const response = await fetch(`${baseUrl}/api/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Signup failed');
+    localStorage.setItem('username', username);
+    window.location.href = '/index.html';
+  } catch (err) {
+    document.getElementById('error').innerText = err.message;
+  }
+}
+
+// Logout function
+function logout() {
+  localStorage.removeItem('username');
+  window.location.href = '/login.html';
+}
 
 // Fetch book details
 async function fetchBook() {
@@ -45,13 +105,8 @@ async function postComment() {
     });
     if (!response.ok) throw new Error(`Failed to post comment: ${response.status}`);
     document.getElementById('new-comment').value = '';
-    fetchComments(); // Refresh comments
+    fetchComments();
   } catch (err) {
     document.getElementById('error').innerText = err.message;
   }
 }
-
-// Initial fetch
-fetchBook();
-fetchComments();
-setInterval(fetchComments, 5000); // Poll for comments every 5 seconds

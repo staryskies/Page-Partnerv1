@@ -18,6 +18,13 @@ body {
     color: #333;
   }
   
+  .user-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
   .comments {
     margin-top: 20px;
   }
@@ -27,12 +34,14 @@ body {
     border-bottom: 1px solid #ddd;
   }
   
-  input[type="text"] {
+  input[type="text"],
+  input[type="password"] {
     padding: 8px;
-    margin-right: 10px;
+    margin: 5px 0;
     width: 70%;
     border: 1px solid #ddd;
     border-radius: 4px;
+    display: block;
   }
   
   button {
@@ -42,6 +51,7 @@ body {
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    margin: 5px 0;
   }
   
   button:hover {
