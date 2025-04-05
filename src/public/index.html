@@ -8,53 +8,140 @@
 </head>
 <body>
   <script>
-    if (
-      !localStorage.getItem('username') &&
-      window.location.pathname !== '/homepage.html' &&
-      window.location.pathname !== '/login.html' &&
-      window.location.pathname !== '/signup.html'
-    ) {
-      window.location.href = '/homepage.html';
+    const baseUrl = window.location.origin;
+  
+    // Mobile navigation toggle
+    const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    if (mobileNavToggle) {
+      mobileNavToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+      });
     }
+  
+    // Collection tabs
+    const collectionTabs = document.querySelectorAll('.collection-tab');
+    collectionTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        collectionTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', async function() {
+      const username = localStorage.getItem('username');
+  
+      // Fetch user data from the server
+      async function fetchUserData() {
+        try {
+          const response = await fetch(`${baseUrl}/api/user`, {
+            headers: { 'X-Username': username },
+          });
+          if (!response.ok) throw new Error('Failed to fetch user data');
+          return await response.json();
+        } catch (err) {
+          console.error('Fetch User Data Error:', err);
+          return {
+            isLoggedIn: false,
+            displayName: '',
+            currentlyReading: 0,
+            completedBooks: 0,
+            readingStreak: 0,
+            badges: 0,
+            hasRecommendations: false,
+            hasPreviews: false,
+            hasCircles: false,
+            hasFriends: false,
+            hasPoints: false,
+          };
+        }
+      }
+  
+      const userData = await fetchUserData();
+  
+      // Update UI based on user data
+      function updateUI(data) {
+        const userAvatar = document.getElementById('user-avatar-initials');
+        const userName = document.getElementById('user-display-name');
+        const userStats = document.getElementById('user-stats');
+        const userGreeting = document.getElementById('user-greeting');
+  
+        if (data.isLoggedIn && data.displayName) {
+          const initials = data.displayName.split(' ').map(name => name.charAt(0)).join('');
+          userAvatar.textContent = initials;
+          userName.textContent = data.displayName;
+          userStats.textContent = `${data.completedBooks} books • ${data.badges} badges`;
+          userGreeting.textContent = `Welcome back, ${data.displayName.split(' ')[0]}!`;
+        } else {
+          userAvatar.textContent = '?';
+          userName.textContent = 'Sign in';
+          userStats.textContent = 'Start your reading journey';
+          userGreeting.textContent = 'Welcome to PagePartner!';
+        }
+  
+        document.getElementById('currently-reading-count').textContent = data.currentlyReading;
+        document.getElementById('completed-count').textContent = data.completedBooks;
+        document.getElementById('streak-count').textContent = data.readingStreak;
+        document.getElementById('badge-count').textContent = data.badges;
+  
+        if (data.currentlyReading > 0) {
+          document.getElementById('currently-reading-info').textContent =
+            data.currentlyReading === 1 ? '1 book in progress' : `${data.currentlyReading} books in progress`;
+        }
+        if (data.completedBooks > 0) {
+          document.getElementById('completed-info').textContent =
+            data.completedBooks === 1 ? '1 book this year' : `${data.completedBooks} this year`;
+        }
+        if (data.badges > 0) {
+          document.getElementById('badge-info').textContent =
+            data.badges === 1 ? '1 badge earned' : `${data.badges} badges earned`;
+        }
+  
+        toggleVisibility('empty-recommendations', 'recommendations-grid', data.hasRecommendations);
+        toggleVisibility('empty-previews', 'previews-grid', data.hasPreviews);
+        toggleVisibility('empty-circles', 'circles-grid', data.hasCircles);
+        toggleVisibility('empty-activity', 'activity-feed', data.hasFriends);
+        toggleVisibility('empty-points', 'points-list', data.hasPoints);
+      }
+  
+      function toggleVisibility(emptyStateId, contentId, hasContent) {
+        const emptyState = document.getElementById(emptyStateId);
+        const content = document.getElementById(contentId);
+        emptyState.style.display = hasContent ? 'none' : 'flex';
+        content.style.display = hasContent ? 'grid' : 'none';
+      }
+  
+      // Update UI with fetched data
+      updateUI(userData);
+  
+      // Add logout functionality
+      document.querySelector('.user-profile').addEventListener('click', () => {
+        if (userData.isLoggedIn) {
+          localStorage.removeItem('username');
+          window.location.href = '/homepage.html';
+        } else {
+          window.location.href = '/login.html';
+        }
+      });
+  
+      // Add event listeners to empty state buttons
+      document.querySelectorAll('.empty-state-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          if (button.textContent.includes('Add Your First Book')) {
+            window.location.href = '/add-book.html';
+          } else if (button.textContent.includes('Explore Previews')) {
+            window.location.href = '/previews.html';
+          } else if (button.textContent.includes('Find Reading Circles')) {
+            window.location.href = '/circles.html';
+          } else if (button.textContent.includes('Find Friends')) {
+            window.location.href = '/friends.html';
+          } else if (button.textContent.includes('Learn How Points Work')) {
+            window.location.href = '/points.html';
+          }
+        });
+      });
+    });
   </script>
-  <div class="container">
-    <h1>Reading App</h1>
-    <div class="user-info">
-      <span>Logged in as: <span id="username"></span></span>
-      <button onclick="logout()">Logout</button>
-    </div>
-
-    <h2>Add a New Book</h2>
-    <input type="text" id="book-title" placeholder="Book Title">
-    <input type="text" id="book-genre" placeholder="Genre">
-    <button onclick="addBook()">Add Book</button>
-
-    <h2>Books</h2>
-    <select id="book-select" onchange="loadGroups()">
-      <option value="">Select a book</option>
-    </select>
-
-    <h2>Groups</h2>
-    <select id="group-select" onchange="loadComments()">
-      <option value="">Select a group</option>
-    </select>
-    <div>
-      <input type="text" id="new-group" placeholder="New Group Name">
-      <button onclick="addGroup()">Add Group</button>
-    </div>
-
-    <h2>Book Details</h2>
-    <div id="book-details">Select a book to view details</div>
-
-    <h2>Group Comments</h2>
-    <div id="comments" class="comments">Select a book and group to view comments</div>
-
-    <h3>Add a Comment</h3>
-    <input type="text" id="new-comment" placeholder="Add a comment">
-    <button onclick="postComment()">Post</button>
-
-    <div id="error" class="error"></div>
-  </div>
-  <script src="/script.js"></script>
-</body>
-</html>
+  </body>
+  </html>

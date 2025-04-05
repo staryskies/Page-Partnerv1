@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achievements - PagePartner</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Reuse styles from index.html */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    :root { /* Copy root vars from index.html */ }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #121212; color: #ffffff; display: flex; min-height: 100vh; overflow-x: hidden; }
+    .sidebar { /* Copy sidebar styles */ }
+    .main-content { flex: 1; padding: 30px; margin-left: 260px; }
+    .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+    .achievement-card { background: #1e1e1e; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); }
+    .achievement-icon { font-size: 2rem; color: #38b2ac; margin-bottom: 15px; }
+    .achievement-name { font-weight: 600; margin-bottom: 8px; }
+    .achievement-desc { font-size: 0.8rem; color: #a0a0a0; }
+    @media (max-width: 992px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+  <button class="mobile-nav-toggle"><i class="fas fa-bars"></i></button>
+  <div class="sidebar">
+    <!-- Copy sidebar from index.html, set Achievements as active -->
+    <div class="logo">
+      <img src="logo.png" alt="PagePartner Logo">
+      <span class="logo-text">PagePartner</span>
+    </div>
+    <nav class="nav-links">
+      <div class="nav-section">
+        <div class="nav-section-title">Main</div>
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="my-library.html" class="nav-item"><i class="fas fa-book"></i> My Library</a>
+        <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Social</div>
+        <a href="friends.html" class="nav-item"><i class="fas fa-user-friends"></i> Friends</a>
+        <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
+        <a href="activity.html" class="nav-item"><i class="fas fa-chart-line"></i> Activity</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Personal</div>
+        <a href="achievements.html" class="nav-item active"><i class="fas fa-award"></i> Achievements</a>
+        <a href="reviews.html" class="nav-item"><i class="fas fa-star"></i> Reviews</a>
+        <a href="statistics.html" class="nav-item"><i class="fas fa-chart-bar"></i> Statistics</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Premium</div>
+        <a href="points.html" class="nav-item"><i class="fas fa-coins"></i> Points & Rewards</a>
+      </div>
+    </nav>
+    <div class="user-profile">
+      <div class="user-avatar" id="user-avatar-initials"></div>
+      <div class="user-info">
+        <div class="user-name" id="user-display-name">Sign in</div>
+        <div class="user-status" id="user-stats">Start your reading journey</div>
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <div class="section-header">
+      <h2 class="section-title">Achievements</h2>
+    </div>
+    <div class="achievements-grid" id="achievements-grid">
+      <!-- Dynamic achievements will be added here -->
+    </div>
+  </div>
+  <script>
+    const baseUrl = window.location.origin;
+    document.addEventListener('DOMContentLoaded', async () => {
+      const username = localStorage.getItem('username');
+      const userResponse = await fetch(`${baseUrl}/api/user`, { headers: { 'X-Username': username } });
+      const userData = await userResponse.json();
+      updateUserProfile(userData);
+
+      // Placeholder achievements
+      const achievements = [
+        { name: 'First Book', desc: 'Read your first book', icon: 'fas fa-book' },
+        { name: 'Streak Starter', desc: 'Read 3 days in a row', icon: 'fas fa-fire' },
+      ];
+      renderAchievements(achievements);
+    });
+
+    function updateUserProfile(data) {
+      const userAvatar = document.getElementById('user-avatar-initials');
+      const userName = document.getElementById('user-display-name');
+      const userStats = document.getElementById('user-stats');
+      if (data.isLoggedIn && data.displayName) {
+        const initials = data.displayName.split(' ').map(n => n.charAt(0)).join('');
+        userAvatar.textContent = initials;
+        userName.textContent = data.displayName;
+        userStats.textContent = `${data.completedBooks} books • ${data.badges} badges`;
+      }
+    }
+
+    function renderAchievements(achievements) {
+      const grid = document.getElementById('achievements-grid');
+      grid.innerHTML = '';
+      achievements.forEach(achievement => {
+        const card = document.createElement('div');
+        card.className = 'achievement-card';
+        card.innerHTML = `
+          <div class="achievement-icon"><i class="${achievement.icon}"></i></div>
+          <div class="achievement-name">${achievement.name}</div>
+          <div class="achievement-desc">${achievement.desc}</div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+  </script>
+</body>
+</html>

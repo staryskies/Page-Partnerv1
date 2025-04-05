@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discover - PagePartner</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Reuse styles from index.html */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    :root { /* Copy root vars from index.html */ }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #121212; color: #ffffff; display: flex; min-height: 100vh; overflow-x: hidden; }
+    .sidebar { /* Copy sidebar styles */ }
+    .main-content { flex: 1; padding: 30px; margin-left: 260px; }
+    .topics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+    .topic-card { background: #1e1e1e; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; border: 1px solid #2a2a2a; }
+    .topic-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4); border-color: #38b2ac; }
+    .topic-icon { font-size: 2rem; color: #38b2ac; margin-bottom: 15px; }
+    .topic-name { font-weight: 600; }
+    @media (max-width: 992px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+  <button class="mobile-nav-toggle"><i class="fas fa-bars"></i></button>
+  <div class="sidebar">
+    <!-- Copy sidebar from index.html, set Discover as active -->
+    <div class="logo">
+      <img src="logo.png" alt="PagePartner Logo">
+      <span class="logo-text">PagePartner</span>
+    </div>
+    <nav class="nav-links">
+      <div class="nav-section">
+        <div class="nav-section-title">Main</div>
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="my-library.html" class="nav-item"><i class="fas fa-book"></i> My Library</a>
+        <a href="discover.html" class="nav-item active"><i class="fas fa-compass"></i> Discover</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Social</div>
+        <a href="friends.html" class="nav-item"><i class="fas fa-user-friends"></i> Friends</a>
+        <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
+        <a href="activity.html" class="nav-item"><i class="fas fa-chart-line"></i> Activity</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Personal</div>
+        <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
+        <a href="reviews.html" class="nav-item"><i class="fas fa-star"></i> Reviews</a>
+        <a href="statistics.html" class="nav-item"><i class="fas fa-chart-bar"></i> Statistics</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Premium</div>
+        <a href="points.html" class="nav-item"><i class="fas fa-coins"></i> Points & Rewards</a>
+      </div>
+    </nav>
+    <div class="user-profile">
+      <div class="user-avatar" id="user-avatar-initials"></div>
+      <div class="user-info">
+        <div class="user-name" id="user-display-name">Sign in</div>
+        <div class="user-status" id="user-stats">Start your reading journey</div>
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <div class="section-header">
+      <h2 class="section-title">Discover New Books</h2>
+    </div>
+    <div class="topics-grid" id="topics-grid">
+      <div class="topic-card">
+        <div class="topic-icon"><i class="fas fa-dragon"></i></div>
+        <div class="topic-name">Fantasy</div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-icon"><i class="fas fa-heart"></i></div>
+        <div class="topic-name">Romance</div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-icon"><i class="fas fa-rocket"></i></div>
+        <div class="topic-name">Sci-Fi</div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-icon"><i class="fas fa-microscope"></i></div>
+        <div class="topic-name">Non-Fiction</div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-icon"><i class="fas fa-mask"></i></div>
+        <div class="topic-name">Mystery</div>
+      </div>
+      <div class="topic-card">
+        <div class="topic-icon"><i class="fas fa-landmark"></i></div>
+        <div class="topic-name">Historical</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const baseUrl = window.location.origin;
+    document.addEventListener('DOMContentLoaded', async () => {
+      const username = localStorage.getItem('username');
+      const userResponse = await fetch(`${baseUrl}/api/user`, { headers: { 'X-Username': username } });
+      const userData = await userResponse.json();
+      updateUserProfile(userData);
+
+      // Add click events to explore genres
+      document.querySelectorAll('.topic-card').forEach(card => {
+        card.addEventListener('click', () => {
+          alert(`Explore ${card.querySelector('.topic-name').textContent} books! (Feature coming soon)`);
+        });
+      });
+    });
+
+    function updateUserProfile(data) {
+      const userAvatar = document.getElementById('user-avatar-initials');
+      const userName = document.getElementById('user-display-name');
+      const userStats = document.getElementById('user-stats');
+      if (data.isLoggedIn && data.displayName) {
+        const initials = data.displayName.split(' ').map(n => n.charAt(0)).join('');
+        userAvatar.textContent = initials;
+        userName.textContent = data.displayName;
+        userStats.textContent = `${data.completedBooks} books • ${data.badges} badges`;
+      }
+    }
+  </script>
+</body>
+</html>

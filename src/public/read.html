@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mark as Read - PagePartner</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* Reuse styles from index.html */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    :root { /* Copy root vars from index.html */ }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background: #121212; color: #ffffff; display: flex; min-height: 100vh; overflow-x: hidden; }
+    .sidebar { /* Copy sidebar styles */ }
+    .main-content { flex: 1; padding: 30px; margin-left: 260px; }
+    .book-list { display: flex; flex-direction: column; gap: 20px; }
+    .book-item { background: #1e1e1e; padding: 20px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .book-title { font-weight: 600; }
+    .mark-read-btn { padding: 8px 15px; background: #38b2ac; color: #ffffff; border: none; border-radius: 8px; cursor: pointer; }
+    .mark-read-btn:hover { background: #2a9d98; }
+    @media (max-width: 992px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } }
+  </style>
+</head>
+<body>
+  <button class="mobile-nav-toggle"><i class="fas fa-bars"></i></button>
+  <div class="sidebar">
+    <!-- Copy sidebar from index.html -->
+    <div class="logo">
+      <img src="logo.png" alt="PagePartner Logo">
+      <span class="logo-text">PagePartner</span>
+    </div>
+    <nav class="nav-links">
+      <div class="nav-section">
+        <div class="nav-section-title">Main</div>
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="my-library.html" class="nav-item"><i class="fas fa-book"></i> My Library</a>
+        <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Social</div>
+        <a href="friends.html" class="nav-item"><i class="fas fa-user-friends"></i> Friends</a>
+        <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
+        <a href="activity.html" class="nav-item"><i class="fas fa-chart-line"></i> Activity</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Personal</div>
+        <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
+        <a href="reviews.html" class="nav-item"><i class="fas fa-star"></i> Reviews</a>
+        <a href="statistics.html" class="nav-item"><i class="fas fa-chart-bar"></i> Statistics</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Premium</div>
+        <a href="points.html" class="nav-item"><i class="fas fa-coins"></i> Points & Rewards</a>
+      </div>
+    </nav>
+    <div class="user-profile">
+      <div class="user-avatar" id="user-avatar-initials"></div>
+      <div class="user-info">
+        <div class="user-name" id="user-display-name">Sign in</div>
+        <div class="user-status" id="user-stats">Start your reading journey</div>
+      </div>
+    </div>
+  </div>
+  <div class="main-content">
+    <div class="section-header">
+      <h2 class="section-title">Mark Books as Read</h2>
+    </div>
+    <div class="book-list" id="book-list">
+      <!-- Dynamic books will be added here -->
+    </div>
+  </div>
+<!-- ... (HTML remains the same until the script section) -->
+<script>
+    const baseUrl = window.location.origin;
+    document.addEventListener('DOMContentLoaded', async () => {
+      const username = localStorage.getItem('username');
+      const userResponse = await fetch(`${baseUrl}/api/user`, { headers: { 'X-Username': username } });
+      const userData = await userResponse.json();
+      updateUserProfile(userData);
+  
+      const booksResponse = await fetch(`${baseUrl}/api/books`, { headers: { 'X-Username': username } });
+      const books = await booksResponse.json();
+      renderBooks(books);
+    });
+  
+    function updateUserProfile(data) {
+      const userAvatar = document.getElementById('user-avatar-initials');
+      const userName = document.getElementById('user-display-name');
+      const userStats = document.getElementById('user-stats');
+      if (data.isLoggedIn && data.displayName) {
+        const initials = data.displayName.split(' ').map(n => n.charAt(0)).join('');
+        userAvatar.textContent = initials;
+        userName.textContent = data.displayName;
+        userStats.textContent = `${data.completedBooks} books • ${data.badges} badges`;
+      }
+    }
+  
+    function renderBooks(books) {
+      const list = document.getElementById('book-list');
+      list.innerHTML = '';
+      books.forEach(book => {
+        const item = document.createElement('div');
+        item.className = 'book-item';
+        item.innerHTML = `
+          <div class="book-title">${book.title}</div>
+          <button class="mark-read-btn" onclick="markAsRead(${book.id})">Mark as Read</button>
+        `;
+        list.appendChild(item);
+      });
+    }
+  
+    async function markAsRead(bookId) {
+        const username = localStorage.getItem('username');
+        try {
+            await fetch(`${baseUrl}/api/user`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'X-Username': username },
+            body: JSON.stringify({ completedBooks: 1, currentlyReading: -1, points: 10 }),
+            });
+            await fetch(`${baseUrl}/api/book/${bookId}`, {
+            method: 'DELETE',
+            headers: { 'X-Username': username },
+            });
+            // Award "First Book" achievement if first completion
+            const userResponse = await fetch(`${baseUrl}/api/user`, { headers: { 'X-Username': username } });
+            const userData = await userResponse.json();
+            if (userData.completedBooks === 1) {
+            await fetch(`${baseUrl}/api/achievements`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Username': username },
+                body: JSON.stringify({ name: 'First Book', description: 'Read your first book', icon: 'fas fa-book' }),
+            });
+            }
+            window.location.reload();
+        } catch (err) {
+            console.error('Mark as Read Error:', err);
+        }
+    }
+  </script>
+</body>
+</html>
