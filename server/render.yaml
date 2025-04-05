@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: reading-app-server
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: reading_app_db
+          property: connectionString
+
+databases:
+  - name: reading_app_db
+    plan: free
