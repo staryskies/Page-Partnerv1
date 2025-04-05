@@ -1,3 +1,18 @@
+const express = require('express');
+const { registerUser, loginUser } = require('../controllers/authController');
+const router = express.Router();
+
+router.post('/register', registerUser);
+router.post('/login', loginUser);
+
+module.exports = router;
+
+// filepath: c:\Users\Yichen zuo\Downloads\Artemis-main\Page-Partnerv1\src\server.js
+const authRoutes = require('./routes/auth');
+
+// Add auth routes
+app.use('/api/auth', authRoutes);
+
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';

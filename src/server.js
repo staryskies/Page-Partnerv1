@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const bookRoutes = require('./routes/book');
 const { connectDB, initDB } = require('./db');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 app.use(express.json());
@@ -11,6 +12,9 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 // API routes
 app.use('/api', bookRoutes);
+
+// Add auth routes
+app.use('/api/auth', authRoutes);
 
 // Serve index.html for the root URL
 app.get('/', (req, res) => {

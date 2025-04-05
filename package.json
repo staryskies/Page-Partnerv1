@@ -7,6 +7,7 @@
     },
     "dependencies": {
       "express": "^4.x",
-      "pg": "^8.x"
+      "pg": "^8.x",
+      "bycrypt": "^5.x"
     }
   }

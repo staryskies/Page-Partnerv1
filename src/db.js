@@ -33,21 +33,16 @@ module.exports = {
         )
       `);
 
-      // Seed sample data (only if tables are empty)
-      const booksCount = await pool.query('SELECT COUNT(*) FROM books');
-      if (booksCount.rows[0].count == 0) {
-        await pool.query(
-          'INSERT INTO books (title, genre) VALUES ($1, $2)',
-          ['Test Book', 'Fiction']
-        );
-        await pool.query(
-          'INSERT INTO comments (book_id, group_id, message) VALUES ($1, $2, $3)',
-          [1, 1, 'Great book!']
-        );
-        console.log('Database initialized with sample data');
-      } else {
-        console.log('Database already initialized');
-      }
+      // Create users table
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          username VARCHAR(100) UNIQUE NOT NULL,
+          password VARCHAR(255) NOT NULL
+        )
+      `);
+
+      console.log('Database initialized');
     } catch (err) {
       console.error('Error initializing database:', err);
       throw err;
