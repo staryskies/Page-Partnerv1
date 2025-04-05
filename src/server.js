@@ -15,10 +15,41 @@ app.get('/', (req, res) => {
 });
 
 // Authentication Routes
-app.post('/api/auth/register', userController.signup);
+app.post('/api/auth/register', async (req, res) => {
+  const { username, email, name, age, password } = req.body;
+
+  // Validation (from userController.signup)
+  if (!username || !email || !name || !age || !password) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+  if (typeof name !== 'string' || name.trim().length === 0) {
+    return res.status(400).json({ error: 'Name must be a non-empty string' });
+  }
+  const ageNum = parseInt(age, 10);
+  if (isNaN(ageNum) || ageNum < 13) {
+    return res.status(400).json({ error: 'Age must be a number and at least 13' });
+  }
+
+  try {
+    const result = await query(
+      'INSERT INTO users (username, email, name, age, password) VALUES ($1, $2, $3, $4, $5) RETURNING id',
+      [username, email, name, ageNum, password]
+    );
+    // Return success with username for automatic login
+    res.status(201).json({ success: true, username, message: 'Signup successful, redirecting to onboarding' });
+  } catch (err) {
+    console.error('Signup Error:', err);
+    res.status(400).json({ error: 'Username or email already exists' });
+  }
+});
+
 app.post('/api/auth/login', userController.login);
 
-// Book Routes
+// Book Routes (unchanged)
 app.get('/api/books', async (req, res) => {
   try {
     const result = await query('SELECT * FROM books');
@@ -107,11 +138,11 @@ app.post('/api/book/:id/group/:groupName/comments', async (req, res) => {
   }
 });
 
-// Onboarding Route
+// Onboarding Route (unchanged)
 app.post('/api/onboarding', async (req, res) => {
   const {
-    username, // Assuming username is passed to link to the user
-    profile_picture, // Base64 string or file path if stored separately
+    username,
+    profile_picture,
     user_location,
     genres,
     favorite_authors,
@@ -122,7 +153,6 @@ app.post('/api/onboarding', async (req, res) => {
   } = req.body;
 
   try {
-    // Update the users table with onboarding data
     const result = await query(
       `UPDATE users 
        SET profile_picture = $1, 
@@ -138,14 +168,14 @@ app.post('/api/onboarding', async (req, res) => {
       [
         profile_picture || null,
         user_location,
-        genres, // Array of strings
-        favorite_authors.split(/[,;\n]/).map(a => a.trim()), // Convert to array
+        genres,
+        favorite_authors.split(/[,;\n]/).map(a => a.trim()),
         parseInt(reading_pace, 10),
-        goals, // Array of strings
-        to_read_list.split(/[,;\n]/).map(b => b.trim()), // Convert to array
-        book_length
-      ],
-      username
+        goals,
+        to_read_list.split(/[,;\n]/).map(b => b.trim()),
+        book_length,
+        username
+      ]
     );
 
     if (result.rows.length === 0) {
@@ -176,7 +206,6 @@ const startServer = async () => {
     await connectDB();
     await initDB();
 
-    // Update database schema to include onboarding fields
     await query(`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS profile_picture TEXT,

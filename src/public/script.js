@@ -5,6 +5,8 @@ let selectedGroupName = null;
 // Redirect to index if logged in and on homepage
 if (window.location.pathname === '/homepage.html' && localStorage.getItem('username')) {
   window.location.href = '/index.html';
+} else if (window.location.pathname === '/index.html' && !localStorage.getItem('username')) {
+  window.location.href = '/homepage.html';
 }
 
 // Redirect to login if not logged in and not on homepage or login page

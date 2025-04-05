@@ -76,6 +76,48 @@
         <p id="error" class="error"></p>
     </div>
 
-    <script src="/script.js"></script>
+    <script>
+        const baseUrl = window.location.origin;
+
+        async function handleSignup() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const name = document.getElementById('name').value;
+            const age = document.getElementById('age').value;
+            const password = document.getElementById('password').value;
+            const errorElement = document.getElementById('error');
+
+            errorElement.textContent = '';
+
+            if (!username || !email || !name || !age || !password) {
+                errorElement.textContent = 'Please fill in all fields.';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/api/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, name, age, password }),
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Signup failed');
+                }
+
+                // Automatically log in by setting username in localStorage
+                localStorage.setItem('username', result.username);
+                errorElement.textContent = 'Signup successful! Redirecting to onboarding...';
+                errorElement.style.color = 'green';
+                setTimeout(() => {
+                    window.location.href = '/onboarding.html'; // Redirect to onboarding
+                }, 1000);
+            } catch (err) {
+                console.error('Signup Error:', err);
+                errorElement.textContent = err.message;
+            }
+        }
+    </script>
 </body>
 </html>
