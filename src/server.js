@@ -1,11 +1,15 @@
 const express = require('express');
+const path = require('path');
 const bookRoutes = require('./routes/book');
 const { connectDB, initDB } = require('./db');
 
 const app = express();
 app.use(express.json());
 
-// Initialize DB and start server
+// Serve static files from the public folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// API routes
 connectDB()
   .then(() => initDB())
   .then(() => {
