@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="../HomePage.css">
+</head>
+<body>
+  <div class="signup-container">
+    <h1>Sign Up</h1>
+    <div>
+      <input type="text" id="username" placeholder="Username">
+    </div>
+    <div>
+      <input type="password" id="password" placeholder="Password">
+    </div>
+    <button onclick="handleSignup()">Sign Up</button>
+    <p id="error" style="color: red;"></p>
+  </div>
+
+  <script>
+    const handleSignup = async () => {
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to sign up');
+        }
+
+        alert('Sign up successful! Please log in.');
+        window.location.href = '/login';
+      } catch (err) {
+        document.getElementById('error').textContent = err.message;
+      }
+    };
+  </script>
+</body>
+</html>

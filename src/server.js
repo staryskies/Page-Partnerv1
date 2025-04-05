@@ -16,9 +16,22 @@ app.use('/api', bookRoutes);
 // Add auth routes
 app.use('/api/auth', authRoutes);
 
+// Serve HTML files for specific routes
+app.get('/book', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/screens/BookViewScreen.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/screens/LoginScreen.html'));
+});
+
+app.get('/signup', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/screens/SignupScreen.html')); // Add SignupScreen.html if needed
+});
+
 // Serve index.html for the root URL
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public', 'index.html'));
+  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // Initialize DB and start server
