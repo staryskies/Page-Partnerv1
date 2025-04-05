@@ -1,5 +1,12 @@
 const db = require('../db');
 
+const addGroup = async (bookId, groupName) => {
+  await db.query(
+    'UPDATE books SET groups = array_append(groups, $1) WHERE id = $2',
+    [groupName, bookId]
+  );
+};
+
 module.exports = {
   createBook: async (title, genre) => {
     const result = await db.query(
@@ -16,12 +23,7 @@ module.exports = {
     const result = await db.query('SELECT * FROM books WHERE id = $1', [bookId]);
     return result.rows[0];
   },
-  addGroup: async (bookId, groupName) => {
-    await db.query(
-      'UPDATE books SET groups = array_append(groups, $1) WHERE id = $2',
-      [groupName, bookId]
-    );
-  },
+  addGroup,
   getComments: async (bookId, groupName) => {
     const result = await db.query(
       'SELECT * FROM comments WHERE book_id = $1 AND group_name = $2 ORDER BY created_at',

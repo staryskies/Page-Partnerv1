@@ -28,6 +28,11 @@ module.exports = {
   addGroup: async (req, res) => {
     const { bookId } = req.params;
     const { name } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: 'Group name is required' });
+    }
+
     console.log('Adding group:', { bookId, name });
     try {
       await addGroup(bookId, name);
