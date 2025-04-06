@@ -513,7 +513,7 @@
 
         .circle-action:hover {
             background: rgba(56, 178, 172, 0.1);
-            color: var(--accent-color);
+            color: var (--accent-color);
         }
 
         .create-circle-card {
@@ -677,7 +677,7 @@
 
         .comment-time {
             font-size: 0.75rem;
-            color: var(--muted-text);
+            color: var (--muted-text);
         }
 
         .comment-text {
@@ -848,7 +848,7 @@
 
         .modal-header {
             padding: 20px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var (--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -939,7 +939,7 @@
         }
 
         .filter-pill.active {
-            background: var(--accent-color);
+            background: var (--accent-color);
             color: white;
             border: 1px solid var(--accent-color);
         }
@@ -1396,13 +1396,39 @@
 
         async function fetchSuggestedCircles(genre) {
             try {
-                const response = await fetch(`${baseUrl}/api/suggest-circles/${encodeURIComponent(genre)}`, {
-                    headers: { 'X-Username': localStorage.getItem('username') }
+                // Show loading state
+                const container = $('#suggested-circles');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </div>
+                            <h3 class="empty-state-title">Finding Circles...</h3>
+                            <p class="empty-state-description">
+                                Looking for the best ${genre} reading circles for you.
+                            </p>
+                        </div>
+                    `;
+                }
+
+                // Call the Magic Loop API
+                const response = await fetch("https://magicloops.dev/api/loop/8efda255-508b-4667-8225-fbfdc295c985/run", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ genre })
                 });
-                if (!response.ok) throw new Error('Failed to fetch suggested circles');
-                return await response.json();
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to fetch suggestions');
+                }
+
+                const data = await response.json();
+                return data.circles || []; // Return the circles array from the response
             } catch (err) {
                 console.error('Fetch Suggested Circles Error:', err);
+                showToast('error', 'Error', 'Failed to fetch suggested circles. Please try again.');
                 return [];
             }
         }
