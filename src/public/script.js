@@ -1,4 +1,3 @@
-// client.js
 const baseUrl = window.location.origin;
 let selectedBookId = null;
 let selectedGroupName = null;
@@ -18,7 +17,8 @@ if (
   window.location.pathname !== '/circles.html' &&
   window.location.pathname !== '/add-book.html' &&
   window.location.pathname !== '/achievements.html' &&
-  window.location.pathname !== '/discover.html'
+  window.location.pathname !== '/discover.html' &&
+  window.location.pathname !== '/reviews.html' // Added reviews.html
 ) {
   window.location.href = '/login.html';
 }
@@ -109,16 +109,21 @@ async function loadBooks() {
     if (!response.ok) throw new Error(`Failed to fetch books: ${response.status}`);
     const books = await response.json();
     const bookSelect = document.getElementById('book-select');
-    bookSelect.innerHTML = '<option value="">Select a book</option>';
-    books.forEach(book => {
-      const option = document.createElement('option');
-      option.value = book.id;
-      option.innerText = book.title;
-      bookSelect.appendChild(option);
-    });
+    if (bookSelect) {
+      bookSelect.innerHTML = '<option value="">Select a book</option>';
+      books.forEach(book => {
+        const option = document.createElement('option');
+        option.value = book.id;
+        option.innerText = book.title;
+        bookSelect.appendChild(option);
+      });
+    }
+    return books; // Return books for use in other functions
   } catch (err) {
     console.error('Load Books Error:', err);
-    document.getElementById('error').innerText = err.message;
+    const errorEl = document.getElementById('error');
+    if (errorEl) errorEl.innerText = err.message;
+    return [];
   }
 }
 
@@ -253,7 +258,7 @@ async function postComment() {
   }
 }
 
-// Load reviews
+// Load reviews (updated to return data)
 async function loadReviews() {
   try {
     const response = await fetch(`${baseUrl}/api/reviews`, {
@@ -261,26 +266,32 @@ async function loadReviews() {
     });
     if (!response.ok) throw new Error('Failed to fetch reviews');
     const data = await response.json();
-    const reviewsDiv = document.getElementById('reviews');
-    reviewsDiv.innerHTML = '';
-    data.reviews.forEach(review => {
-      const div = document.createElement('div');
-      div.innerHTML = `
-        <h3>${review.review_title}</h3>
-        <p>Book: ${review.book_title} (${review.book_genre})</p>
-        <p>Rating: ${review.rating}/5</p>
-        <p>${review.review_text}</p>
-        <p>Helpful votes: ${review.helpful_votes}</p>
-        <button onclick="deleteReview(${review.id})">Delete</button>
-      `;
-      reviewsDiv.appendChild(div);
-    });
+    const reviewsDiv = document.getElementById('reviews') || document.getElementById('my-reviews-list');
+    if (reviewsDiv) {
+      reviewsDiv.innerHTML = '';
+      data.reviews.forEach(review => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <h3>${review.review_title}</h3>
+          <p>Book: ${review.book_title} (${review.book_genre})</p>
+          <p>Rating: ${review.rating}/5</p>
+          <p>${review.review_text}</p>
+          <p>Helpful votes: ${review.helpful_votes}</p>
+          <button onclick="deleteReview(${review.id})">Delete</button>
+        `;
+        reviewsDiv.appendChild(div);
+      });
+    }
+    return data.reviews;
   } catch (err) {
-    document.getElementById('error').innerText = err.message;
+    console.error('Load Reviews Error:', err);
+    const errorEl = document.getElementById('error');
+    if (errorEl) errorEl.innerText = err.message;
+    return [];
   }
 }
 
-// Load community reviews
+// Load community reviews (updated to return data)
 async function loadCommunityReviews() {
   try {
     const response = await fetch(`${baseUrl}/api/reviews/community`, {
@@ -288,50 +299,50 @@ async function loadCommunityReviews() {
     });
     if (!response.ok) throw new Error('Failed to fetch community reviews');
     const data = await response.json();
-    const communityDiv = document.getElementById('community-reviews');
-    communityDiv.innerHTML = '';
-    data.reviews.forEach(review => {
-      const div = document.createElement('div');
-      div.innerHTML = `
-        <h3>${review.review_title}</h3>
-        <p>By: ${review.username}</p>
-        <p>Book: ${review.book_title} (${review.book_genre})</p>
-        <p>Rating: ${review.rating}/5</p>
-        <p>${review.review_text}</p>
-        <p>Helpful votes: ${review.helpful_votes}</p>
-        <button onclick="voteReview(${review.id}, 'helpful')">Helpful</button>
-      `;
-      communityDiv.appendChild(div);
-    });
+    const communityDiv = document.getElementById('community-reviews') || document.getElementById('community-reviews-list');
+    if (communityDiv) {
+      communityDiv.innerHTML = '';
+      data.reviews.forEach(review => {
+        const div = document.createElement('div');
+        div.innerHTML = `
+          <h3>${review.review_title}</h3>
+          <p>By: ${review.username}</p>
+          nec<p>Book: ${review.book_title} (${review.book_genre})</p>
+          <p>Rating: ${review.rating}/5</p>
+          <p>${review.review_text}</p>
+          <p>Helpful votes: ${review.helpful_votes}</p>
+          <button onclick="voteReview(${review.id}, 'helpful')">Helpful</button>
+        `;
+        communityDiv.appendChild(div);
+      });
+    }
+    return data.reviews;
   } catch (err) {
-    document.getElementById('error').innerText = err.message;
+    console.error('Load Community Reviews Error:', err);
+    const errorEl = document.getElementById('error');
+    if (errorEl) errorEl.innerText = err.message;
+    return [];
   }
 }
 
-// Add a new review
-async function addReview() {
-  const bookId = document.getElementById('book-select').value;
-  const reviewTitle = document.getElementById('review-title').value;
-  const rating = document.getElementById('rating').value;
-  const reviewText = document.getElementById('review-text').value;
-  const tags = document.getElementById('review-tags').value.split(',').map(tag => tag.trim());
-  const containsSpoilers = document.getElementById('contains-spoilers').checked;
-
-  if (!bookId || !reviewTitle || !rating || !reviewText) {
-    document.getElementById('error').innerText = 'All fields are required';
-    return;
+// Add a new review (modified to accept full review object)
+async function addReview(reviewData) {
+  const { book_id, review_title, rating, review_text, tags, contains_spoilers } = reviewData;
+  if (!book_id || !review_title || !rating || !review_text) {
+    throw new Error('All required fields must be provided');
   }
 
   try {
     const response = await fetch(`${baseUrl}/api/reviews`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Username': localStorage.getItem('username') },
-      body: JSON.stringify({ book_id: bookId, review_title: reviewTitle, rating, review_text: reviewText, tags, contains_spoilers }),
+      body: JSON.stringify({ book_id, review_title, rating, review_text, tags, contains_spoilers }),
     });
     if (!response.ok) throw new Error('Failed to add review');
-    loadReviews();
+    return await response.json(); // Return the created review
   } catch (err) {
-    document.getElementById('error').innerText = err.message;
+    console.error('Add Review Error:', err);
+    throw err;
   }
 }
 
@@ -343,9 +354,10 @@ async function deleteReview(reviewId) {
       headers: { 'X-Username': localStorage.getItem('username') },
     });
     if (!response.ok) throw new Error('Failed to delete review');
-    loadReviews();
+    return true;
   } catch (err) {
-    document.getElementById('error').innerText = err.message;
+    console.error('Delete Review Error:', err);
+    throw err;
   }
 }
 
@@ -358,8 +370,9 @@ async function voteReview(reviewId, vote) {
       body: JSON.stringify({ vote }),
     });
     if (!response.ok) throw new Error('Failed to vote on review');
-    loadCommunityReviews();
+    return true;
   } catch (err) {
-    document.getElementById('error').innerText = err.message;
+    console.error('Vote Review Error:', err);
+    throw err;
   }
 }

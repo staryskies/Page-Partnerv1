@@ -53,20 +53,16 @@
             flex-direction: column;
         }
 
-        .sidebar-header {
-            margin-bottom: 30px;
-            padding: 0 10px;
-        }
-
         .logo {
             display: flex;
             align-items: center;
             text-decoration: none;
+            margin-bottom: 30px;
         }
 
-        .logo i {
-            font-size: 1.8rem;
-            color: var(--primary-color);
+        .logo img {
+            width: 28px;
+            height: 28px;
             margin-right: 12px;
         }
 
@@ -75,12 +71,6 @@
             font-size: 1.4rem;
             color: var(--primary-color);
             letter-spacing: -0.5px;
-        }
-
-        .logo img {
-            width: 50px; /* Adjust the size as needed */
-            height: auto; /* Maintain aspect ratio */
-            object-fit: contain; /* Ensure the image fits within the container */
         }
 
         .nav-section {
@@ -129,7 +119,7 @@
 
         .nav-item.active {
             background: rgba(56, 178, 172, 0.15);
-            color: var (--accent-color);
+            color: var(--accent-color);
             font-weight: 600;
         }
 
@@ -503,7 +493,7 @@
             justify-content: space-between;
             align-items: center;
             font-size: 0.9rem;
-            color: var (--muted-text);
+            color: var(--muted-text);
         }
 
         .review-book {
@@ -686,7 +676,7 @@
 
         .modal-footer {
             padding: 20px;
-            border-top: 1px solid var (--border-color);
+            border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: flex-end;
             gap: 10px;
@@ -889,10 +879,11 @@
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="add-book.html" class="nav-item active"><i class="fas fa-plus"></i> Add Book</a>
+                <a href="add-book.html" class="nav-item"><i class="fas fa-plus"></i> Add Book</a>
                 <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
                 <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
                 <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
+                <a href="reviews.html" class="nav-item active"><i class="fas fa-star"></i> Reviews</a>
             </div>
         </nav>
         <div class="sidebar-footer">
@@ -949,7 +940,6 @@
                 <div class="tab-bar">
                     <div class="tab active" data-tab="my-reviews">My Reviews</div>
                     <div class="tab" data-tab="community">Community Reviews</div>
-                    <div class="tab" data-tab="moderation">Moderation Queue</div>
                 </div>
 
                 <div class="tab-content" id="my-reviews-tab">
@@ -994,25 +984,6 @@
                         <p class="empty-state-description">No community reviews available yet.</p>
                     </div>
                 </div>
-
-                <div class="tab-content hidden" id="moderation-tab">
-                    <div class="search-bar">
-                        <input type="text" class="search-input" placeholder="Search moderation queue..." id="moderation-search">
-                        <button class="search-btn"><i class="fas fa-search"></i></button>
-                    </div>
-                    <div class="filters">
-                        <div class="filter-pill active" data-filter="pending">Pending</div>
-                        <div class="filter-pill" data-filter="flagged">Flagged</div>
-                        <div class="filter-pill" data-filter="approved">Approved</div>
-                        <div class="filter-pill" data-filter="rejected">Rejected</div>
-                    </div>
-                    <div class="review-cards" id="moderation-list"></div>
-                    <div class="empty-state" id="empty-moderation">
-                        <div class="empty-state-icon"><i class="fas fa-check-circle"></i></div>
-                        <h3 class="empty-state-title">No Reviews In Queue</h3>
-                        <p class="empty-state-description">The moderation queue is empty.</p>
-                    </div>
-                </div>
             </div>
         </section>
     </main>
@@ -1025,14 +996,11 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label class="form-label">Book Title</label>
-                    <input type="text" class="form-input" id="book-title" placeholder="Enter book title">
-                    <div class="form-error" id="book-title-error">Please enter a book title.</div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Author</label>
-                    <input type="text" class="form-input" id="book-author" placeholder="Enter author name">
-                    <div class="form-error" id="book-author-error">Please enter an author name.</div>
+                    <label class="form-label">Book</label>
+                    <select class="form-input" id="book-select">
+                        <option value="">Select a book</option>
+                    </select>
+                    <div class="form-error" id="book-select-error">Please select a book.</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Your Rating</label>
@@ -1153,57 +1121,184 @@
                 return;
             }
 
-            try {
-                const response = await fetch(`${baseUrl}/api/user`, {
-                    headers: { 'X-Username': username }
-                });
-                if (!response.ok) throw new Error('Failed to fetch user data');
-                const userData = await response.json();
+            usernameElement.textContent = username;
+            avatarElement.textContent = username[0].toUpperCase();
+            statsElement.textContent = 'Loading stats...';
 
-                usernameElement.textContent = userData.displayName || username;
-                statsElement.textContent = `${userData.completedBooks} books completed`;
-                avatarElement.textContent = userData.displayName ? userData.displayName[0].toUpperCase() : username[0].toUpperCase();
+            try {
+                const reviews = await loadReviews();
+                statsElement.textContent = `${reviews.length} reviews written`;
             } catch (err) {
-                console.error('Update Sidebar Error:', err);
-                usernameElement.textContent = username;
                 statsElement.textContent = 'Stats unavailable';
-                avatarElement.textContent = username[0].toUpperCase();
-                showToast('error', 'Error', 'Failed to load user data');
             }
         }
 
-        // Modified review creation to integrate with client.js
+        // Create review card
+        function createReviewCard(review, isCommunity = false) {
+            const card = document.createElement('div');
+            card.className = 'review-card';
+            card.dataset.reviewId = review.id;
 
+            const starsHTML = Array(5).fill(0).map((_, i) => `<i class="fas fa-star star${i < review.rating ? ' filled' : ''}"></i>`).join('');
+            const tagsHTML = (review.tags || []).map(tag => `<span class="tag-item">${tag}</span>`).join('');
 
-        function showToast(type, title, message, duration = 3000) {
-            const toast = $('#toast');
-            toast.className = 'toast';
-            toast.classList.add(`toast-${type}`);
-            const iconElement = toast.querySelector('.toast-icon i');
-            iconElement.className = type === 'success' ? 'fas fa-check-circle' : type === 'error' ? 'fas fa-exclamation-circle' : 'fas fa-exclamation-triangle';
-            toast.querySelector('.toast-title').textContent = title;
-            toast.querySelector('.toast-message').textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), duration);
+            card.innerHTML = `
+                <div class="review-meta">
+                    <div class="review-user">
+                        <div class="review-avatar">${isCommunity ? review.username[0].toUpperCase() : localStorage.getItem('username')[0].toUpperCase()}</div>
+                        <div>
+                            <div class="review-username">${isCommunity ? review.username : 'You'}</div>
+                            <div class="review-date">${new Date().toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div class="star-rating">${starsHTML}</div>
+                    <div class="review-book">
+                        <div class="review-book-cover">${review.book_title.slice(0, 10)}</div>
+                        <div>
+                            <div class="review-book-title">${review.book_title}</div>
+                            <div class="review-book-author">${review.book_genre}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="review-content">
+                    <h3 class="review-title">${review.review_title}</h3>
+                    <div class="review-text"><p>${review.review_text}</p></div>
+                    <div class="review-actions">
+                        ${isCommunity ? `
+                            <div class="vote-buttons">
+                                <button class="vote-btn" data-vote="helpful" onclick="voteReview(${review.id}, 'helpful')"><i class="fas fa-thumbs-up"></i> Helpful (${review.helpful_votes})</button>
+                            </div>
+                            <div><button class="btn btn-sm btn-light report-btn"><i class="fas fa-flag"></i> Report</button></div>
+                        ` : `
+                            <div class="vote-buttons"><span><i class="fas fa-eye"></i> Helpful (${review.helpful_votes})</span></div>
+                            <div>
+                                <button class="btn btn-sm btn-light delete-review-btn" onclick="openDeleteModal(${review.id})"><i class="fas fa-trash"></i> Delete</button>
+                            </div>
+                        `}
+                    </div>
+                    ${tagsHTML ? `<div class="mt-md">${tagsHTML}</div>` : ''}
+                </div>
+            `;
+            return card;
         }
 
-        function validateForm(formElements) {
-            let isValid = true;
-            Object.keys(formElements).forEach(key => {
-                const { element, errorElement, validation } = formElements[key];
-                const value = element.value ? element.value.trim() : '';
-                if (validation && !validation(value)) {
-                    isValid = false;
-                    element.classList.add('error');
-                    showElement(errorElement);
-                } else {
-                    element.classList.remove('error');
-                    hideElement(errorElement);
-                }
+        // Update stats
+        function updateStats(reviews) {
+            const myReviewsCount = $('#my-reviews-count');
+            const helpfulVotesCount = $('#helpful-votes-count');
+            const commentsCount = $('#comments-count');
+
+            if (myReviewsCount) myReviewsCount.textContent = reviews.length;
+            if (helpfulVotesCount) helpfulVotesCount.textContent = reviews.reduce((sum, r) => sum + (r.helpful_votes || 0), 0);
+            if (commentsCount) commentsCount.textContent = '0'; // Placeholder until comment system is implemented
+        }
+
+        // Populate reviews
+        async function populateReviews() {
+            const myReviewsList = $('#my-reviews-list');
+            const communityReviewsList = $('#community-reviews-list');
+
+            const myReviews = await loadReviews();
+            myReviewsList.innerHTML = '';
+            if (myReviews.length === 0) {
+                showElement($('#empty-my-reviews'));
+                hideElement(myReviewsList);
+            } else {
+                hideElement($('#empty-my-reviews'));
+                myReviews.forEach(review => myReviewsList.appendChild(createReviewCard(review)));
+                showElement(myReviewsList);
+            }
+
+            const communityReviews = await loadCommunityReviews();
+            communityReviewsList.innerHTML = '';
+            if (communityReviews.length === 0) {
+                showElement($('#empty-community-reviews'));
+                hideElement(communityReviewsList);
+            } else {
+                hideElement($('#empty-community-reviews'));
+                communityReviews.forEach(review => communityReviewsList.appendChild(createReviewCard(review, true)));
+                showElement(communityReviewsList);
+            }
+
+            updateStats(myReviews);
+        }
+
+        // Setup tabs
+        function setupTabs() {
+            $$('.tab').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    $$('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const tabId = this.dataset.tab;
+                    $$('.tab-content').forEach(content => hideElement(content));
+                    showElement($(`#${tabId}-tab`));
+                });
             });
-            return isValid;
         }
 
+        // Setup filters
+        function setupFilters() {
+            const filterReviews = (listId, filterValue, searchTerm = '') => {
+                const cards = $$(`#${listId} .review-card`);
+                let visibleCount = 0;
+                cards.forEach(card => {
+                    const stars = Array.from(card.querySelectorAll('.star.filled')).length;
+                    const helpful = parseInt(card.querySelector('.vote-btn')?.textContent.match(/\d+/) || 0);
+                    const text = card.textContent.toLowerCase();
+                    const matchesSearch = searchTerm ? text.includes(searchTerm) : true;
+
+                    if (filterValue === 'all' && matchesSearch) {
+                        showElement(card);
+                        visibleCount++;
+                    } else if (filterValue === 'helpful' && helpful > 0 && matchesSearch) {
+                        showElement(card);
+                        visibleCount++;
+                    } else if (filterValue === 'recent' && matchesSearch) { // Placeholder logic
+                        showElement(card);
+                        visibleCount++;
+                    } else if (filterValue === 'top' && stars >= 4 && matchesSearch) {
+                        showElement(card);
+                        visibleCount++;
+                    } else if (filterValue === 'discussed' && matchesSearch) { // Placeholder
+                        showElement(card);
+                        visibleCount++;
+                    } else if (stars === parseInt(filterValue) && matchesSearch) {
+                        showElement(card);
+                        visibleCount++;
+                    } else {
+                        hideElement(card);
+                    }
+                });
+
+                const list = $(`#${listId}`);
+                const empty = $(`#empty-${listId.split('-')[0]}`);
+                visibleCount > 0 ? (hideElement(empty), showElement(list)) : (showElement(empty), hideElement(list));
+            };
+
+            $$('.filter-pill').forEach(pill => {
+                pill.addEventListener('click', function () {
+                    const filterContainer = this.closest('.filters');
+                    filterContainer.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                    this.classList.add('active');
+                    const filterValue = this.dataset.filter;
+                    const tabContent = this.closest('.tab-content');
+                    const listId = tabContent.id.replace('-tab', '-list');
+                    filterReviews(listId, filterValue);
+                });
+            });
+
+            $$('.search-input').forEach(input => {
+                input.addEventListener('input', debounce(function () {
+                    const searchTerm = this.value.trim().toLowerCase();
+                    const tabContent = this.closest('.tab-content');
+                    const listId = tabContent.id.replace('-tab', '-list');
+                    const activeFilter = tabContent.querySelector('.filter-pill.active').dataset.filter;
+                    filterReviews(listId, activeFilter, searchTerm);
+                }));
+            });
+        }
+
+        // Debounce utility
         function debounce(func, delay = 300) {
             let timeout;
             return function (...args) {
@@ -1212,134 +1307,123 @@
             };
         }
 
-        $('#mobile-nav-toggle').addEventListener('click', () => $('#sidebar').classList.toggle('active'));
+        // Setup star rating
+        function setupStarRating() {
+            const editableStars = $$('.star-rating-edit .star');
+            const ratingLabel = $('.star-rating-label');
+            const ratingLabels = ['', '1 - Poor', '2 - Fair', '3 - Good', '4 - Very Good', '5 - Outstanding'];
 
-        function setupTabs() {
-            $$('.tab-bar .tab').forEach(tab => {
-                tab.addEventListener('click', function () {
-                    const tabBar = this.closest('.tab-bar');
-                    tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    const tabId = this.getAttribute('data-tab');
-                    $$('.tab-content').forEach(content => hideElement(content));
-                    showElement(`#${tabId}-tab`);
+            editableStars.forEach(star => {
+                star.addEventListener('click', function () {
+                    const rating = parseInt(this.dataset.rating);
+                    editableStars.forEach(s => {
+                        s.classList.toggle('filled', parseInt(s.dataset.rating) <= rating);
+                    });
+                    ratingLabel.textContent = ratingLabels[rating];
                 });
             });
         }
 
-        function createReviewCard({ bookTitle, bookAuthor, rating, reviewTitle, reviewText, tags, isCommunity = false, isModeration = false }) {
-            const card = document.createElement('div');
-            card.className = 'review-card';
-            if (isModeration) card.setAttribute('data-status', 'pending');
-
-            const starsHTML = Array(5).fill(0).map((_, i) => `<i class="fas fa-star star${i < rating ? ' filled' : ''}"></i>`).join('');
-            const tagsHTML = tags.map(tag => `<span class="tag-item">${tag} <span class="tag-close">×</span></span>`).join('');
-
-            card.innerHTML = `
-                <div class="review-meta">
-                    <div class="review-user">
-                        <div class="review-avatar">${isCommunity ? 'U' : 'You'}</div>
-                        <div>
-                            <div class="review-username">${isCommunity ? 'User' : 'You'}</div>
-                            <div class="review-date">${new Date().toLocaleDateString()}</div>
-                        </div>
-                    </div>
-                    <div class="star-rating">${starsHTML}</div>
-                    <div class="review-book">
-                        <div class="review-book-cover">${bookTitle.slice(0, 10)}</div>
-                        <div>
-                            <div class="review-book-title">${bookTitle}</div>
-                            <div class="review-book-author">${bookAuthor}</div>
-                        </div>
-                    </div>
-                    ${isModeration ? '<div class="mt-md"><span class="badge badge-warning">Pending</span></div>' : ''}
-                </div>
-                <div class="review-content">
-                    <h3 class="review-title">${reviewTitle}</h3>
-                    <div class="review-text"><p>${reviewText}</p></div>
-                    <div class="review-actions">
-                        ${isCommunity ? `
-                            <div class="vote-buttons">
-                                <button class="vote-btn" data-vote="helpful"><i class="fas fa-thumbs-up"></i> Helpful (0)</button>
-                                <button class="vote-btn" data-vote="not-helpful"><i class="fas fa-thumbs-down"></i> Not Helpful (0)</button>
-                            </div>
-                            <div><button class="btn btn-sm btn-light report-btn"><i class="fas fa-flag"></i> Report</button></div>
-                        ` : isModeration ? `
-                            <div class="vote-buttons"><span><i class="fas fa-clock"></i> Awaiting approval</span></div>
-                            <div class="moderation-buttons">
-                                <button class="btn btn-sm btn-success approve-btn"><i class="fas fa-check"></i> Approve</button>
-                                <button class="btn btn-sm btn-danger reject-btn"><i class="fas fa-times"></i> Reject</button>
-                            </div>
-                        ` : `
-                            <div class="vote-buttons"><span><i class="fas fa-eye"></i> 0 views</span></div>
-                            <div>
-                                <button class="btn btn-sm btn-outline edit-review-btn"><i class="fas fa-edit"></i> Edit</button>
-                                <button class="btn btn-sm btn-light delete-review-btn"><i class="fas fa-trash"></i> Delete</button>
-                            </div>
-                        `}
-                    </div>
-                    ${tags.length ? `<div class="mt-md">${tagsHTML}</div>` : ''}
-                </div>
-            `;
-
-            card.setAttribute('data-stars', rating);
-            card.setAttribute('data-helpful', '0');
-            return card;
+        // Setup tags input
+        function setupTagsInput() {
+            const tagsInput = $('#tags-input');
+            tagsInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && this.value.trim()) {
+                    e.preventDefault();
+                    const container = this.closest('.tags-input-container');
+                    const tagItem = document.createElement('div');
+                    tagItem.className = 'tag-item';
+                    tagItem.innerHTML = `${this.value.trim()} <span class="tag-close">×</span>`;
+                    container.insertBefore(tagItem, this);
+                    this.value = '';
+                    tagItem.querySelector('.tag-close').addEventListener('click', () => tagItem.remove());
+                }
+            });
         }
 
-        function updateStats() {
-            const reviews = $$('#my-reviews-list .review-card');
-            $('#my-reviews-count').textContent = reviews.length;
-            $('#helpful-votes-count').textContent = Array.from(reviews).reduce((sum, r) => sum + parseInt(r.getAttribute('data-helpful')), 0);
-            $('#comments-count').textContent = '0'; // Placeholder
-        }
-
-        async function publishReview() {
-            const formElements = {
-                bookTitle: { element: $('#book-title'), errorElement: $('#book-title-error'), validation: v => v.length > 0 },
-                bookAuthor: { element: $('#book-author'), errorElement: $('#book-author-error'), validation: v => v.length > 0 },
-                rating: { element: null, errorElement: $('#rating-error'), validation: () => $$('.star-rating-edit .star.filled').length > 0 },
-                reviewTitle: { element: $('#review-title'), errorElement: $('#review-title-error'), validation: v => v.length > 0 },
-                reviewText: { element: $('#review-text'), errorElement: $('#review-text-error'), validation: v => v.length >= 50 }
+        // Setup modals
+        function setupModals() {
+            const openModal = modal => {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            };
+            const closeModal = modal => {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
             };
 
-            if (validateForm(formElements)) {
-                const tags = Array.from($$('.tag-item')).map(t => t.textContent.replace('×', '').trim());
-                const reviewData = {
-                    book_id: $('#book-select') ? $('#book-select').value : null, // Assuming we'll add book selection
-                    review_title: $('#review-title').value,
-                    rating: $$('.star-rating-edit .star.filled').length,
-                    review_text: $('#review-text').value,
-                    tags,
-                    contains_spoilers: $('#contains-spoilers').checked
+            const writeReviewModal = $('#write-review-modal');
+            $('#open-write-review-modal').addEventListener('click', () => {
+                loadBooks(); // Ensure book list is populated
+                openModal(writeReviewModal);
+            });
+            $('#write-first-review-btn').addEventListener('click', () => {
+                loadBooks();
+                openModal(writeReviewModal);
+            });
+            $('#close-write-review-modal').addEventListener('click', () => closeModal(writeReviewModal));
+
+            const deleteModal = $('#confirm-delete-modal');
+            function openDeleteModal(reviewId) {
+                openModal(deleteModal);
+                $('#confirm-delete-btn').dataset.reviewId = reviewId;
+            }
+
+            $('#close-confirm-delete-modal').addEventListener('click', () => closeModal(deleteModal));
+            $('#cancel-delete-btn').addEventListener('click', () => closeModal(deleteModal));
+            $('#confirm-delete-btn').addEventListener('click', async () => {
+                const reviewId = $('#confirm-delete-btn').dataset.reviewId;
+                try {
+                    await deleteReview(reviewId);
+                    $(`[data-review-id="${reviewId}"]`).remove();
+                    showToast('success', 'Review Deleted', 'Your review has been deleted.');
+                    populateReviews();
+                } catch (err) {
+                    showToast('error', 'Error', 'Failed to delete review');
+                }
+                closeModal(deleteModal);
+            });
+
+            $('#publish-review-btn').addEventListener('click', async () => {
+                const formElements = {
+                    bookSelect: { element: $('#book-select'), errorElement: $('#book-select-error'), validation: v => v.length > 0 },
+                    rating: { element: null, errorElement: $('#rating-error'), validation: () => $$('.star-rating-edit .star.filled').length > 0 },
+                    reviewTitle: { element: $('#review-title'), errorElement: $('#review-title-error'), validation: v => v.length > 0 },
+                    reviewText: { element: $('#review-text'), errorElement: $('#review-text-error'), validation: v => v.length >= 50 }
                 };
 
-                try {
-                    await addReview(reviewData);
-                    const reviewCard = createReviewCard({
-                        bookTitle: $('#book-title').value,
-                        bookAuthor: $('#book-author').value,
-                        rating: reviewData.rating,
-                        reviewTitle: reviewData.review_title,
-                        reviewText: reviewData.review_text,
-                        tags
-                    });
-                    $('#my-reviews-list').insertBefore(reviewCard, $('#my-reviews-list').firstChild);
-                    showToast('success', 'Review Published', 'Your review has been added!');
-                    $('#write-review-modal').style.display = 'none';
-                    document.body.style.overflow = 'auto';
-                    updateStats();
-                } catch (err) {
-                    showToast('error', 'Error', 'Failed to publish review');
+                if (validateForm(formElements)) {
+                    const reviewData = {
+                        book_id: $('#book-select').value,
+                        review_title: $('#review-title').value,
+                        rating: $$('.star-rating-edit .star.filled').length,
+                        review_text: $('#review-text').value,
+                        tags: Array.from($$('.tag-item')).map(t => t.textContent.replace('×', '').trim()),
+                        contains_spoilers: $('#contains-spoilers').checked
+                    };
+
+                    try {
+                        await addReview(reviewData);
+                        showToast('success', 'Review Published', 'Your review has been added!');
+                        closeModal(writeReviewModal);
+                        populateReviews();
+                        $('#review-title').value = '';
+                        $('#review-text').value = '';
+                        $$('.star-rating-edit .star').forEach(s => s.classList.remove('filled'));
+                        $$('.tag-item').forEach(t => t.remove());
+                    } catch (err) {
+                        showToast('error', 'Error', 'Failed to publish review');
+                    }
                 }
-            }
+            });
+
+            $('#save-draft-btn').addEventListener('click', () => {
+                showToast('success', 'Draft Saved', 'Your review has been saved as a draft.');
+                closeModal(writeReviewModal);
+            });
         }
 
-        // Initialize page
-        
-
-        // Your existing functions (setupTabs, createReviewCard, etc.) remain here
-        // Add these missing functions from your original code
+        // Validate form
         function validateForm(formElements) {
             let isValid = true;
             Object.keys(formElements).forEach(key => {
@@ -1357,226 +1441,19 @@
             return isValid;
         }
 
-        function debounce(func, delay = 300) {
-            let timeout;
-            return function (...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), delay);
-            };
-        }
-
-        function setupFilters() {
-            const filterReviews = (listId, filterValue, searchTerm = '') => {
-                const cards = $$(`#${listId} .review-card`);
-                let visibleCount = 0;
-                cards.forEach(card => {
-                    const stars = parseInt(card.getAttribute('data-stars') || '0');
-                    const helpful = parseInt(card.getAttribute('data-helpful') || '0');
-                    const text = card.textContent.toLowerCase();
-                    const matchesSearch = searchTerm ? text.includes(searchTerm) : true;
-
-                    if (filterValue === 'all' && matchesSearch) {
-                        showElement(card);
-                        visibleCount++;
-                    } else if (filterValue === 'helpful' && helpful > 0 && matchesSearch) {
-                        showElement(card);
-                        visibleCount++;
-                    } else if (stars === parseInt(filterValue) && matchesSearch) {
-                        showElement(card);
-                        visibleCount++;
-                    } else {
-                        hideElement(card);
-                    }
-                });
-
-                const list = $(`#${listId}`);
-                const empty = $(`#empty-${listId.split('-')[0]}`);
-                visibleCount > 0 ? (hideElement(empty), showElement(list)) : (showElement(empty), hideElement(list));
-            };
-
-            $$('.filters .filter-pill').forEach(pill => {
-                pill.addEventListener('click', function () {
-                    const filterContainer = this.closest('.filters');
-                    filterContainer.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
-                    this.classList.add('active');
-                    const filterValue = this.getAttribute('data-filter');
-                    const tabContent = this.closest('.tab-content');
-                    const listId = tabContent.id.replace('-tab', '-list');
-                    filterReviews(listId, filterValue);
-                });
-            });
-
-            $$('.search-input').forEach(input => {
-                input.addEventListener('input', debounce(function () {
-                    const searchTerm = this.value.trim().toLowerCase();
-                    const tabContent = this.closest('.tab-content');
-                    const listId = tabContent.id.replace('-tab', '-list');
-                    const activeFilter = tabContent.querySelector('.filter-pill.active').getAttribute('data-filter');
-                    filterReviews(listId, activeFilter, searchTerm);
-                }));
-            });
-        }
-
-        function setupStarRating() {
-            const editableStars = $$('.star-rating-edit .star');
-            const ratingLabel = $('.star-rating-label');
-            const ratingLabels = ['', '1 - Poor', '2 - Fair', '3 - Good', '4 - Very Good', '5 - Outstanding'];
-
-            editableStars.forEach(star => {
-                star.addEventListener('click', function () {
-                    const rating = parseInt(this.getAttribute('data-rating'));
-                    editableStars.forEach(s => {
-                        s.classList.toggle('filled', parseInt(s.getAttribute('data-rating')) <= rating);
-                    });
-                    ratingLabel.textContent = ratingLabels[rating];
-                });
-
-                star.addEventListener('mouseenter', function () {
-                    const rating = parseInt(this.getAttribute('data-rating'));
-                    editableStars.forEach(s => {
-                        s.classList.toggle('filled', parseInt(s.getAttribute('data-rating')) <= rating);
-                    });
-                    ratingLabel.textContent = ratingLabels[rating];
-                });
-            });
-
-            const container = $('.star-rating-edit');
-            container.addEventListener('mouseleave', () => {
-                const selectedRating = Array.from(editableStars).filter(s => s.classList.contains('filled')).length;
-                editableStars.forEach(s => {
-                    s.classList.toggle('filled', parseInt(s.getAttribute('data-rating')) <= selectedRating);
-                });
-                ratingLabel.textContent = ratingLabels[selectedRating];
-            });
-        }
-
-        function setupTagsInput() {
-            const tagsInput = $('#tags-input');
-            tagsInput.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter' && this.value.trim()) {
-                    e.preventDefault();
-                    const container = this.closest('.tags-input-container');
-                    const tagItem = document.createElement('div');
-                    tagItem.className = 'tag-item';
-                    tagItem.innerHTML = `${this.value.trim()} <span class="tag-close">×</span>`;
-                    container.insertBefore(tagItem, this);
-                    this.value = '';
-                    tagItem.querySelector('.tag-close').addEventListener('click', () => tagItem.remove());
-                }
-            });
-        }
-
-        function setupModals() {
-            const openModal = modal => {
-                modal.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            };
-            const closeModal = modal => {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            };
-
-            const writeReviewModal = $('#write-review-modal');
-            $('#open-write-review-modal').addEventListener('click', () => openModal(writeReviewModal));
-            $('#write-first-review-btn').addEventListener('click', () => openModal(writeReviewModal));
-            $('#close-write-review-modal').addEventListener('click', () => closeModal(writeReviewModal));
-
-            const deleteModal = $('#confirm-delete-modal');
-            $$('.delete-review-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    openModal(deleteModal);
-                    $('#confirm-delete-btn').reviewCard = btn.closest('.review-card');
-                });
-            });
-            $('#close-confirm-delete-modal').addEventListener('click', () => closeModal(deleteModal));
-            $('#cancel-delete-btn').addEventListener('click', () => closeModal(deleteModal));
-            $('#confirm-delete-btn').addEventListener('click', function () {
-                if (this.reviewCard) {
-                    this.reviewCard.remove();
-                    showToast('success', 'Review Deleted', 'Your review has been deleted.');
-                    updateStats();
-                }
-                closeModal(deleteModal);
-            });
-
-            const formElements = {
-                bookTitle: { element: $('#book-title'), errorElement: $('#book-title-error'), validation: v => v.length > 0 },
-                bookAuthor: { element: $('#book-author'), errorElement: $('#book-author-error'), validation: v => v.length > 0 },
-                rating: { element: null, errorElement: $('#rating-error'), validation: () => $$('.star-rating-edit .star.filled').length > 0 },
-                reviewTitle: { element: $('#review-title'), errorElement: $('#review-title-error'), validation: v => v.length > 0 },
-                reviewText: { element: $('#review-text'), errorElement: $('#review-text-error'), validation: v => v.length >= 50 }
-            };
-
-            $('#publish-review-btn').addEventListener('click', () => {
-                if (validateForm(formElements)) {
-                    const tags = Array.from($$('.tag-item')).map(t => t.textContent.replace('×', '').trim());
-                    const review = {
-                        bookTitle: $('#book-title').value,
-                        bookAuthor: $('#book-author').value,
-                        rating: $$('.star-rating-edit .star.filled').length,
-                        reviewTitle: $('#review-title').value,
-                        reviewText: $('#review-text').value,
-                        tags
-                    };
-                    const list = $('#my-reviews-list');
-                    list.insertBefore(createReviewCard(review), list.firstChild);
-                    showToast('success', 'Review Published', 'Your review has been added!');
-                    closeModal(writeReviewModal);
-                    updateStats();
-                    $('#book-title').value = $('#book-author').value = $('#review-title').value = $('#review-text').value = '';
-                    $$('.star-rating-edit .star').forEach(s => s.classList.remove('filled'));
-                    $$('.tag-item').forEach(t => t.remove());
-                }
-            });
-
-            $('#save-draft-btn').addEventListener('click', () => {
-                showToast('success', 'Draft Saved', 'Your review has been saved as a draft.');
-                closeModal(writeReviewModal);
-            });
-        }
-
-        function setupVoteButtons() {
-            $$('.vote-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const voteType = this.getAttribute('data-vote');
-                    this.classList.toggle('active');
-                    const count = parseInt(this.textContent.match(/\d+/) || 0) + (this.classList.contains('active') ? 1 : -1);
-                    this.innerHTML = `<i class="fas fa-thumbs-${voteType === 'helpful' ? 'up' : 'down'}"></i> ${voteType === 'helpful' ? 'Helpful' : 'Not Helpful'} (${count})`;
-                    if (voteType === 'helpful') updateStats();
-                });
-            });
-        }
-
-        function setupModeration() {
-            $$('.approve-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const card = this.closest('.review-card');
-                    card.querySelector('.badge').className = 'badge badge-success';
-                    card.querySelector('.badge').textContent = 'Approved';
-                    showToast('success', 'Review Approved', 'The review has been approved.');
-                });
-            });
-
-            $$('.reject-btn').forEach(btn => {
-                btn.addEventListener('click', function () {
-                    const card = this.closest('.review-card');
-                    card.querySelector('.badge').className = 'badge badge-danger';
-                    card.querySelector('.badge').textContent = 'Rejected';
-                    showToast('error', 'Review Rejected', 'The review has been rejected.');
-                });
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialization
+        async function init() {
+            await updateSidebar();
+            await populateReviews();
             setupTabs();
             setupFilters();
             setupStarRating();
             setupTagsInput();
             setupModals();
-            setupVoteButtons();
-            setupModeration();
             $('#close-toast').addEventListener('click', () => $('#toast').classList.remove('show'));
-        });
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
