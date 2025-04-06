@@ -7,19 +7,24 @@ const pool = new Pool({
 });
 
 module.exports = {
+  // Connect to the database
   connectDB: async () => {
     try {
       const client = await pool.connect();
       console.log('Connected to PostgreSQL database');
-      client.release();
+      client.release(); // Release the client back to the pool
     } catch (err) {
       console.error('Database connection error:', err);
       throw err;
     }
   },
 
+  // Initialize the database schema
   initDB: async () => {
     try {
+      console.log('Starting database initialization...');
+
+      // Users Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -43,12 +48,14 @@ module.exports = {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
+      console.log('Users table created or already exists');
 
+      // Books Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
           title VARCHAR(255) NOT NULL,
-          author VARCHAR(255) NOT NULL
+          author VARCHAR(255) NOT NULL,
           genre VARCHAR(100) NOT NULL,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
           excerpt TEXT,
@@ -56,22 +63,26 @@ module.exports = {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
+      console.log('Books table created or already exists');
 
+      // Circles Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS circles (
           id SERIAL PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
           book_id INT REFERENCES books(id) ON DELETE SET NULL,
-          creator VARCHAR(255) NOT NULL, -- Reverted to VARCHAR(255) for username
+          creator VARCHAR(255) NOT NULL,
           status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'archived')),
-          members TEXT[] DEFAULT '{}', -- Fixed typo from "member" to "members"
+          members TEXT[] DEFAULT '{}',
           description TEXT,
           privacy VARCHAR(50) DEFAULT 'public' CHECK (privacy IN ('public', 'private')),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           CONSTRAINT unique_circle_name_book UNIQUE (name, book_id)
         )
       `);
+      console.log('Circles table created or already exists');
 
+      // Comments Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS comments (
           id SERIAL PRIMARY KEY,
@@ -82,7 +93,9 @@ module.exports = {
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
+      console.log('Comments table created or already exists');
 
+      // Achievements Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS achievements (
           id SERIAL PRIMARY KEY,
@@ -93,6 +106,7 @@ module.exports = {
           earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
+      console.log('Achievements table created or already exists');
 
       console.log('Database initialized successfully');
     } catch (err) {
@@ -101,6 +115,7 @@ module.exports = {
     }
   },
 
+  // Query function to interact with the database
   query: async (text, params) => {
     try {
       const result = await pool.query(text, params);
@@ -111,6 +126,7 @@ module.exports = {
     }
   },
 
+  // Close the database connection pool
   closeDB: async () => {
     try {
       await pool.end();
