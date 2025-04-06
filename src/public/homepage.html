@@ -37,16 +37,17 @@
         .logo-container {
             display: flex;
             align-items: center;
+            gap: 10px;
         }
 
         .logo-icon {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             margin-right: 10px;
         }
 
         .logo-text {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 700;
             color: #2A9D8F;
             letter-spacing: -0.5px;
@@ -55,20 +56,25 @@
         .auth-buttons {
             display: flex;
             gap: 15px;
+            align-items: center;
         }
 
         .login-btn {
             color: #2A9D8F;
             background: none;
-            border: none;
+            border: 2px solid #2A9D8F;
+            border-radius: 8px;
+            padding: 10px 20px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .login-btn:hover {
-            color: #1A365D;
+            color: white;
+            background-color: #2A9D8F;
+            border-color: #2A9D8F;
         }
 
         .signup-btn {
@@ -80,7 +86,7 @@
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: all 0.3s ease;
         }
 
         .signup-btn:hover {
@@ -111,9 +117,12 @@
 
         .hero-image img {
             width: 100%;
+            max-width: 500px;
+            height: auto;
             border-radius: 10px;
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
             animation: float 6s ease-in-out infinite;
+            object-fit: cover;
         }
 
         @keyframes float {
@@ -531,32 +540,40 @@
         }
 
         @media (max-width: 768px) {
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .testimonials {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .testimonial-card {
-                width: 100%;
-                max-width: 400px;
-            }
-            
-            .footer-content {
-                grid-template-columns: 1fr;
-                gap: 30px;
-            }
-            
-            .footer-bottom {
+            .hero {
                 flex-direction: column;
                 text-align: center;
+                padding: 40px 5%;
             }
             
-            .footer-bottom-links {
-                justify-content: center;
+            .hero-content, .hero-image {
+                width: 100%;
+            }
+            
+            .hero-content {
+                margin-bottom: 20px;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .cta-button {
+                margin: 0 auto;
+            }
+            
+            .logo-text {
+                font-size: 1.5rem;
+            }
+            
+            .auth-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .login-btn, .signup-btn {
+                width: 100%;
+                text-align: center;
             }
         }
     </style>
@@ -583,7 +600,7 @@
             <button class="cta-button">Start Your Reading Journey</button>
         </div>
         <div class="hero-image">
-            <img src="https://via.placeholder.com/600x400" alt="People discussing books together">
+            <img src="hero.jpg"People discussing books together">
         </div>
     </section>
 
