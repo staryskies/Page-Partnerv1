@@ -1167,87 +1167,15 @@
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-header">
-                <h2 class="section-title">Live Reading</h2>
-                <a href="#" class="section-action">How it works <i class="fas fa-question-circle"></i></a>
-            </div>
-            <div class="section-body">
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-book-reader"></i>
-                    </div>
-                    <h3 class="empty-state-title">No Live Sessions Right Now</h3>
-                    <p class="empty-state-description">
-                        Join a reading circle or create your own to experience live reading sessions.
-                    </p>
-                    <button class="btn btn-primary" id="join-circle-btn">
-                        <i class="fas fa-plus"></i> Join a Circle
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <section class="section" id="circles-section">
             <div class="section-header">
                 <h2 class="section-title">Your Reading Circles</h2>
                 <a href="#" class="section-action">View all <i class="fas fa-chevron-right"></i></a>
             </div>
             <div class="section-body">
-                <div class="tab-bar">
-                    <div class="tab active" data-filter="all">All Circles</div>
-                    <div class="tab" data-filter="active">Active</div>
-                    <div class="tab" data-filter="upcoming">Upcoming</div>
-                    <div class="tab" data-filter="past">Past</div>
-                    <div class="tab" data-filter="mine">My Circles</div>
-                </div>
-                <div class="filters" id="genre-filters">
-                    <div class="filter-pill active" data-genre="all">All</div>
-                    <div class="filter-pill" data-genre="Fiction">Fiction</div>
-                    <div class="filter-pill" data-genre="Non-Fiction">Non-Fiction</div>
-                    <div class="filter-pill" data-genre="Fantasy">Fantasy</div>
-                    <div class="filter-pill" data-genre="Science Fiction">Science Fiction</div>
-                    <div class="filter-pill" data-genre="Mystery">Mystery</div>
-                    <div class="filter-pill" data-genre="Biography">Biography</div>
-                </div>
                 <div class="circles-grid" id="circles-grid"></div>
             </div>
         </section>
-
-        <!-- Added Suggestions Section -->
-        <section class="section suggestions-section" id="suggestions-section">
-            <div class="section-header">
-                <h2 class="section-title">Suggested Circles</h2>
-                <span class="section-action" id="suggestion-count">0 suggestions</span>
-            </div>
-            <div class="genre-selector">
-                <form class="genre-form" id="genre-form">
-                    <div class="form-group">
-                        <label class="form-label" for="genre-select">Search Circles by Genre</label>
-                        <select class="form-select" id="genre-select">
-                            <option value="">Select a genre</option>
-                            <option value="Fiction">Fiction</option>
-                            <option value="Non-Fiction">Non-Fiction</option>
-                            <option value="Fantasy">Fantasy</option>
-                            <option value="Science Fiction">Science Fiction</option>
-                            <option value="Mystery">Mystery</option>
-                            <option value="Thriller">Thriller</option>
-                            <option value="Romance">Romance</option>
-                            <option value="Biography">Biography</option>
-                            <option value="History">History</option>
-                            <option value="Poetry">Poetry</option>
-                            <option value="Self-Help">Self-Help</option>
-                        </select>
-                    </div>
-                    <button class="search-btn" id="search-btn" title="Search Circles">
-                        <i class="fas fa-search"></i> Search
-                    </button>
-                </form>
-            </div>
-            
-        </section>
-
-        
     </main>
 
     <div class="modal" id="create-circle-modal">

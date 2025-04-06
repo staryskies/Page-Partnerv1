@@ -649,7 +649,7 @@
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        return data.books || []; // Ensure we return the user's books array or empty array if none
+        return data.books || []; // Ensure we return the user's books array or an empty array if none
     } catch (error) {
         console.error('Failed to fetch user books:', error);
         return [];

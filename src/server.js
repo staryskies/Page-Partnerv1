@@ -77,6 +77,22 @@ app.get('/api/books', getUsername, bookController.getBooks);
 app.post('/api/book', requireLogin, bookController.createBook);
 app.get('/api/book/:bookId', requireLogin, bookController.getBookDetails);
 
+// Backend: Filter books by the logged-in user
+app.get('/api/users/:username/books', async (req, res) => {
+    const { username } = req.params;
+
+    try {
+        const result = await db.query(
+            'SELECT * FROM books WHERE user_id = (SELECT id FROM users WHERE username = $1)',
+            [username]
+        );
+        res.json({ books: result.rows });
+    } catch (err) {
+        console.error('Error fetching user books:', err);
+        res.status(500).json({ error: 'Failed to fetch books' });
+    }
+});
+
 // Circles Routes
 app.get('/api/circles', getUsername, async (req, res) => {
     try {
