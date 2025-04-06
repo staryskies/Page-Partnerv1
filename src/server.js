@@ -111,6 +111,7 @@ app.get('/api/suggest-circles/:genre', requireLogin, async (req, res) => {
       SELECT c.id, c.name, c.book_id AS "bookId", c.creator, c.status, c.members, c.description, c.privacy,
              b.genre AS "bookGenre", b.title AS "bookTitle", b.author AS "bookAuthor"
       FROM circles c
+      FROM books b
       JOIN books b ON c.book_id = b.id
       WHERE b.genre = $1 AND c.privacy = 'public'
       ORDER BY random()
