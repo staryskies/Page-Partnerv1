@@ -672,6 +672,38 @@
     function getErrorId(sectionNum) {
       return { 3: 'location', 4: 'genres', 5: 'authors', 8: 'goals', 9: 'books', 10: 'length' }[sectionNum] || '';
     }
+
+    async function completeOnboarding() {
+      const username = localStorage.getItem('username');
+      if (!username) {
+        alert('You must be logged in to complete onboarding.');
+        window.location.href = '/login.html';
+        return;
+      }
+    
+      const preferences = { /* Collect preferences from the form */ };
+    
+      try {
+        const response = await fetch('/api/user/onboarding', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Username': username,
+          },
+          body: JSON.stringify(preferences),
+        });
+    
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to complete onboarding.');
+        }
+    
+        window.location.href = '/index.html';
+      } catch (err) {
+        console.error('Onboarding Error:', err);
+        alert(err.message);
+      }
+    }
   </script>
 </body>
 </html>

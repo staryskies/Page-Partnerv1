@@ -3,33 +3,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reading App</title>
-  <link rel="stylesheet" href="/styles.css">
+  <title>PagePartner - Modern Reading Experience</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary-color: #1e3a5f;
+      --secondary-color: #ff6b6b;
+      --accent-color: #38b2ac;
+      --number-color: #2196f3;
+      --dark-bg: #ffffff;
+      --card-bg: #ffffff;
+      --light-text: #212529;
+      --muted-text: #8a8a8a;
+      --border-color: #f0f0f0;
+      --gradient-start: #ffffff;
+      --gradient-end: #f8f9fa;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: var(--gradient-start);
+      color: var(--light-text);
+    }
+
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo img {
+      height: 32px;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 15px;
+    }
+
+    .action-btn {
+      padding: 12px 20px;
+      background: var(--secondary-color);
+      color: white;
+      border: none;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .main-container {
+      display: flex;
+      height: calc(100vh - 80px);
+    }
+
+    .sidebar {
+      width: 250px;
+      background: var(--dark-bg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .sidebar a {
+      color: var(--light-text);
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .sidebar a:hover {
+      background-color: var(--accent-color);
+      color: white;
+    }
+
+    .content {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .reading-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 35px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--hover-shadow);
+    }
+
+    .stat-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.3rem;
+      color: var(--accent-color);
+      opacity: 0.8;
+    }
+
+    .stat-label {
+      color: var(--muted-text);
+      font-size: 0.9rem;
+      margin-bottom: 15px;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+      color: var(--number-color);
+    }
+  </style>
 </head>
 <body>
-  <div class="user-profile">
-    <span id="user-avatar-initials">?</span>
-    <span id="user-display-name">Sign in</span>
-    <span id="user-stats">Start your reading journey</span>
-    <span id="user-greeting">Welcome to PagePartner!</span>
-  </div>
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <img src="logo.png" alt="Logo">
+      <span class="logo-text">PagePartner</span>
+    </div>
+    <div class="header-right">
+      <a href="/login.html" class="action-btn">Login</a>
+      <a href="/signup.html" class="action-btn secondary-btn">Sign Up</a>
+    </div>
+  </header>
 
-  <div id="currently-reading-info">
-    <span id="currently-reading-count">0</span> books in progress
-  </div>
-  <div id="completed-info">
-    <span id="completed-count">0</span> books completed
-  </div>
-  <div id="streak-info">
-    <span id="streak-count">0</span> day streak
-  </div>
-  <div id="badge-info">
-    <span id="badge-count">0</span> badges earned
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <a href="/index.html">Dashboard</a>
+      <a href="/add-book.html">Add Book</a>
+      <a href="/previews.html">Previews</a>
+      <a href="/circles.html">Reading Circles</a>
+      <a href="/friends.html">Friends</a>
+      <a href="/points.html">Points</a>
+    </nav>
+
+    <!-- Content -->
+    <div class="content">
+      <h1>Welcome to PagePartner</h1>
+      <div class="reading-stats">
+        <div class="stat-card">
+          <i class="fas fa-book stat-icon"></i>
+          <div class="stat-label">Currently Reading</div>
+          <div class="stat-value" id="currently-reading-count">0</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-check stat-icon"></i>
+          <div class="stat-label">Books Completed</div>
+          <div class="stat-value" id="completed-count">0</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-fire stat-icon"></i>
+          <div class="stat-label">Reading Streak</div>
+          <div class="stat-value" id="streak-count">0</div>
+        </div>
+        <div class="stat-card">
+          <i class="fas fa-award stat-icon"></i>
+          <div class="stat-label">Badges Earned</div>
+          <div class="stat-value" id="badge-count">0</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
     const baseUrl = window.location.origin;
-  
+
+    // Logout functionality
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('username');
+      window.location.href = '/login.html';
+    });
+
     // Mobile navigation toggle
     const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
     const sidebar = document.querySelector('.sidebar');
@@ -163,5 +356,5 @@
       });
     });
   </script>
-  </body>
-  </html>
+</body>
+</html>

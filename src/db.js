@@ -22,22 +22,15 @@ module.exports = {
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           username VARCHAR(255) UNIQUE NOT NULL,
-          email VARCHAR(255) UNIQUE NOT NULL,
-          name VARCHAR(255) NOT NULL,
-          age INT NOT NULL,
           password VARCHAR(255) NOT NULL,
-          profile_picture TEXT,
-          user_location VARCHAR(255),
-          genres TEXT[],
-          favorite_authors TEXT[],
-          reading_pace INT,
-          goals TEXT[],
-          to_read_list TEXT[],
-          book_length VARCHAR(50),
           currently_reading INT DEFAULT 0,
           completed_books INT DEFAULT 0,
           reading_streak INT DEFAULT 0,
           badges INT DEFAULT 0,
+          recommendations JSON DEFAULT '[]',
+          previews JSON DEFAULT '[]',
+          circles JSON DEFAULT '[]',
+          friends JSON DEFAULT '[]',
           points INT DEFAULT 0
         )
       `);
