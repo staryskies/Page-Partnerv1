@@ -44,19 +44,23 @@ app.post('/api/auth/login', userController.login);
 // User Data
 app.get('/api/user', requireLogin, async (req, res) => {
   const user = req.user;
-  const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(member_ids)', [user.id]);
-  const achievementsResult = await query('SELECT COUNT(*) FROM achievements WHERE user_id = $1', [user.id]);
-  res.json({
-    isLoggedIn: true,
-    displayName: user.username, // Adjusted to match table
-    currentlyReading: user.currently_reading || 0,
-    completedBooks: user.completed_books || 0,
-    readingStreak: user.reading_streak || 0,
-    badges: parseInt(achievementsResult.rows[0].count, 10),
-    points: user.points || 0,
-    goals: user.goals || [],
-    recommendations: user.recommendations || []
-  });
+  try {
+    const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(member_ids)', [user.id]);
+    const achievementsResult = await query('SELECT COUNT(*) FROM achievements WHERE user_id = $1', [user.id]);
+    res.json({
+      isLoggedIn: true,
+      displayName: user.username,
+      currentlyReading: user.currently_reading || 0,
+      completedBooks: user.completed_books || 0,
+      readingStreak: user.reading_streak || 0,
+      badges: parseInt(achievementsResult.rows[0].count, 10),
+      points: user.points || 0,
+      recommendations: user.recommendations || []
+    });
+  } catch (err) {
+    console.error('Get User Error:', err);
+    res.status(500).json({ error: 'Failed to fetch user data' });
+  }
 });
 
 app.patch('/api/user', requireLogin, async (req, res) => {
@@ -66,6 +70,12 @@ app.patch('/api/user', requireLogin, async (req, res) => {
       'UPDATE users SET completed_books = COALESCE(completed_books, 0) + $1, currently_reading = COALESCE(currently_reading, 0) + $2, points = COALESCE(points, 0) + $3 WHERE id = $4',
       [completedBooks || 0, currentlyReading || 0, points || 0, req.user.id]
     );
+    if (completedBooks) {
+      await query(
+        'UPDATE reading_goals SET progress = progress + $1 WHERE user_id = $2 AND is_active = TRUE',
+        [completedBooks, req.user.id]
+      );
+    }
     res.status(200).json({ success: true });
   } catch (err) {
     console.error('Update User Error:', err);
@@ -199,19 +209,63 @@ app.get('/api/circles', requireLogin, async (req, res) => {
 });
 
 app.post('/api/circles', requireLogin, async (req, res) => {
-  const { name, bookId } = req.body;
-  if (!name || !bookId) {
-    return res.status(400).json({ error: 'Name and book ID are required' });
+  const { name, bookId, description, isPublic } = req.body;
+  if (!name) {
+    return res.status(400).json({ error: 'Name is required' });
   }
   try {
     const result = await query(
-      'INSERT INTO circles (name, book_id, member_ids) VALUES ($1, $2, $3) RETURNING id',
-      [name, bookId, [req.user.id]]
+      'INSERT INTO circles (name, book_id, member_ids, description, is_public, created_by) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [name, bookId || null, [req.user.id], description || null, isPublic !== undefined ? isPublic : true, req.user.id]
     );
     res.status(201).json({ success: true, circleId: result.rows[0].id });
   } catch (err) {
     console.error('Create Circle Error:', err);
     res.status(500).json({ error: 'Failed to create circle' });
+  }
+});
+
+app.get('/api/circles/public', async (req, res) => {
+  const { search } = req.query;
+  try {
+    let queryText = 'SELECT * FROM circles WHERE is_public = TRUE';
+    const params = [];
+    if (search) {
+      queryText += ' AND (name ILIKE $1 OR description ILIKE $1)';
+      params.push(`%${search}%`);
+    }
+    const result = await query(queryText, params);
+    const circles = await Promise.all(result.rows.map(async circle => {
+      const book = circle.book_id ? (await query('SELECT title, genre FROM books WHERE id = $1', [circle.book_id])).rows[0] : null;
+      return { ...circle, bookTitle: book?.title, bookGenre: book?.genre };
+    }));
+    res.json(circles);
+  } catch (err) {
+    console.error('Find Circles Error:', err);
+    res.status(500).json({ error: 'Failed to fetch public circles' });
+  }
+});
+
+app.post('/api/circles/:id/join', requireLogin, async (req, res) => {
+  const { id } = req.params;
+  try {
+    const circleResult = await query('SELECT * FROM circles WHERE id = $1', [id]);
+    if (circleResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Circle not found' });
+    }
+    const circle = circleResult.rows[0];
+    if (!circle.is_public && !circle.member_ids.includes(req.user.id)) {
+      return res.status(403).json({ error: 'This is a private circle' });
+    }
+    if (circle.member_ids.includes(req.user.id)) {
+      return res.status(400).json({ error: 'Already a member of this circle' });
+    }
+    const updatedMembers = [...circle.member_ids, req.user.id];
+    await query('UPDATE circles SET member_ids = $1 WHERE id = $2', [updatedMembers, id]);
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Join Circle Error:', err);
+    res.status(500).json({ error: 'Failed to join circle' });
   }
 });
 
@@ -242,16 +296,24 @@ app.post('/api/achievements', requireLogin, async (req, res) => {
 
 // Onboarding Route
 app.post('/api/onboarding', requireLogin, async (req, res) => {
-  const { profile_picture, user_location, genres, favorite_authors, reading_pace, goals, to_read_list, book_length } = req.body;
+  const { profile_picture, user_location, genres, favorite_authors, reading_pace, to_read_list, book_length } = req.body;
   try {
     const result = await query(
       `UPDATE users 
        SET profile_picture = $1, user_location = $2, genres = $3, favorite_authors = $4, 
-           reading_pace = $5, goals = $6, to_read_list = $7, book_length = $8 
-       WHERE id = $9 
+           reading_pace = $5, to_read_list = $6, book_length = $7 
+       WHERE id = $8 
        RETURNING id`,
-      [profile_picture || null, user_location, genres, favorite_authors.split(/[,;\n]/).map(a => a.trim()), 
-       parseInt(reading_pace, 10), goals, to_read_list.split(/[,;\n]/).map(b => b.trim()), book_length, req.user.id]
+      [
+        profile_picture || null,
+        user_location,
+        genres || [],
+        favorite_authors ? favorite_authors.split(/[,;\n]/).map(a => a.trim()) : [],
+        parseInt(reading_pace, 10) || 0,
+        to_read_list ? to_read_list.split(/[,;\n]/).map(b => b.trim()) : [],
+        book_length,
+        req.user.id
+      ]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -284,6 +346,41 @@ app.post('/api/generate-preview', requireLogin, async (req, res) => {
   }
 });
 
+// Reading Goals Routes
+app.get('/api/reading-goals', requireLogin, async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM reading_goals WHERE user_id = $1 AND is_active = TRUE', [req.user.id]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Get Reading Goals Error:', err);
+    res.status(500).json({ error: 'Failed to fetch reading goals' });
+  }
+});
+
+app.post('/api/reading-goals', requireLogin, async (req, res) => {
+  const { targetBooks, timeframe } = req.body;
+  if (!targetBooks || !timeframe) {
+    return res.status(400).json({ error: 'Target books and timeframe are required' });
+  }
+  try {
+    await query('UPDATE reading_goals SET is_active = FALSE WHERE user_id = $1 AND is_active = TRUE', [req.user.id]);
+    const startDate = new Date();
+    let endDate;
+    if (timeframe === 'month') endDate = new Date(startDate.setMonth(startDate.getMonth() + 1));
+    else if (timeframe === 'year') endDate = new Date(startDate.setFullYear(startDate.getFullYear() + 1));
+    else return res.status(400).json({ error: 'Invalid timeframe' });
+
+    const result = await query(
+      'INSERT INTO reading_goals (user_id, target_books, timeframe, start_date, end_date, progress) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
+      [req.user.id, targetBooks, timeframe, new Date(), endDate, 0]
+    );
+    res.status(201).json({ success: true, goalId: result.rows[0].id });
+  } catch (err) {
+    console.error('Set Reading Goal Error:', err);
+    res.status(500).json({ error: 'Failed to set reading goal' });
+  }
+});
+
 // Error Handling
 app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 app.use((err, req, res, next) => {
@@ -297,51 +394,84 @@ const startServer = async () => {
     await connectDB();
     await initDB();
 
+    // Ensure all columns and tables exist
     await query(`
       ALTER TABLE users
       ADD COLUMN IF NOT EXISTS profile_picture TEXT,
       ADD COLUMN IF NOT EXISTS user_location VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS genres TEXT[],
-      ADD COLUMN IF NOT EXISTS favorite_authors TEXT[],
-      ADD COLUMN IF NOT EXISTS reading_pace INT,
-      ADD COLUMN IF NOT EXISTS goals TEXT[],
-      ADD COLUMN IF NOT EXISTS to_read_list TEXT[],
+      ADD COLUMN IF NOT EXISTS genres TEXT[] DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS favorite_authors TEXT[] DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS reading_pace INT DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS to_read_list TEXT[] DEFAULT '{}',
       ADD COLUMN IF NOT EXISTS book_length VARCHAR(50),
       ADD COLUMN IF NOT EXISTS currently_reading INT DEFAULT 0,
       ADD COLUMN IF NOT EXISTS completed_books INT DEFAULT 0,
       ADD COLUMN IF NOT EXISTS reading_streak INT DEFAULT 0,
       ADD COLUMN IF NOT EXISTS badges INT DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS points INT DEFAULT 0
+      ADD COLUMN IF NOT EXISTS recommendations JSON DEFAULT '[]',
+      ADD COLUMN IF NOT EXISTS previews JSON DEFAULT '[]',
+      ADD COLUMN IF NOT EXISTS circles JSON DEFAULT '[]',
+      ADD COLUMN IF NOT EXISTS friends JSON DEFAULT '[]',
+      ADD COLUMN IF NOT EXISTS points INT DEFAULT 0,
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     `);
 
     await query(`
       ALTER TABLE books
-      ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id),
-      ADD COLUMN IF NOT EXISTS excerpt TEXT
+      ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id) ON DELETE CASCADE,
+      ADD COLUMN IF NOT EXISTS excerpt TEXT,
+      ADD COLUMN IF NOT EXISTS groups TEXT[] DEFAULT '{}',
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP
     `);
 
     await query(`
-      CREATE TABLE IF NOT EXISTS circles (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        book_id INT REFERENCES books(id),
-        member_ids INT[] DEFAULT '{}'
-      )
+      ALTER TABLE circles
+      ADD COLUMN IF NOT EXISTS description TEXT,
+      ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT TRUE,
+      ADD COLUMN IF NOT EXISTS created_by INT REFERENCES users(id) ON DELETE SET NULL,
+      ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'active'
     `);
 
     await query(`
       ALTER TABLE comments
-      ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id)
+      ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id) ON DELETE CASCADE
     `);
 
     await query(`
-      CREATE TABLE IF NOT EXISTS achievements (
+      CREATE TABLE IF NOT EXISTS friendships (
         id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES users(id),
-        name VARCHAR(255) NOT NULL,
-        description TEXT,
-        icon VARCHAR(255),
-        earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
+        friend_id INT REFERENCES users(id) ON DELETE CASCADE,
+        status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (user_id, friend_id)
+      )
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS reading_sessions (
+        id SERIAL PRIMARY KEY,
+        circle_id INT REFERENCES circles(id) ON DELETE CASCADE,
+        start_time TIMESTAMP,
+        end_time TIMESTAMP,
+        is_active BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS reading_goals (
+        id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
+        target_books INT NOT NULL,
+        timeframe VARCHAR(50) NOT NULL,
+        start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        end_date TIMESTAMP,
+        progress INT DEFAULT 0,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 

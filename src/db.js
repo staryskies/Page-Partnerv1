@@ -10,7 +10,7 @@ module.exports = {
     try {
       const client = await pool.connect();
       console.log('Connected to PostgreSQL database');
-      client.release(); // Release the client back to the pool
+      client.release();
     } catch (err) {
       console.error('Database connection error:', err);
       throw err;
@@ -19,7 +19,6 @@ module.exports = {
 
   initDB: async () => {
     try {
-      // Users Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
@@ -30,23 +29,21 @@ module.exports = {
           genres TEXT[] DEFAULT '{}',
           favorite_authors TEXT[] DEFAULT '{}',
           reading_pace INT DEFAULT 0,
-          goals TEXT[] DEFAULT '{}', -- e.g., ["10 books this year"]
           to_read_list TEXT[] DEFAULT '{}',
           book_length VARCHAR(50),
           currently_reading INT DEFAULT 0,
           completed_books INT DEFAULT 0,
           reading_streak INT DEFAULT 0,
           badges INT DEFAULT 0,
-          recommendations JSON DEFAULT '[]', -- e.g., [{"title": "Book", "author": "Author"}]
-          previews JSON DEFAULT '[]', -- e.g., [{"book_id": 1, "preview": "text"}]
-          circles JSON DEFAULT '[]', -- Deprecated, using circles table instead
-          friends JSON DEFAULT '[]', -- Placeholder for future friend system
+          recommendations JSON DEFAULT '[]',
+          previews JSON DEFAULT '[]',
+          circles JSON DEFAULT '[]',
+          friends JSON DEFAULT '[]',
           points INT DEFAULT 0,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
-      // Books Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
@@ -54,40 +51,37 @@ module.exports = {
           genre VARCHAR(255) NOT NULL,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
           excerpt TEXT,
-          groups TEXT[] DEFAULT '{}', -- e.g., ["Chapter 1", "Chapter 2"]
+          groups TEXT[] DEFAULT '{}',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          completed_at TIMESTAMP -- When the user marks it as completed
+          completed_at TIMESTAMP
         )
       `);
 
-      // Comments Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS comments (
           id SERIAL PRIMARY KEY,
           book_id INT REFERENCES books(id) ON DELETE CASCADE,
-          group_name VARCHAR(255), -- e.g., "Chapter 1"
+          group_name VARCHAR(255),
           message TEXT NOT NULL,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
-      // Circles Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS circles (
           id SERIAL PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
-          description TEXT, -- Added for circle description
+          description TEXT,
           book_id INT REFERENCES books(id) ON DELETE SET NULL,
-          member_ids INT[] DEFAULT '{}', -- Array of user IDs
-          is_public BOOLEAN DEFAULT TRUE, -- Public or private circle
-          created_by INT REFERENCES users(id) ON DELETE SET NULL, -- Creator of the circle
+          member_ids INT[] DEFAULT '{}',
+          is_public BOOLEAN DEFAULT TRUE,
+          created_by INT REFERENCES users(id) ON DELETE SET NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          status VARCHAR(50) DEFAULT 'active' -- e.g., 'active', 'upcoming', 'past'
+          status VARCHAR(50) DEFAULT 'active'
         )
       `);
 
-      // Achievements Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS achievements (
           id SERIAL PRIMARY KEY,
@@ -99,19 +93,17 @@ module.exports = {
         )
       `);
 
-      // Friendships Table (for future friend system)
       await pool.query(`
         CREATE TABLE IF NOT EXISTS friendships (
           id SERIAL PRIMARY KEY,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
           friend_id INT REFERENCES users(id) ON DELETE CASCADE,
-          status VARCHAR(50) DEFAULT 'pending', -- e.g., 'pending', 'accepted'
+          status VARCHAR(50) DEFAULT 'pending',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           UNIQUE (user_id, friend_id)
         )
       `);
 
-      // Reading Sessions Table (for live reading feature)
       await pool.query(`
         CREATE TABLE IF NOT EXISTS reading_sessions (
           id SERIAL PRIMARY KEY,
@@ -119,6 +111,20 @@ module.exports = {
           start_time TIMESTAMP,
           end_time TIMESTAMP,
           is_active BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS reading_goals (
+          id SERIAL PRIMARY KEY,
+          user_id INT REFERENCES users(id) ON DELETE CASCADE,
+          target_books INT NOT NULL,
+          timeframe VARCHAR(50) NOT NULL, -- e.g., 'year', 'month'
+          start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          end_date TIMESTAMP,
+          progress INT DEFAULT 0,
+          is_active BOOLEAN DEFAULT TRUE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
