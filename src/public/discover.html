@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Book Discovery App</title>
+  <title>Book Discovery - PagePartner</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     /* [Previous CSS remains unchanged] */
@@ -321,15 +321,17 @@
   </div>
 
   <script>
-    // Get username from local storage or some auth mechanism
-    const username = localStorage.getItem('username') || 'testuser'; // Adjust based on your auth system
+    const baseUrl = window.location.origin;
 
     // Function to get user data from backend
     async function getUserData() {
       try {
-        const response = await fetch('/api/user', {
+        const username = localStorage.getItem('username');
+        if (!username) throw new Error('No username found in localStorage');
+        
+        const response = await fetch(`${baseUrl}/api/user`, {
           headers: {
-            'X-Username': username // Match your backend's expected header
+            'X-Username': username
           }
         });
         if (!response.ok) {
@@ -342,11 +344,10 @@
           completed_books: data.completedBooks,
           reading_streak: data.readingStreak,
           badges: data.badges,
-          points: data.hasPoints ? data.points : 0 // Your endpoint doesn't return points directly
+          points: data.points || 0
         };
       } catch (error) {
         console.error('Failed to fetch user data:', error);
-        // Fallback data
         return {
           username: "Guest",
           currently_reading: 0,
@@ -355,6 +356,33 @@
           badges: 0,
           points: 0
         };
+      }
+    }
+
+    // Function to add book to user's library
+    async function addBookToLibrary(title, genre) {
+      const username = localStorage.getItem('username');
+      if (!username) {
+        alert('You must be logged in to add a book.');
+        return false;
+      }
+
+      try {
+        const response = await fetch(`${baseUrl}/api/book`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Username': username
+          },
+          body: JSON.stringify({ title, genre, excerpt: '' }) // No excerpt from discovery
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Failed to add book');
+        return true;
+      } catch (error) {
+        console.error('Add Book Error:', error);
+        alert(`Failed to add book: ${error.message}`);
+        return false;
       }
     }
 
@@ -391,8 +419,6 @@
         }
         
         const data = await response.json();
-        console.log('API Response:', data);
-        
         return data.suggestions || [];
       } catch (error) {
         console.error('Error fetching book recommendations:', error);
@@ -535,9 +561,13 @@
           bookCard.appendChild(author);
           bookCard.appendChild(description);
           
-          bookCard.addEventListener('click', () => {
-            console.log('Selected book:', book.title);
-            alert(`You selected "${book.title || 'Unknown Title'}" by ${book.author || 'Unknown Author'}`);
+          bookCard.addEventListener('click', async () => {
+            const success = await addBookToLibrary(book.title || 'Unknown Title', this.selectedGenre);
+            if (success) {
+              alert(`"${book.title || 'Unknown Title'}" has been added to your currently reading books!`);
+              // Optionally redirect to dashboard or refresh data
+              // window.location.href = '/index.html';
+            }
           });
           
           booksGrid.appendChild(bookCard);
@@ -566,47 +596,47 @@
       getMockBooks(genre) {
         const mockBooksByGenre = {
           'Fantasy': [
-            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
-            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
-            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
-            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
-            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+            { title: 'The Name of the Wind', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'The Way of Kings', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'A Wizard of Earthsea', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'The Fifth Season', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'Piranesi', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
           ],
           'Science Fiction': [
-            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
-            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
-            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
-            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
-            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+            { title: 'Dune', author: 'Frank Herbert', description: 'A sprawling epic about politics, religion, and ecology on a desert planet.' },
+            { title: 'Neuromancer', author: 'William Gibson', description: 'A hacker navigates a dystopian future of cyberspace and corporate control.' },
+            { title: 'Foundation', author: 'Isaac Asimov', description: 'A mathematician predicts the fall of an empire and works to preserve knowledge.' },
+            { title: 'Snow Crash', author: 'Neal Stephenson', description: 'A satirical take on a future America with virtual reality and linguistic viruses.' },
+            { title: 'The Left Hand of Darkness', author: 'Ursula K. Le Guin', description: 'An envoy navigates a genderless society on an icy alien planet.' }
           ],
           'Mystery': [
-            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
-            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
-            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
-            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
-            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+            { title: 'The Hound of the Baskervilles', author: 'Arthur Conan Doyle', description: 'Sherlock Holmes investigates a supernatural hound on the moors.' },
+            { title: 'The Big Sleep', author: 'Raymond Chandler', description: 'Private eye Philip Marlowe unravels a web of crime in Los Angeles.' },
+            { title: 'Gone Girl', author: 'Gillian Flynn', description: 'A husband becomes the prime suspect when his wife mysteriously disappears.' },
+            { title: 'The Girl with the Dragon Tattoo', author: 'Stieg Larsson', description: 'A journalist and hacker uncover dark family secrets.' },
+            { title: 'In the Woods', author: 'Tana French', description: 'A detective investigates a child’s murder tied to his own past.' }
           ],
           'Romance': [
-            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
-            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
-            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
-            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
-            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+            { title: 'Pride and Prejudice', author: 'Jane Austen', description: 'A spirited woman and a wealthy man overcome pride and prejudice to find love.' },
+            { title: 'The Notebook', author: 'Nicholas Sparks', description: 'A lifelong love story unfolds through a notebook read to an elderly woman.' },
+            { title: 'Outlander', author: 'Diana Gabaldon', description: 'A time-traveling nurse finds romance in 18th-century Scotland.' },
+            { title: 'Me Before You', author: 'Jojo Moyes', description: 'A quirky woman becomes a caregiver to a paralyzed man, sparking an unexpected bond.' },
+            { title: 'The Kiss Quotient', author: 'Helen Hoang', description: 'A woman with Asperger’s hires an escort to learn about relationships.' }
           ],
           'Historical Fiction': [
-            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
-            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
-            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
-            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
-            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+            { title: 'The Nightingale', author: 'Kristin Hannah', description: 'Two sisters navigate love and survival in WWII France.' },
+            { title: 'All the Light We Cannot See', author: 'Anthony Doerr', description: 'A blind French girl and a German boy intersect during WWII.' },
+            { title: 'The Book Thief', author: 'Markus Zusak', description: 'A girl finds solace in stealing books during Nazi Germany.' },
+            { title: 'Atonement', author: 'Ian McEwan', description: 'A lie shatters lives in pre-WWII England.' },
+            { title: 'The Pillars of the Earth', author: 'Ken Follett', description: 'A cathedral’s construction shapes lives in 12th-century England.' }
           ],
           'Non-Fiction': [
-            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
-            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
-            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
-            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
-            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
-          ],
+            { title: 'Sapiens', author: 'Yuval Noah Harari', description: 'A history of humankind from the Stone Age to the present.' },
+            { title: 'Educated', author: 'Tara Westover', description: 'A woman’s journey from an isolated upbringing to earning a PhD.' },
+            { title: 'The Immortal Life of Henrietta Lacks', author: 'Rebecca Skloot', description: 'The story of a woman whose cells revolutionized medicine.' },
+            { title: 'Becoming', author: 'Michelle Obama', description: 'The former First Lady’s memoir of her life and career.' },
+            { title: 'Into Thin Air', author: 'Jon Krakauer', description: 'A firsthand account of a deadly Everest expedition.' }
+          ]
         };
         
         return mockBooksByGenre[genre] || [];
