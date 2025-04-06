@@ -619,16 +619,6 @@
                     <div class="tab" data-tab="special">Special Achievements</div>
                 </div>
 
-                <div class="sort-controls">
-                    <span class="sort-label">Sort by:</span>
-                    <select class="sort-select" id="sort-badges">
-                        <option value="category">Badge Type</option>
-                        <option value="progress">Progress</option>
-                        <option value="xp">XP Value</option>
-                        <option value="title">Alphabetical</option>
-                    </select>
-                </div>
-
                 <div class="tab-content" id="all-badges-tab">
                     <div class="badge-grid" id="all-badges-list"></div>
                 </div>
@@ -773,34 +763,7 @@
             });
         }
 
-        function sortBadges(sortBy) {
-            const tabId = $('.tab.active').getAttribute('data-tab');
-            const container = $(`#${tabId}-list`);
-            const badgeCards = Array.from(container.querySelectorAll('.badge-card'));
-            
-            badgeCards.sort((a, b) => {
-                switch(sortBy) {
-                    case 'category':
-                        return a.getAttribute('data-badge-type').localeCompare(b.getAttribute('data-badge-type'));
-                    case 'progress':
-                        const aProgress = parseInt(a.getAttribute('data-badge-progress'));
-                        const bProgress = parseInt(b.getAttribute('data-badge-progress'));
-                        return bProgress - aProgress; // Higher progress first
-                    case 'xp':
-                        const aXp = parseInt(a.getAttribute('data-badge-xp'));
-                        const bXp = parseInt(b.getAttribute('data-badge-xp'));
-                        return bXp - aXp; // Higher XP first
-                    case 'title':
-                        return a.getAttribute('data-badge-title').localeCompare(b.getAttribute('data-badge-title'));
-                    default:
-                        return 0;
-                }
-            });
-            
-            // Clear and re-append sorted cards
-            container.innerHTML = '';
-            badgeCards.forEach(card => container.appendChild(card));
-        }
+        // Function removed as we no longer need sorting functionality
 
         function updateBadgeCards(badge) {
             const cards = $(`[data-badge-id="${badge.id}"]`);
@@ -904,17 +867,9 @@
             updateStats();
             setupTabs();
             
-            // Setup sort functionality
-            $('#sort-badges').addEventListener('change', function() {
-                sortBadges(this.value);
-            });
-            
             $('#simulate-activity-btn').addEventListener('click', simulateActivity);
             $('#close-toast').addEventListener('click', () => $('#toast').classList.remove('show'));
             $('#logout-btn').addEventListener('click', logout);
-            
-            // Initial sort by category
-            sortBadges('category');
         });
     </script>
 </body>

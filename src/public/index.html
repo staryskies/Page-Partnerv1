@@ -663,14 +663,8 @@
 
     async function getUserBooks() {
       try {
-        const username = localStorage.getItem('username');
-        if (!username) {
-            console.error('No username found in localStorage');
-            return []; // Return early if no username, no need to fetch
-        }
-
-        const response = await fetch(`${baseUrl}/api/users/${username}/books`, {
-            headers: { 'X-Username': username }
+        const response = await fetch(`${baseUrl}/api/books`, {
+            headers: { 'Content-Type': 'application/json' }
         });
 
         if (!response.ok) {
@@ -679,7 +673,7 @@
         }
 
         const data = await response.json();
-        
+
         // Validate that data.books is an array; return empty array if not
         if (!Array.isArray(data.books)) {
             console.warn('Unexpected response format: data.books is not an array', data);
@@ -688,11 +682,10 @@
 
         return data.books; // Return the books array
     } catch (error) {
-        console.error('Failed to fetch user books:', error.message);
+        console.error('Failed to fetch all books:', error.message);
         return []; // Return empty array on any error
     }
-
-}
+  }
 
     async function updateUI() {
       const userData = await getUserData();
@@ -769,7 +762,7 @@
 
     function logout() {
       localStorage.removeItem('username');
-      window.location.href = 'homepage.html'; // Redirect to homepage.html
+      window.location.href = 'homepage.html';
     }
 
     document.addEventListener('DOMContentLoaded', () => {
