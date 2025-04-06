@@ -6,7 +6,6 @@
   <title>Book Discovery - PagePartner</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* [Previous CSS remains unchanged] */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     :root {
       --primary-color: #1e3a5f;
@@ -323,27 +322,22 @@
   <script>
     const baseUrl = window.location.origin;
 
-    // Function to get user data from backend
     async function getUserData() {
       try {
         const username = localStorage.getItem('username');
         if (!username) throw new Error('No username found in localStorage');
         
         const response = await fetch(`${baseUrl}/api/user`, {
-          headers: {
-            'X-Username': username
-          }
+          headers: { 'X-Username': username }
         });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         return {
-          username: data.displayName,
-          currently_reading: data.currentlyReading,
-          completed_books: data.completedBooks,
-          reading_streak: data.readingStreak,
-          badges: data.badges,
+          username: data.displayName || "Guest",
+          currently_reading: data.currentlyReading || 0,
+          completed_books: data.completedBooks || 0,
+          reading_streak: data.readingStreak || 0,
+          badges: data.badges || 0,
           points: data.points || 0
         };
       } catch (error) {
@@ -359,7 +353,6 @@
       }
     }
 
-    // Function to add book to user's library
     async function addBookToLibrary(title, genre) {
       const username = localStorage.getItem('username');
       if (!username) {
@@ -374,7 +367,7 @@
             'Content-Type': 'application/json',
             'X-Username': username
           },
-          body: JSON.stringify({ title, genre, excerpt: '' }) // No excerpt from discovery
+          body: JSON.stringify({ title, genre, excerpt: '' })
         });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || 'Failed to add book');
@@ -386,14 +379,13 @@
       }
     }
 
-    // Magic Loops API call function with user parameters
     async function callMagicLoops(genre, userData) {
       try {
         const timeoutPromise = new Promise((_, reject) => {
           setTimeout(() => reject(new Error('API request timed out')), 15000);
         });
 
-        const instruction = `Generate a list of 5 book suggestions in the ${genre} genre in JSON format with title, author, and description for each book. 
+        const instruction = `Generate a list of 5 book suggestions in the ${genre} genre in JSON format with "title", "author", and "description" fields for each book. 
           Personalize recommendations based on this user data:
           - Username: ${userData.username}
           - Currently reading: ${userData.currently_reading} books
@@ -404,29 +396,44 @@
 
         const fetchPromise = fetch('https://magicloops.dev/api/loop/31478684-0d4c-4202-be61-3e75f0e55fa3/run', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            instruction: instruction
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instruction })
         });
 
         const response = await Promise.race([fetchPromise, timeoutPromise]);
-        
-        if (!response.ok) {
-          throw new Error(`Magic Loops API request failed with status: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Magic Loops API request failed with status: ${response.status}`);
         
         const data = await response.json();
-        return data.suggestions || [];
+        console.log('Raw API Response:', data); // Debug log
+
+        // Ensure the response contains suggestions and is an array
+        let suggestions = [];
+        if (data.suggestions && Array.isArray(data.suggestions)) {
+          suggestions = data.suggestions;
+        } else if (typeof data === 'string') {
+          // Attempt to parse if the response is a JSON string
+          try {
+            const parsed = JSON.parse(data);
+            suggestions = parsed.suggestions || parsed;
+          } catch (e) {
+            console.error('Failed to parse API response as JSON:', e);
+          }
+        } else if (Array.isArray(data)) {
+          suggestions = data;
+        }
+
+        // Normalize the suggestions to ensure they have title, author, and description
+        return suggestions.map(book => ({
+          title: book.title || 'Unknown Title',
+          author: book.author || 'Unknown Author',
+          description: book.description || 'No description available'
+        }));
       } catch (error) {
         console.error('Error fetching book recommendations:', error);
         throw error;
       }
     }
 
-    // Book discovery UI component
     class BookDiscovery {
       constructor(containerElement) {
         this.container = containerElement;
@@ -481,19 +488,13 @@
         
         try {
           const suggestions = await callMagicLoops(genre, this.userData);
-          
-          if (!Array.isArray(suggestions) || suggestions.length === 0) {
-            console.warn('No valid suggestions received from API, using mock data');
+          this.bookResults = suggestions;
+          if (this.bookResults.length === 0) {
+            console.warn('No suggestions received from API, using mock data');
             this.bookResults = this.getMockBooks(genre);
-          } else {
-            this.bookResults = suggestions.map(book => ({
-              title: book.title,
-              author: book.author,
-              description: book.description
-            }));
           }
         } catch (error) {
-          console.error('API call failed:', error);
+          console.error('API call failed, falling back to mock data:', error);
           this.bookResults = this.getMockBooks(genre);
         } finally {
           this.isLoading = false;
@@ -504,11 +505,7 @@
       updateGenreButtons(selectedGenre) {
         const buttons = this.container.querySelectorAll('.genre-button');
         buttons.forEach(button => {
-          if (button.textContent === selectedGenre) {
-            button.classList.add('selected');
-          } else {
-            button.classList.remove('selected');
-          }
+          button.classList.toggle('selected', button.textContent === selectedGenre);
         });
       }
       
@@ -547,26 +544,24 @@
           bookCard.className = 'book-card';
           
           const title = document.createElement('h3');
-          title.textContent = book.title || 'Unknown Title';
+          title.textContent = book.title;
           
           const author = document.createElement('p');
           author.className = 'book-author';
-          author.textContent = `By ${book.author || 'Unknown Author'}`;
+          author.textContent = `By ${book.author}`;
           
           const description = document.createElement('p');
           description.className = 'book-description';
-          description.textContent = book.description || 'No description available';
+          description.textContent = book.description;
           
           bookCard.appendChild(title);
           bookCard.appendChild(author);
           bookCard.appendChild(description);
           
           bookCard.addEventListener('click', async () => {
-            const success = await addBookToLibrary(book.title || 'Unknown Title', this.selectedGenre);
+            const success = await addBookToLibrary(book.title, this.selectedGenre);
             if (success) {
-              alert(`"${book.title || 'Unknown Title'}" has been added to your currently reading books!`);
-              // Optionally redirect to dashboard or refresh data
-              // window.location.href = '/index.html';
+              alert(`"${book.title}" has been added to your currently reading books!`);
             }
           });
           
@@ -581,7 +576,7 @@
         const userName = document.getElementById('user-display-name');
         const userStats = document.getElementById('user-stats');
         
-        if (this.userData && this.userData.username) {
+        if (this.userData && this.userData.username !== "Guest") {
           const initials = this.userData.username.charAt(0).toUpperCase();
           userAvatar.textContent = initials;
           userName.textContent = this.userData.username;
@@ -643,7 +638,6 @@
       }
     }
 
-    // Initialize everything
     document.addEventListener('DOMContentLoaded', () => {
       const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
       const sidebar = document.querySelector('.sidebar');
