@@ -260,9 +260,3 @@ app.get('/api/user', requireLogin, async (req, res) => {
   }
 });
 
-{
-  "isLoggedIn": true,
-  "displayName": "John Doe",
-  "completedBooks": 5,
-  "badges": 3
-}
