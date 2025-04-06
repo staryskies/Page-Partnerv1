@@ -1,110 +1,945 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Achievements - PagePartner</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PagePartner - Badges</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #37BBAE;
+            --color-primary-light: rgba(55, 187, 174, 0.1);
+            --color-primary-dark: #32a89d;
+            --color-secondary: #FF6B6B;
+            --color-secondary-light: rgba(255, 107, 107, 0.1);
+            --color-secondary-dark: #ff5252;
+            --color-accent-blue: #219ebc;
+            --color-accent-dark: #13293d;
+            --color-background: #f8f9fa;
+            --color-sidebar: #f6f8f9;
+            --color-white: #ffffff;
+            --color-text: #444444;
+            --color-text-light: #6c757d;
+            --color-gray-100: #f8f9fa;
+            --color-gray-200: #e9ecef;
+            --color-gray-300: #dee2e6;
+            --color-success: #4CAF50;
+            --color-success-dark: #3d9140;
+            --color-warning: #FFC107;
+            --color-danger: #DC3545;
+            --color-danger-dark: #c82333;
+            --color-info: #17A2B8;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.03);
+            --transition-default: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .d-flex { display: flex; }
+        .flex-column { flex-direction: column; }
+        .flex-grow-1 { flex-grow: 1; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .align-center { align-items: center; }
+        .text-center { text-align: center; }
+        .mb-xs { margin-bottom: var(--spacing-xs); }
+        .mb-sm { margin-bottom: var(--spacing-sm); }
+        .mb-md { margin-bottom: var(--spacing-md); }
+        .mb-lg { margin-bottom: var(--spacing-lg); }
+        .mb-xl { margin-bottom: var(--spacing-xl); }
+        .mt-xs { margin-top: var(--spacing-xs); }
+        .mt-sm { margin-top: var(--spacing-sm); }
+        .mt-md { margin-top: var(--spacing-md); }
+        .mt-lg { margin-top: var(--spacing-lg); }
+        .mt-xl { margin-top: var(--spacing-xl); }
+        .ml-auto { margin-left: auto; }
+        .mr-xs { margin-right: var(--spacing-xs); }
+        .mr-sm { margin-right: var(--spacing-sm); }
+        .mr-md { margin-right: var(--spacing-md); }
+        .gap-xs { gap: var(--spacing-xs); }
+        .gap-sm { gap: var(--spacing-sm); }
+        .gap-md { gap: var(--spacing-md); }
+        .gap-lg { gap: var(--spacing-lg); }
+        .p-xs { padding: var(--spacing-xs); }
+        .p-sm { padding: var(--spacing-sm); }
+        .p-md { padding: var(--spacing-md); }
+        .p-lg { padding: var(--spacing-lg); }
+        .py-md { padding-top: var(--spacing-md); padding-bottom: var(--spacing-md); }
+        .px-md { padding-left: var(--spacing-md); padding-right: var(--spacing-md); }
+        .fw-regular { font-weight: 400; }
+        .fw-medium { font-weight: 500; }
+        .fw-semibold { font-weight: 600; }
+        .fw-bold { font-weight: 700; }
+        .fs-sm { font-size: 0.85rem; }
+        .fs-md { font-size: 1rem; }
+        .fs-lg { font-size: 1.1rem; }
+        .fs-xl { font-size: 1.5rem; }
+        .color-primary { color: var(--color-primary); }
+        .color-text-light { color: var(--color-text-light); }
+        .border-bottom { border-bottom: 1px solid var(--color-gray-200); }
+        .hidden { display: none; }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--color-sidebar);
+            border-right: 1px solid var(--color-gray-200);
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            padding: var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            text-decoration: none;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .nav-section-title {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+            font-weight: 600;
+            padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-xs);
+            transition: var(--transition-default);
+        }
+
+        .nav-item:hover {
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+        }
+
+        .nav-item.active {
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+
+        .nav-item i {
+            margin-right: var(--spacing-md);
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--color-gray-200);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            transition: var(--transition-default);
+        }
+
+        .user-info:hover {
+            background-color: var(--color-primary-light);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-weight: 600;
+        }
+
+        .user-details {
+            flex-grow: 1;
+        }
+
+        .user-name {
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            text-decoration: none;
+            transition: var(--transition-default);
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .btn i {
+            margin-right: var(--spacing-sm);
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-dark);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--color-primary-light);
+        }
+
+        .btn-light {
+            background-color: var(--color-white);
+            color: var(--color-text);
+            border: 1px solid var(--color-gray-300);
+        }
+
+        .btn-light:hover {
+            background-color: var(--color-gray-100);
+        }
+
+        .btn-success {
+            background-color: var(--color-success);
+            color: var(--color-white);
+        }
+
+        .btn-success:hover {
+            background-color: var(--color-success-dark);
+        }
+
+        .section {
+            background-color: var(--color-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .section-body {
+            padding: var(--spacing-lg);
+        }
+
+        .tab-bar {
+            display: flex;
+            margin-bottom: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-gray-200);
+            overflow-x: auto;
+            padding-bottom: 1px;
+        }
+
+        .tab {
+            padding: var(--spacing-md) var(--spacing-lg);
+            color: var(--color-text-light);
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: var(--transition-default);
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: var(--color-primary);
+        }
+
+        .tab.active {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-primary);
+        }
+
+        .badge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .badge-card {
+            background-color: var(--color-white);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            transition: var(--transition-default);
+            border: 1px solid var(--color-gray-200);
+        }
+
+        .badge-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .badge-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto var(--spacing-md);
+            transition: var(--transition-default);
+        }
+
+        .badge-card.unlocked .badge-icon {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .badge-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .badge-description {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .badge-progress {
+            height: 6px;
+            background-color: var(--color-gray-200);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .badge-progress-bar {
+            height: 100%;
+            background-color: var(--color-primary);
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        .badge-status {
+            font-size: 0.8rem;
+            color: var(--color-text-light);
+            margin-top: var(--spacing-xs);
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .leaderboard-table th {
+            font-weight: 600;
+            color: var(--color-text);
+            background-color: var(--color-gray-100);
+        }
+
+        .leaderboard-table td {
+            font-size: 0.9rem;
+        }
+
+        .leaderboard-rank {
+            width: 60px;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .leaderboard-user {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .leaderboard-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--color-primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            font-size: 0.8rem;
+        }
+
+        .empty-state {
+            background-color: var(--color-white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            background-color: var(--color-primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            font-size: 2rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .empty-state-title {
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            font-size: 1.1rem;
+        }
+
+        .empty-state-description {
+            color: var(--color-text-light);
+            margin-bottom: var(--spacing-lg);
+            max-width: 400px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card {
+            background-color: var(--color-white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-icon {
+            position: absolute;
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
+            font-size: 1.2rem;
+            color: var(--color-primary);
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .stat-description {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+        }
+
+        .mobile-nav-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            z-index: 900;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--color-white);
+            color: var(--color-text);
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            z-index: 2000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-success { border-left: 4px solid var(--color-success); }
+        .toast-error { border-left: 4px solid var(--color-danger); }
+        .toast-icon { font-size: 1.5rem; }
+        .toast-content { flex-grow: 1; }
+        .toast-title { font-weight: 600; margin-bottom: var(--spacing-xs); }
+        .toast-message { font-size: 0.9rem; color: var(--color-text-light); }
+        .toast-close { background: none; border: none; font-size: 1rem; color: var(--color-text-light); cursor: pointer; padding: var(--spacing-xs); }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .badge-grid {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .mobile-nav-toggle {
+                display: flex;
+            }
+
+            .sidebar.active {
+                display: block;
+                position: fixed;
+                width: 280px;
+                z-index: 1000;
+                height: 100vh;
+                animation: slideIn 0.3s ease;
+            }
+
+            @keyframes slideIn {
+                from { transform: translateX(-100%); }
+                to { transform: translateX(0); }
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .badge-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <button class="mobile-nav-toggle"><i class="fas fa-bars"></i></button>
-  <div class="sidebar">
-    <div class="logo">
-      <img src="logo.png" alt="PagePartner Logo">
-      <span class="logo-text">PagePartner</span>
-    </div>
-    <nav class="nav-links">
-      <div class="nav-section">
-        <div class="nav-section-title">Main</div>
-        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="my-library.html" class="nav-item"><i class="fas fa-book"></i> My Library</a>
-        <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Social</div>
-        <a href="friends.html" class="nav-item"><i class="fas fa-user-friends"></i> Friends</a>
-        <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
-        <a href="activity.html" class="nav-item"><i class="fas fa-chart-line"></i> Activity</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Personal</div>
-        <a href="achievements.html" class="nav-item active"><i class="fas fa-award"></i> Achievements</a>
-        <a href="reviews.html" class="nav-item"><i class="fas fa-star"></i> Reviews</a>
-        <a href="statistics.html" class="nav-item"><i class="fas fa-chart-bar"></i> Statistics</a>
-      </div>
-      <div class="nav-section">
-        <div class="nav-section-title">Premium</div>
-        <a href="points.html" class="nav-item"><i class="fas fa-coins"></i> Points & Rewards</a>
-      </div>
-    </nav>
-    <div class="user-profile">
-      <div class="user-avatar" id="user-avatar-initials"></div>
-      <div class="user-info">
-        <div class="user-name" id="user-display-name">Sign in</div>
-        <div class="user-status" id="user-stats">Start your reading journey</div>
-      </div>
-    </div>
-  </div>
-  <div class="main-content">
-    <div class="section-header">
-      <h2 class="section-title">Achievements</h2>
-    </div>
-    <div class="achievements-grid" id="achievements-grid">
-      <!-- Dynamic achievements will be added here -->
-    </div>
-  </div>
-  <script>
-    const baseUrl = window.location.origin;
-    document.addEventListener('DOMContentLoaded', async () => {
-      const username = localStorage.getItem('username');
-      const userResponse = await fetch(`${baseUrl}/api/user`, { headers: { 'X-Username': username } });
-      const userData = await userResponse.json();
-      updateUserProfile(userData);
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="logo">
+                <i class="fas fa-book-reader color-primary"></i>
+                <span class="logo-text">PagePartner</span>
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">MAIN</div>
+            <a href="#" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="#" class="nav-item"><i class="fas fa-book"></i> My Library</a>
+            <a href="#" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">SOCIAL</div>
+            <a href="#" class="nav-item"><i class="fas fa-user-friends"></i> Friends</a>
+            <a href="#" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
+            <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Activity</a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-section-title">PERSONAL</div>
+            <a href="#" class="nav-item active"><i class="fas fa-trophy"></i> Badges</a>
+            <a href="#" class="nav-item"><i class="fas fa-star"></i> Reviews</a>
+            <a href="#" class="nav-item"><i class="fas fa-chart-bar"></i> Statistics</a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar"><i class="fas fa-user"></i></div>
+                <div class="user-details">
+                    <div class="user-name">Sign In</div>
+                    <div class="user-role">Create an account</div>
+                </div>
+                <i class="fas fa-sign-in-alt"></i>
+            </div>
+        </div>
+    </aside>
 
-      // Placeholder achievements
-      const achievements = [
-        { name: 'First Book', desc: 'Read your first book', icon: 'fas fa-book' },
-        { name: 'Streak Starter', desc: 'Read 3 days in a row', icon: 'fas fa-fire' },
-      ];
-      renderAchievements(achievements);
-      
-      // Add mobile navigation toggle
-      const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
-      const sidebar = document.querySelector('.sidebar');
-      if (mobileNavToggle) {
-        mobileNavToggle.addEventListener('click', () => {
-          sidebar.classList.toggle('open');
+    <button class="mobile-nav-toggle" id="mobile-nav-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Badges & Achievements</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" id="simulate-activity-btn">
+                    <i class="fas fa-plus"></i> Simulate Activity
+                </button>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+                <div class="stat-title">Badges Earned</div>
+                <div class="stat-value" id="badges-earned">0</div>
+                <div class="stat-description">Total badges unlocked</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+                <div class="stat-title">Books Read</div>
+                <div class="stat-value" id="books-read">0</div>
+                <div class="stat-description">Books completed</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-title">Social Points</div>
+                <div class="stat-value" id="social-points">0</div>
+                <div class="stat-description">From interactions</div>
+            </div>
+           
+        </div>
+
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Your Badges</h2>
+            </div>
+            <div class="section-body">
+                <div class="tab-bar">
+                    <div class="tab active" data-tab="all-badges">All Badges</div>
+                    <div class="tab" data-tab="genre">Genre Exploration</div>
+                    <div class="tab" data-tab="reading">Reading Milestones</div>
+                    <div class="tab" data-tab="social">Social Participation</div>
+                    <div class="tab" data-tab="special">Special Achievements</div>
+                </div>
+
+                <div class="tab-content" id="all-badges-tab">
+                    <div class="badge-grid" id="all-badges-list"></div>
+                </div>
+                <div class="tab-content hidden" id="genre-tab">
+                    <div class="badge-grid" id="genre-badges-list"></div>
+                </div>
+                <div class="tab-content hidden" id="reading-tab">
+                    <div class="badge-grid" id="reading-badges-list"></div>
+                </div>
+                <div class="tab-content hidden" id="social-tab">
+                    <div class="badge-grid" id="social-badges-list"></div>
+                </div>
+                <div class="tab-content hidden" id="special-tab">
+                    <div class="badge-grid" id="special-badges-list"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Leaderboard</h2>
+            </div>
+            <div class="section-body">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th class="leaderboard-rank">Rank</th>
+                            <th>User</th>
+                            <th>Badges</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <tr>
+                            <td class="leaderboard-rank">1</td>
+                            <td class="leaderboard-user">
+                                <div class="leaderboard-avatar">You</div>
+                                <span>You</span>
+                            </td>
+                            <td id="leaderboard-badges">0</td>
+                            <td id="leaderboard-points">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast">
+        <div class="toast-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="toast-content">
+            <div class="toast-title">Badge Earned!</div>
+            <div class="toast-message">You've unlocked a new badge.</div>
+        </div>
+        <button class="toast-close" id="close-toast"><i class="fas fa-times"></i></button>
+    </div>
+
+    <script>
+        function $(selector) {
+            return document.querySelector(selector);
+        }
+
+        function $$(selector) {
+            return document.querySelectorAll(selector);
+        }
+
+        function showElement(element) {
+            element.classList.remove('hidden');
+        }
+
+        function hideElement(element) {
+            element.classList.add('hidden');
+        }
+
+        function showToast(type, title, message, duration = 3000) {
+            const toast = $('#toast');
+            toast.className = 'toast';
+            toast.classList.add(`toast-${type}`);
+            const iconElement = toast.querySelector('.toast-icon i');
+            iconElement.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            toast.querySelector('.toast-title').textContent = title;
+            toast.querySelector('.toast-message').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+
+        const badges = {
+            genre: [
+                { id: 'fantasy', title: 'Fantasy Explorer', description: 'Read 5 fantasy books', icon: 'fas fa-dragon', goal: 5, progress: 0 },
+                { id: 'mystery', title: 'Mystery Sleuth', description: 'Read 5 mystery books', icon: 'fas fa-search', goal: 5, progress: 0 },
+                { id: 'scifi', title: 'Sci-Fi Voyager', description: 'Read 5 sci-fi books', icon: 'fas fa-rocket', goal: 5, progress: 0 }
+            ],
+            reading: [
+                { id: 'reader10', title: '10 Book Club', description: 'Read 10 books in a year', icon: 'fas fa-book', goal: 10, progress: 0 },
+                { id: 'reader25', title: '25 Book Elite', description: 'Read 25 books in a year', icon: 'fas fa-books', goal: 25, progress: 0 },
+                { id: 'reader50', title: '50 Book Legend', description: 'Read 50 books in a year', icon: 'fas fa-trophy', goal: 50, progress: 0 }
+            ],
+            social: [
+                { id: 'friend', title: 'Social Butterfly', description: 'Make 5 friends', icon: 'fas fa-user-friends', goal: 5, progress: 0 },
+                { id: 'commentator', title: 'Commentator', description: 'Post 10 comments', icon: 'fas fa-comment-dots', goal: 10, progress: 0 },
+                { id: 'circle', title: 'Circle Leader', description: 'Join 3 reading circles', icon: 'fas fa-users', goal: 3, progress: 0 }
+            ],
+            special: [
+                { id: 'streak', title: 'Reading Streak', description: 'Read daily for 7 days', icon: 'fas fa-fire', goal: 7, progress: 0 },
+                { id: 'reviewer', title: 'Top Reviewer', description: 'Write 10 reviews', icon: 'fas fa-star', goal: 10, progress: 0 },
+                { id: 'earlybird', title: 'Early Bird', description: 'Join in the first month', icon: 'fas fa-clock', goal: 1, progress: 0 },
+                { id: 'marathon', title: 'Marathon Reader', description: 'Read 1000 pages in a month', icon: 'fas fa-running', goal: 1000, progress: 0 }
+            ]
+        };
+
+        function createBadgeCard(badge) {
+            const card = document.createElement('div');
+            const isUnlocked = badge.progress >= badge.goal;
+            card.className = `badge-card ${isUnlocked ? 'unlocked' : ''}`;
+            card.setAttribute('data-category', badge.category);
+            card.innerHTML = `
+                <div class="badge-icon"><i class="${badge.icon}"></i></div>
+                <h3 class="badge-title">${badge.title}</h3>
+                <p class="badge-description">${badge.description}</p>
+                <div class="badge-progress">
+                    <div class="badge-progress-bar" style="width: ${Math.min((badge.progress / badge.goal) * 100, 100)}%"></div>
+                </div>
+                <div class="badge-status">${isUnlocked ? 'Unlocked!' : `${badge.progress}/${badge.goal}`}</div>
+            `;
+            return card;
+        }
+
+        function populateBadges() {
+            const allList = $('#all-badges-list');
+            const genreList = $('#genre-badges-list');
+            const readingList = $('#reading-badges-list');
+            const socialList = $('#social-badges-list');
+            const specialList = $('#special-badges-list');
+
+            Object.entries(badges).forEach(([category, badgeList]) => {
+                badgeList.forEach(badge => {
+                    badge.category = category;
+                    allList.appendChild(createBadgeCard(badge));
+                    if (category === 'genre') genreList.appendChild(createBadgeCard(badge));
+                    else if (category === 'reading') readingList.appendChild(createBadgeCard(badge));
+                    else if (category === 'social') socialList.appendChild(createBadgeCard(badge));
+                    else if (category === 'special') specialList.appendChild(createBadgeCard(badge));
+                });
+            });
+        }
+
+        function updateStats() {
+            const earned = $$('.badge-card.unlocked').length;
+            const books = badges.reading.reduce((sum, b) => sum + b.progress, 0);
+            const social = badges.social.reduce((sum, b) => sum + b.progress, 0);
+            $('#badges-earned').textContent = earned;
+            $('#books-read').textContent = books;
+            $('#social-points').textContent = social * 10;
+            $('#leaderboard-rank').textContent = earned ? `#${Math.max(1, 100 - earned)}` : 'N/A';
+            $('#leaderboard-badges').textContent = earned;
+            $('#leaderboard-points').textContent = (books * 50 + social * 10);
+        }
+
+        function checkBadgeUnlock(badge) {
+            if (badge.progress >= badge.goal && !badge.unlocked) {
+                badge.unlocked = true;
+                showToast('success', 'Badge Earned!', `You've unlocked "${badge.title}"!`);
+                const cards = $$(`.badge-card[data-category="${badge.category}"]`);
+                cards.forEach(card => {
+                    if (card.querySelector('.badge-title').textContent === badge.title) {
+                        card.classList.add('unlocked');
+                        card.querySelector('.badge-progress-bar').style.width = '100%';
+                        card.querySelector('.badge-status').textContent = 'Unlocked!';
+                    }
+                });
+                updateStats();
+            }
+        }
+
+        function simulateActivity() {
+            const randomBadge = () => {
+                const categories = Object.keys(badges);
+                const category = categories[Math.floor(Math.random() * categories.length)];
+                const badgeList = badges[category];
+                return badgeList[Math.floor(Math.random() * badgeList.length)];
+            };
+
+            const badge = randomBadge();
+            badge.progress = Math.min(badge.progress + Math.floor(Math.random() * 3) + 1, badge.goal + 1);
+            checkBadgeUnlock(badge);
+            updateStats();
+        }
+
+        function setupTabs() {
+            $$('.tab-bar .tab').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    const tabBar = this.closest('.tab-bar');
+                    tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    const tabId = this.getAttribute('data-tab');
+                    $$('.tab-content').forEach(content => hideElement(content));
+                    showElement(`#${tabId}-tab`);
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            $('#mobile-nav-toggle').addEventListener('click', () => $('#sidebar').classList.toggle('active'));
+            $('#simulate-activity-btn').addEventListener('click', simulateActivity);
+            $('#close-toast').addEventListener('click', () => $('#toast').classList.remove('show'));
+
+            populateBadges();
+            updateStats();
+            setupTabs();
         });
-      }
-    });
-
-    function updateUserProfile(data) {
-      const userAvatar = document.getElementById('user-avatar-initials');
-      const userName = document.getElementById('user-display-name');
-      const userStats = document.getElementById('user-stats');
-      if (data.isLoggedIn && data.displayName) {
-        const initials = data.displayName.split(' ').map(n => n.charAt(0)).join('');
-        userAvatar.textContent = initials;
-        userName.textContent = data.displayName;
-        userStats.textContent = `${data.completedBooks} books • ${data.badges} badges`;
-      }
-    }
-
-    function renderAchievements(achievements) {
-      const grid = document.getElementById('achievements-grid');
-      grid.innerHTML = '';
-      achievements.forEach(achievement => {
-        const card = document.createElement('div');
-        card.className = 'achievement-card';
-        card.innerHTML = `
-          <div class="achievement-icon"><i class="${achievement.icon}"></i></div>
-          <div class="achievement-name">${achievement.name}</div>
-          <div class="achievement-desc">${achievement.desc}</div>
-        `;
-        grid.appendChild(card);
-      });
-    }
-  </script>
+    </script>
 </body>
 </html>
