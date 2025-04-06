@@ -313,10 +313,45 @@
             font-weight: 600;
         }
 
+        .sort-controls {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0 20px 10px;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .sort-label {
+            color: var(--muted-text);
+            font-size: 0.9rem;
+        }
+
+        .sort-select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg);
+            color: var(--light-text);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sort-select:hover {
+            border-color: var(--accent-color);
+        }
+
+        .sort-select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(56, 178, 172, 0.2);
+        }
+
         .badge-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 20px;
+            padding: 0 20px 20px;
         }
 
         .badge-card {
@@ -327,11 +362,24 @@
             box-shadow: var(--card-shadow);
             text-align: center;
             transition: all 0.3s;
+            position: relative;
         }
 
         .badge-card:hover {
             transform: translateY(-5px);
             box-shadow: var(--hover-shadow);
+        }
+
+        .badge-type {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            background-color: rgba(56, 178, 172, 0.1);
+            color: var(--accent-color);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: 500;
         }
 
         .badge-icon {
@@ -583,6 +631,16 @@
                     <div class="tab" data-tab="special">Special Achievements</div>
                 </div>
 
+                <div class="sort-controls">
+                    <span class="sort-label">Sort by:</span>
+                    <select class="sort-select" id="sort-badges">
+                        <option value="category">Badge Type</option>
+                        <option value="progress">Progress</option>
+                        <option value="xp">XP Value</option>
+                        <option value="title">Alphabetical</option>
+                    </select>
+                </div>
+
                 <div class="tab-content" id="all-badges-tab">
                     <div class="badge-grid" id="all-badges-list"></div>
                 </div>
@@ -660,27 +718,35 @@
             setTimeout(() => toast.classList.remove('show'), duration);
         }
 
+        // Badge definitions with their categories
+        const badgeTypes = {
+            genre: "Genre Exploration",
+            reading: "Reading Milestones",
+            social: "Social Participation",
+            special: "Special Achievements"
+        };
+
         const badges = {
             genre: [
-                { id: 'fantasy', title: 'Fantasy Explorer', description: 'Read 5 fantasy books', icon: 'fas fa-dragon', goal: 5, progress: 0, xp: 100 },
-                { id: 'mystery', title: 'Mystery Sleuth', description: 'Read 5 mystery books', icon: 'fas fa-search', goal: 5, progress: 0, xp: 100 },
-                { id: 'scifi', title: 'Sci-Fi Voyager', description: 'Read 5 sci-fi books', icon: 'fas fa-rocket', goal: 5, progress: 0, xp: 100 }
+                { id: 'fantasy', title: 'Fantasy Explorer', description: 'Read 5 fantasy books', icon: 'fas fa-dragon', goal: 5, progress: 0, xp: 100, type: 'genre' },
+                { id: 'mystery', title: 'Mystery Sleuth', description: 'Read 5 mystery books', icon: 'fas fa-search', goal: 5, progress: 0, xp: 100, type: 'genre' },
+                { id: 'scifi', title: 'Sci-Fi Voyager', description: 'Read 5 sci-fi books', icon: 'fas fa-rocket', goal: 5, progress: 0, xp: 100, type: 'genre' }
             ],
             reading: [
-                { id: 'reader10', title: '10 Book Club', description: 'Read 10 books in a year', icon: 'fas fa-book', goal: 10, progress: 0, xp: 200 },
-                { id: 'reader myeloid25', title: '25 Book Elite', description: 'Read 25 books in a year', icon: 'fas fa-books', goal: 25, progress: 0, xp: 500 },
-                { id: 'reader50', title: '50 Book Legend', description: 'Read 50 books in a year', icon: 'fas fa-trophy', goal: 50, progress: 0, xp: 1000 }
+                { id: 'reader10', title: '10 Book Club', description: 'Read 10 books in a year', icon: 'fas fa-book', goal: 10, progress: 0, xp: 200, type: 'reading' },
+                { id: 'reader25', title: '25 Book Elite', description: 'Read 25 books in a year', icon: 'fas fa-books', goal: 25, progress: 0, xp: 500, type: 'reading' },
+                { id: 'reader50', title: '50 Book Legend', description: 'Read 50 books in a year', icon: 'fas fa-trophy', goal: 50, progress: 0, xp: 1000, type: 'reading' }
             ],
             social: [
-                { id: 'friend', title: 'Social Butterfly', description: 'Make 5 friends', icon: 'fas fa-user-friends', goal: 5, progress: 0, xp: 150 },
-                { id: 'commentator', title: 'Commentator', description: 'Post 10 comments', icon: 'fas fa-comment-dots', goal: 10, progress: 0, xp: 200 },
-                { id: 'circle', title: 'Circle Leader', description: 'Join 3 reading circles', icon: 'fas fa-users', goal: 3, progress: 0, xp: 300 }
+                { id: 'friend', title: 'Social Butterfly', description: 'Make 5 friends', icon: 'fas fa-user-friends', goal: 5, progress: 0, xp: 150, type: 'social' },
+                { id: 'commentator', title: 'Commentator', description: 'Post 10 comments', icon: 'fas fa-comment-dots', goal: 10, progress: 0, xp: 200, type: 'social' },
+                { id: 'circle', title: 'Circle Leader', description: 'Join 3 reading circles', icon: 'fas fa-users', goal: 3, progress: 0, xp: 300, type: 'social' }
             ],
             special: [
-                { id: 'streak', title: 'Reading Streak', description: 'Read daily for 7 days', icon: 'fas fa-fire', goal: 7, progress: 0, xp: 350 },
-                { id: 'reviewer', title: 'Top Reviewer', description: 'Write 10 reviews', icon: 'fas fa-star', goal: 10, progress: 0, xp: 400 },
-                { id: 'earlybird', title: 'Early Bird', description: 'Join in the first month', icon: 'fas fa-clock', goal: 1, progress: 0, xp: 100 },
-                { id: 'marathon', title: 'Marathon Reader', description: 'Read 1000 pages in a month', icon: 'fas fa-running', goal: 1000, progress: 0, xp: 500 }
+                { id: 'streak', title: 'Reading Streak', description: 'Read daily for 7 days', icon: 'fas fa-fire', goal: 7, progress: 0, xp: 350, type: 'special' },
+                { id: 'reviewer', title: 'Top Reviewer', description: 'Write 10 reviews', icon: 'fas fa-star', goal: 10, progress: 0, xp: 400, type: 'special' },
+                { id: 'earlybird', title: 'Early Bird', description: 'Join in the first month', icon: 'fas fa-clock', goal: 1, progress: 0, xp: 100, type: 'special' },
+                { id: 'marathon', title: 'Marathon Reader', description: 'Read 1000 pages in a month', icon: 'fas fa-running', goal: 1000, progress: 0, xp: 500, type: 'special' }
             ]
         };
 
@@ -689,7 +755,13 @@
             const isUnlocked = badge.progress >= badge.goal;
             card.className = `badge-card ${isUnlocked ? 'unlocked' : ''}`;
             card.setAttribute('data-badge-id', badge.id);
+            card.setAttribute('data-badge-type', badge.type);
+            card.setAttribute('data-badge-progress', badge.progress);
+            card.setAttribute('data-badge-xp', badge.xp);
+            card.setAttribute('data-badge-title', badge.title);
+            
             card.innerHTML = `
+                <div class="badge-type">${badgeTypes[badge.type]}</div>
                 <div class="badge-icon"><i class="${badge.icon}"></i></div>
                 <h3 class="badge-title">${badge.title}</h3>
                 <p class="badge-description">${badge.description}</p>
@@ -713,15 +785,51 @@
             });
         }
 
+        function sortBadges(sortBy) {
+            const tabId = $('.tab.active').getAttribute('data-tab');
+            const container = $(`#${tabId}-list`);
+            const badgeCards = Array.from(container.querySelectorAll('.badge-card'));
+            
+            badgeCards.sort((a, b) => {
+                switch(sortBy) {
+                    case 'category':
+                        return a.getAttribute('data-badge-type').localeCompare(b.getAttribute('data-badge-type'));
+                    case 'progress':
+                        const aProgress = parseInt(a.getAttribute('data-badge-progress'));
+                        const bProgress = parseInt(b.getAttribute('data-badge-progress'));
+                        return bProgress - aProgress; // Higher progress first
+                    case 'xp':
+                        const aXp = parseInt(a.getAttribute('data-badge-xp'));
+                        const bXp = parseInt(b.getAttribute('data-badge-xp'));
+                        return bXp - aXp; // Higher XP first
+                    case 'title':
+                        return a.getAttribute('data-badge-title').localeCompare(b.getAttribute('data-badge-title'));
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Clear and re-append sorted cards
+            container.innerHTML = '';
+            badgeCards.forEach(card => container.appendChild(card));
+        }
+
         function updateBadgeCards(badge) {
             const cards = $$(`[data-badge-id="${badge.id}"]`);
             const isUnlocked = badge.progress >= badge.goal;
             cards.forEach(card => {
                 card.classList.toggle('unlocked', isUnlocked);
+                card.setAttribute('data-badge-progress', badge.progress);
                 const progressBar = card.querySelector('.badge-progress-bar');
                 progressBar.style.width = `${Math.min((badge.progress / badge.goal) * 100, 100)}%`;
                 card.querySelector('.badge-status').textContent = isUnlocked ? 'Unlocked!' : `${badge.progress}/${badge.goal}`;
             });
+            
+            // Re-sort badges if needed
+            const currentSort = $('#sort-badges').value;
+            if (currentSort !== 'category') {
+                sortBadges(currentSort);
+            }
         }
 
         function calculateTotalXP() {
@@ -773,6 +881,9 @@
                     $$('.tab-content').forEach(content => hideElement(content));
                     const tabId = this.getAttribute('data-tab');
                     showElement(`#${tabId}-tab`);
+                    
+                    // Apply current sort to the newly selected tab
+                    sortBadges($('#sort-badges').value);
                 });
             });
         }
@@ -804,10 +915,20 @@
             populateBadges();
             updateStats();
             setupTabs();
+            
+            // Setup sort functionality
+            $('#sort-badges').addEventListener('change', function() {
+                sortBadges(this.value);
+            });
+            
             $('#simulate-activity-btn').addEventListener('click', simulateActivity);
             $('#close-toast').addEventListener('click', () => $('#toast').classList.remove('show'));
             $('#logout-btn').addEventListener('click', logout);
+            
+            // Initial sort by category
+            sortBadges('category');
         });
     </script>
 </body>
 </html>
+

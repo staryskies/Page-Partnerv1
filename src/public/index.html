@@ -6,7 +6,6 @@
   <title>PagePartner - Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* [Previous CSS remains unchanged] */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     :root {
       --primary-color: #1e3a5f;
@@ -112,7 +111,7 @@
     }
     .nav-item.active {
       background: rgba(56, 178, 172, 0.15);
-      color: var (--accent-color);
+      color: var(--accent-color);
       font-weight: 600;
     }
     .nav-item.active i {
@@ -280,33 +279,63 @@
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
     }
+    /* Updated Book Card Styles */
     .book-card {
       border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 16px;
+      border-radius: 15px;
+      padding: 20px;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
       background: var(--card-bg);
       box-shadow: var(--card-shadow);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
     }
     .book-card:hover {
       transform: translateY(-5px);
-      box-shadow: var (--hover-shadow);
+      box-shadow: var(--hover-shadow);
+      border-color: var(--accent-color);
+    }
+    .book-card:before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, var(--accent-color), var(--number-color));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .book-card:hover:before {
+      transform: scaleX(1);
     }
     .book-title {
-      font-weight: 600;
-      font-size: 1rem;
-      margin-bottom: 4px;
+      font-weight: 700;
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+      line-height: 1.2;
     }
     .book-author {
       color: var(--muted-text);
-      font-style: italic;
-      margin: 4px 0 12px;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
+      font-weight: 500;
     }
     .book-genre {
-      color: var(--light-text);
-      font-size: 0.9em;
-      line-height: 1.4;
+      color: var(--accent-color);
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      background-color: rgba(56, 178, 172, 0.1);
+      border-radius: 20px;
+      display: inline-block;
+      font-weight: 600;
+      margin-top: auto;
     }
     .empty-state {
       display: flex;
@@ -439,7 +468,9 @@
       justify-content: center;
       align-items: center;
     }
-
+    .tutorial-modal.show {
+      display: flex;
+    }
     .tutorial-content {
       background: #ffffff;
       padding: 30px;
@@ -449,30 +480,25 @@
       max-width: 500px;
       width: 90%;
     }
-
     .tutorial-content h2 {
       font-size: 1.8rem;
       color: #2A9D8F;
       margin-bottom: 15px;
     }
-
     .tutorial-content p {
       font-size: 1rem;
       color: #4A5568;
       margin-bottom: 20px;
     }
-
     .tutorial-content ul {
       text-align: left;
       margin-bottom: 20px;
       color: #1A365D;
     }
-
     .tutorial-content ul li {
       margin-bottom: 10px;
       font-size: 0.95rem;
     }
-
     .tutorial-btn {
       padding: 10px 20px;
       background-color: #2A9D8F;
@@ -483,33 +509,29 @@
       font-size: 1rem;
       transition: background-color 0.3s ease;
     }
-
     .tutorial-btn:hover {
       background-color: #238177;
     }
     .password-container {
-        position: relative;
-        display: flex;
-        align-items: center;
+      position: relative;
+      display: flex;
+      align-items: center;
     }
-
     .password-container input {
-        flex: 1;
+      flex: 1;
     }
-
     .toggle-password-btn {
-        position: absolute;
-        right: 10px;
-        background: none;
-        border: none;
-        color: #2A9D8F;
-        font-size: 0.9rem;
-        cursor: pointer;
-        padding: 0;
+      position: absolute;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #2A9D8F;
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 0;
     }
-
     .toggle-password-btn:hover {
-        color: #238177;
+      color: #238177;
     }
   </style>
 </head>
@@ -737,13 +759,12 @@
     document.addEventListener('DOMContentLoaded', () => {
       const username = localStorage.getItem('username');
 
-      // Redirect to homepage if not logged in
+      // Redirect to login page if not signed in
       if (!username) {
         window.location.href = 'homepage.html';
-        return; // Stop further execution
+        return;
       }
 
-      // Initialize other functionality if the user is logged in
       const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
       const sidebar = document.querySelector('.sidebar');
       const logoutBtn = document.getElementById('logout-btn');
@@ -799,7 +820,18 @@
       });
     });
   </script>
-  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('toggle-password');
+
+        togglePasswordBtn.addEventListener('click', () => {
+            const isPasswordVisible = passwordInput.type === 'text';
+            passwordInput.type = isPasswordVisible ? 'password' : 'text';
+            togglePasswordBtn.textContent = isPasswordVisible ? 'Show' : 'Hide';
+        });
+    });
+  </script>
 </body>
 </html>
 
