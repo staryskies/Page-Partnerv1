@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -311,8 +310,8 @@
     <div class="user-profile">
       <div class="user-avatar" id="user-avatar-initials"></div>
       <div class="user-info">
-        <div class="user-name" id="user-display-name">Sign in</div>
-        <div class="user-status" id="user-stats">Start your reading journey</div>
+        <div class="user-name" id="user-display-name">Loading...</div>
+        <div class="user-status" id="user-stats">Loading stats...</div>
       </div>
     </div>
   </div>
@@ -322,12 +321,58 @@
   </div>
 
   <script>
-    // Magic Loops API call function with timeout
-    async function callMagicLoops(genre) {
+    // Get username from local storage or some auth mechanism
+    const username = localStorage.getItem('username') || 'testuser'; // Adjust based on your auth system
+
+    // Function to get user data from backend
+    async function getUserData() {
+      try {
+        const response = await fetch('/api/user', {
+          headers: {
+            'X-Username': username // Match your backend's expected header
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return {
+          username: data.displayName,
+          currently_reading: data.currentlyReading,
+          completed_books: data.completedBooks,
+          reading_streak: data.readingStreak,
+          badges: data.badges,
+          points: data.hasPoints ? data.points : 0 // Your endpoint doesn't return points directly
+        };
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        // Fallback data
+        return {
+          username: "Guest",
+          currently_reading: 0,
+          completed_books: 0,
+          reading_streak: 0,
+          badges: 0,
+          points: 0
+        };
+      }
+    }
+
+    // Magic Loops API call function with user parameters
+    async function callMagicLoops(genre, userData) {
       try {
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('API request timed out')), 15000); // Increased to 15s
+          setTimeout(() => reject(new Error('API request timed out')), 15000);
         });
+
+        const instruction = `Generate a list of 5 book suggestions in the ${genre} genre in JSON format with title, author, and description for each book. 
+          Personalize recommendations based on this user data:
+          - Username: ${userData.username}
+          - Currently reading: ${userData.currently_reading} books
+          - Completed books: ${userData.completed_books}
+          - Reading streak: ${userData.reading_streak} days
+          - Badges: ${userData.badges}
+          - Points: ${userData.points}`;
 
         const fetchPromise = fetch('https://magicloops.dev/api/loop/31478684-0d4c-4202-be61-3e75f0e55fa3/run', {
           method: 'POST',
@@ -335,7 +380,7 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            instruction: `Generate a list of 5 book suggestions in the ${genre} genre in JSON format with title, author, and description for each book.`
+            instruction: instruction
           })
         });
 
@@ -346,9 +391,8 @@
         }
         
         const data = await response.json();
-        console.log('API Response:', data); // Debug log
+        console.log('API Response:', data);
         
-        // Extract suggestions array from the response
         return data.suggestions || [];
       } catch (error) {
         console.error('Error fetching book recommendations:', error);
@@ -364,13 +408,16 @@
         this.selectedGenre = null;
         this.bookResults = [];
         this.isLoading = false;
+        this.userData = null;
         
         this.init();
       }
       
-      init() {
+      async init() {
+        this.userData = await getUserData();
         this.renderGenres();
         this.createResultsArea();
+        this.updateUserProfile();
       }
       
       renderGenres() {
@@ -407,13 +454,12 @@
         this.updateResultsArea();
         
         try {
-          const suggestions = await callMagicLoops(genre);
+          const suggestions = await callMagicLoops(genre, this.userData);
           
           if (!Array.isArray(suggestions) || suggestions.length === 0) {
             console.warn('No valid suggestions received from API, using mock data');
             this.bookResults = this.getMockBooks(genre);
           } else {
-            // Map suggestions to ensure consistent format
             this.bookResults = suggestions.map(book => ({
               title: book.title,
               author: book.author,
@@ -500,50 +546,67 @@
         this.resultsArea.appendChild(booksGrid);
       }
       
+      updateUserProfile() {
+        const userAvatar = document.getElementById('user-avatar-initials');
+        const userName = document.getElementById('user-display-name');
+        const userStats = document.getElementById('user-stats');
+        
+        if (this.userData && this.userData.username) {
+          const initials = this.userData.username.charAt(0).toUpperCase();
+          userAvatar.textContent = initials;
+          userName.textContent = this.userData.username;
+          userStats.textContent = `${this.userData.completed_books} books • ${this.userData.badges} badges`;
+        } else {
+          userAvatar.textContent = 'G';
+          userName.textContent = 'Guest';
+          userStats.textContent = '0 books • 0 badges';
+        }
+      }
+      
       getMockBooks(genre) {
         const mockBooksByGenre = {
           'Fantasy': [
-            { title: 'The Name of the Wind', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
-            { title: 'The Way of Kings', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
-            { title: 'A Wizard of Earthsea', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
-            { title: 'The Fifth Season', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
-            { title: 'Piranesi', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
           ],
           'Science Fiction': [
-            { title: 'Dune', author: 'Frank Herbert', description: 'A complex tale of politics, religion, ecology, and human evolution set in a distant feudal interstellar society.' },
-            { title: 'Project Hail Mary', author: 'Andy Weir', description: 'A lone astronaut must save Earth from disaster, with no memory of how he got there or what his mission is.' },
-            { title: 'Neuromancer', author: 'William Gibson', description: 'A washed-up computer hacker is hired for one last job, which brings him up against a powerful artificial intelligence.' },
-            { title: 'The Three-Body Problem', author: 'Liu Cixin', description: 'Chinas Cultural Revolution sets in motion a contact with alien civilization that will reshape humanitys future.' },
-            { title: 'Hyperion', author: 'Dan Simmons', description: 'Seven pilgrims journey to the time tombs on Hyperion, each with a tale of how they came to be there.' }
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
           ],
           'Mystery': [
-            { title: 'The Silent Patient', author: 'Alex Michaelides', description: 'A famous painter shoots her husband and then never speaks another word.' },
-            { title: 'Gone Girl', author: 'Gillian Flynn', description: 'A woman disappears on her wedding anniversary, and her husband becomes the prime suspect.' },
-            { title: 'The Thursday Murder Club', author: 'Richard Osman', description: 'Four friends in a retirement village meet weekly to solve cold cases, until a real murder occurs nearby.' },
-            { title: 'In the Woods', author: 'Tana French', description: 'A detective with a traumatic past investigates the murder of a young girl in the same woods where he experienced tragedy.' },
-            { title: 'The Dry', author: 'Jane Harper', description: 'A federal agent returns to his drought-stricken hometown to attend the funeral of his childhood friend, who allegedly killed his family.' }
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
           ],
           'Romance': [
-            { title: 'Pride and Prejudice', author: 'Jane Austen', description: 'The story of Elizabeth Bennet and her complicated relationship with the proud Mr. Darcy.' },
-            { title: 'Red, White & Royal Blue', author: 'Casey McQuiston', description: 'The First Son of the United States falls in love with the Prince of Wales after an incident forces them to pretend to be friends.' },
-            { title: 'The Hating Game', author: 'Sally Thorne', description: 'Two executive assistants who hate each other compete for the same promotion while fighting their mutual attraction.' },
-            { title: 'Beach Read', author: 'Emily Henry', description: 'A romance writer and a literary fiction author, both suffering from writers block, decide to swap genres for a summer.' },
-            { title: 'The Kiss Quotient', author: 'Helen Hoang', description: 'A woman with Aspergers hires a male escort to teach her about relationships , but ends up getting more than she bargained for.' }
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
           ],
           'Historical Fiction': [
-            { title: 'All the Light We Cannot See', author: 'Anthony Doerr', description: 'The paths of a blind French girl and a German boy collide in occupied France during World War II.' },
-            { title: 'The Book Thief', author: 'Markus Zusak', description: 'Death narrates the story of Liesel, a young girl living with a foster family in Nazi Germany.' },
-            { title: 'Wolf Hall', author: 'Hilary Mantel', description: 'Thomas Cromwells rise to power in the court of Henry VIII.' },
-            { title: 'Pachinko', author: 'Min Jin Lee', description: 'An epic tale following four generations of a Korean family who move to Japan.' },
-            { title: 'The Nightingale', author: 'Kristin Hannah', description: 'Two sisters in France must survive and resist during the German occupation in World War II.' }
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
           ],
           'Non-Fiction': [
-            { title: 'Sapiens: A Brief History of Humankind', author: 'Yuval Noah Harari', description: 'A survey of the history of humankind from the evolution of archaic human species to the 21st century.' },
-            { title: 'Educated', author: 'Tara Westover', description: 'A memoir about growing up in a survivalist family in Idaho and the pursuit of education that followed.' },
-            { title: 'The Immortal Life of Henrietta Lacks', author: 'Rebecca Skloot', description: 'The story of Henrietta Lacks, whose cells were used for medical research without her knowledge.' },
-            { title: 'Thinking, Fast and Slow', author: 'Daniel Kahneman', description: 'An examination of the two systems that drive the way we think: fast, intuitive thinking and slow, deliberate thinking.' },
-            { title: 'The Code Breaker', author: 'Walter Isaacson', description: 'The story of Jennifer Doudna, Nobel Prize winner for her work on CRISPR gene editing.' }
-          ]
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+          ],
         };
         
         return mockBooksByGenre[genre] || [];
@@ -564,24 +627,6 @@
 
       if (container) {
         const bookDiscovery = new BookDiscovery(container);
-      }
-
-      const userAvatar = document.getElementById('user-avatar-initials');
-      const userName = document.getElementById('user-display-name');
-      const userStats = document.getElementById('user-stats');
-      
-      const mockUser = {
-        isLoggedIn: false,
-        displayName: "Sign in",
-        completedBooks: 0,
-        badges: 0
-      };
-      
-      if (mockUser.isLoggedIn && mockUser.displayName) {
-        const initials = mockUser.displayName.split(' ').map(n => n.charAt(0)).join('');
-        userAvatar.textContent = initials;
-        userName.textContent = mockUser.displayName;
-        userStats.textContent = `${mockUser.completedBooks} books • ${mockUser.badges} badges`;
       }
     });
   </script>
