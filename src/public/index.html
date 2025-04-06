@@ -662,20 +662,36 @@
     }
 
     async function getUserBooks() {
-    try {
+      try {
         const username = localStorage.getItem('username');
-        if (!username) throw new Error('No username found in localStorage');
-        
+        if (!username) {
+            console.error('No username found in localStorage');
+            return []; // Return early if no username, no need to fetch
+        }
+
         const response = await fetch(`${baseUrl}/api/users/${username}/books`, {
             headers: { 'X-Username': username }
         });
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+        if (!response.ok) {
+            const errorText = await response.text(); // Get more error details
+            throw new Error(`Failed to fetch books: ${response.status} - ${errorText}`);
+        }
+
         const data = await response.json();
-        return data.books || []; // Ensure we return the user's books array or an empty array if none
+        
+        // Validate that data.books is an array; return empty array if not
+        if (!Array.isArray(data.books)) {
+            console.warn('Unexpected response format: data.books is not an array', data);
+            return [];
+        }
+
+        return data.books; // Return the books array
     } catch (error) {
-        console.error('Failed to fetch user books:', error);
-        return [];
+        console.error('Failed to fetch user books:', error.message);
+        return []; // Return empty array on any error
     }
+
 }
 
     async function updateUI() {
@@ -820,18 +836,7 @@
       });
     });
   </script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const passwordInput = document.getElementById('password');
-        const togglePasswordBtn = document.getElementById('toggle-password');
 
-        togglePasswordBtn.addEventListener('click', () => {
-            const isPasswordVisible = passwordInput.type === 'text';
-            passwordInput.type = isPasswordVisible ? 'password' : 'text';
-            togglePasswordBtn.textContent = isPasswordVisible ? 'Show' : 'Hide';
-        });
-    });
-  </script>
 </body>
 </html>
 

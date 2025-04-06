@@ -1589,10 +1589,8 @@
             const filterHandler = setupFilters();
             filterHandler.setCircles(circles);
             await populateCircles(circles);
-            populateReadingGoal();
-            await populateRecommendations();
             setupModal();
-            setupSuggestions();
+
 
             const urlParams = new URLSearchParams(window.location.search);
             const genre = urlParams.get('genre');
