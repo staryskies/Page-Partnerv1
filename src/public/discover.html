@@ -280,6 +280,90 @@
         grid-template-columns: 1fr;
       }
     }
+    .carousel-container {
+        position: relative;
+        width: 100%;
+        max-width: 1000px;
+        margin: 20px auto;
+        overflow: hidden;
+    }
+
+    .carousel {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding: 20px;
+        scrollbar-width: none; /* Hide scrollbar for Firefox */
+    }
+
+    .carousel::-webkit-scrollbar {
+        display: none; /* Hide scrollbar for Chrome, Safari, and Edge */
+    }
+
+    .carousel-item {
+        flex: 0 0 250px;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 16px;
+        background: var(--card-bg);
+        box-shadow: var(--card-shadow);
+        transition: transform 0.3s;
+        cursor: pointer;
+    }
+
+    .carousel-item:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--hover-shadow);
+    }
+
+    .carousel-item h3 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+    }
+
+    .carousel-item .book-author {
+        font-size: 0.9rem;
+        color: var(--muted-text);
+        margin-bottom: 10px;
+    }
+
+    .carousel-item .book-description {
+        font-size: 0.85rem;
+        color: var(--light-text);
+        line-height: 1.4;
+    }
+
+    .carousel-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--accent-color);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        box-shadow: var(--card-shadow);
+    }
+
+    .carousel-btn.prev {
+        left: 10px;
+    }
+
+    .carousel-btn.next {
+        right: 10px;
+    }
+
+    .carousel-btn:hover {
+        background: var(--primary-color);
+    }
   </style>
 </head>
 <body>
@@ -311,6 +395,13 @@
   <div class="main-content">
     <h1>Book Discovery</h1>
     <div id="book-discovery-container"></div>
+    <div class="carousel-container">
+      <div class="carousel" id="book-carousel">
+          <!-- Books will be dynamically added here -->
+      </div>
+      <button class="carousel-btn prev" id="carousel-prev"><i class="fas fa-chevron-left"></i></button>
+      <button class="carousel-btn next" id="carousel-next"><i class="fas fa-chevron-right"></i></button>
+    </div>
   </div>
 
   <script>
@@ -416,7 +507,9 @@
           suggestions = data;
         }
 
-        // Normalize the suggestions to ensure they have title, author, and description
+        // Populate the carousel with the suggestions
+        populateCarousel(suggestions);
+
         return suggestions.map(book => ({
           title: book.title || 'Unknown Title',
           author: book.author || 'Unknown Author',
@@ -427,6 +520,42 @@
         throw error;
       }
     }
+
+    function populateCarousel(books) {
+      const carousel = document.getElementById('book-carousel');
+      carousel.innerHTML = ''; // Clear existing items
+
+      books.forEach(book => {
+        const item = document.createElement('div');
+        item.className = 'carousel-item';
+
+        item.innerHTML = `
+            <h3>${book.title}</h3>
+            <p class="book-author">By ${book.author}</p>
+            <p class="book-description">${book.description}</p>
+        `;
+
+        item.addEventListener('click', async () => {
+            const success = await addBookToLibrary(book.title, book.author, 'Unknown Genre');
+            if (success) {
+                alert(`"${book.title}" by ${book.author} has been added to your library!`);
+            }
+        });
+
+        carousel.appendChild(item);
+      });
+    }
+
+    // Add carousel navigation functionality
+    document.getElementById('carousel-prev').addEventListener('click', () => {
+      const carousel = document.getElementById('book-carousel');
+      carousel.scrollBy({ left: -300, behavior: 'smooth' });
+    });
+
+    document.getElementById('carousel-next').addEventListener('click', () => {
+      const carousel = document.getElementById('book-carousel');
+      carousel.scrollBy({ left: 300, behavior: 'smooth' });
+    });
 
     class BookDiscovery {
       constructor(containerElement) {
