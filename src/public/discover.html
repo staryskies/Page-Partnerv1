@@ -379,7 +379,7 @@
           setTimeout(() => reject(new Error('API request timed out')), 15000);
         });
 
-        const instruction = `Generate a list of 5 book suggestions in the ${genre} genre in JSON format with "title", "author", and "description" fields for each book. 
+        const instruction = `Generate a list of 5 book suggestions in the ${genre} genre in JSON format with "title", "author", and "description" fields for each book. description should also say what makes this book good for the user and where the user can find a copy of the book 
           Ensure each book object includes a valid "title", "author", and "description". Personalize recommendations based on this user data:
           - Username: ${userData.username}
           - Currently reading: ${userData.currently_reading} books
