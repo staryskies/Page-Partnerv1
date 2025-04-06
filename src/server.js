@@ -1,4 +1,5 @@
 // server.js
+require('dotenv').config(); // Add dotenv for environment variables
 const express = require('express');
 const path = require('path');
 const { Pool } = require('pg');
@@ -7,19 +8,18 @@ const userController = require('./controllers/userController');
 
 const app = express();
 
-// Database Connection
+// Database Connection using Render's DATABASE_URL
 const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'pagepartner',
-  password: process.env.DB_PASSWORD || 'your_password',
-  port: process.env.DB_PORT || 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false // Required for Render's PostgreSQL
+  }
 });
 
 async function connectDB() {
   try {
     await pool.connect();
-    console.log('Connected to database');
+    console.log('Connected to Render database');
   } catch (err) {
     console.error('Database connection error:', err);
     throw err;
@@ -38,11 +38,11 @@ async function initDB() {
         age INT NOT NULL,
         profile_picture TEXT,
         user_location VARCHAR(255),
-        genres TEXT[],
-        favorite_authors TEXT[],
+        genres TEXT[] DEFAULT '{}',
+        favorite_authors TEXT[] DEFAULT '{}',
         reading_pace INT,
-        goals TEXT[],
-        to_read_list TEXT[],
+        goals TEXT[] DEFAULT '{}',
+        to_read_list TEXT[] DEFAULT '{}',
         book_length VARCHAR(50),
         currently_reading INT DEFAULT 0,
         completed_books INT DEFAULT 0,
@@ -105,13 +105,19 @@ const query = async (text, params) => {
   }
 };
 
+// Input sanitization function
+const sanitizeInput = (input) => {
+  if (typeof input !== 'string') return input;
+  return input.replace(/[<>'"%;]/g, '');
+};
+
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Authentication Middleware
 const requireLogin = async (req, res, next) => {
-  const username = req.headers['x-username'];
+  const username = sanitizeInput(req.headers['x-username']);
   if (!username) {
     return res.status(401).json({ error: 'Please log in first' });
   }
@@ -145,7 +151,7 @@ app.post('/api/auth/login', userController.login);
 app.get('/api/user', requireLogin, async (req, res) => {
   const user = req.user;
   try {
-    const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(member_ids)', [user.id]);
+    const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(COALESCE(member_ids, \'{}\'))', [user.id]);
     const achievementsResult = await query('SELECT COUNT(*) FROM achievements WHERE user_id = $1', [user.id]);
     res.json({
       isLoggedIn: true,
@@ -181,11 +187,29 @@ app.patch('/api/user', requireLogin, async (req, res) => {
   }
 });
 
-// Book Routes
+// Book Routes with Pagination
 app.get('/api/books', requireLogin, async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+  
   try {
-    const result = await query('SELECT * FROM books WHERE user_id = $1', [req.user.id]);
-    res.json(result.rows);
+    const result = await query(
+      'SELECT * FROM books WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
+      [req.user.id, limit, offset]
+    );
+    const totalResult = await query('SELECT COUNT(*) FROM books WHERE user_id = $1', [req.user.id]);
+    const totalBooks = parseInt(totalResult.rows[0].count);
+    
+    res.json({
+      books: result.rows,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalBooks / limit),
+        totalBooks: totalBooks,
+        limit: limit
+      }
+    });
   } catch (err) {
     console.error('Get Books Error:', err);
     res.status(500).json({ error: 'Failed to fetch books' });
@@ -198,9 +222,13 @@ app.post('/api/book', requireLogin, async (req, res) => {
     return res.status(400).json({ error: 'Title and genre are required' });
   }
   try {
+    const sanitizedTitle = sanitizeInput(title);
+    const sanitizedGenre = sanitizeInput(genre);
+    const sanitizedExcerpt = excerpt ? sanitizeInput(excerpt) : null;
+    
     const result = await query(
       'INSERT INTO books (title, genre, user_id, excerpt) VALUES ($1, $2, $3, $4) RETURNING id',
-      [title, genre, req.user.id, excerpt || null]
+      [sanitizedTitle, sanitizedGenre, req.user.id, sanitizedExcerpt]
     );
     await query('UPDATE users SET currently_reading = COALESCE(currently_reading, 0) + 1 WHERE id = $1', [req.user.id]);
     res.status(201).json({ success: true, bookId: result.rows[0].id });
@@ -245,14 +273,15 @@ app.post('/api/book/:bookId/group', requireLogin, async (req, res) => {
   if (!name) {
     return res.status(400).json({ error: 'Group name is required' });
   }
+  const sanitizedName = sanitizeInput(name);
   try {
     const bookResult = await query('SELECT groups FROM books WHERE id = $1 AND user_id = $2', [bookId, req.user.id]);
     if (bookResult.rows.length === 0) {
       return res.status(404).json({ error: 'Book not found' });
     }
     const groups = bookResult.rows[0].groups || [];
-    if (!groups.includes(name)) {
-      groups.push(name);
+    if (!groups.includes(sanitizedName)) {
+      groups.push(sanitizedName);
       await query('UPDATE books SET groups = $1 WHERE id = $2', [groups, bookId]);
     }
     res.status(201).json({ success: true });
@@ -265,10 +294,11 @@ app.post('/api/book/:bookId/group', requireLogin, async (req, res) => {
 // Comments Routes
 app.get('/api/book/:bookId/group/:groupName/comments', requireLogin, async (req, res) => {
   const { bookId, groupName } = req.params;
+  const sanitizedGroupName = sanitizeInput(groupName);
   try {
     const result = await query(
       'SELECT c.*, u.username FROM comments c JOIN users u ON c.user_id = u.id WHERE book_id = $1 AND group_name = $2 ORDER BY created_at',
-      [bookId, groupName]
+      [bookId, sanitizedGroupName]
     );
     res.json(result.rows);
   } catch (err) {
@@ -279,14 +309,16 @@ app.get('/api/book/:bookId/group/:groupName/comments', requireLogin, async (req,
 
 app.post('/api/book/:bookId/group/:groupName/comments', requireLogin, async (req, res) => {
   const { bookId, groupName } = req.params;
-  const { message } = req.body;
+  const { message } = req.body; // Fixed: Extracted message from req.body
   if (!message) {
     return res.status(400).json({ error: 'Message is required' });
   }
+  const sanitizedGroupName = sanitizeInput(groupName);
+  const sanitizedMessage = sanitizeInput(message);
   try {
     await query(
       'INSERT INTO comments (book_id, group_name, message, user_id) VALUES ($1, $2, $3, $4)',
-      [bookId, groupName, message, req.user.id]
+      [bookId, sanitizedGroupName, sanitizedMessage, req.user.id]
     );
     res.status(201).json({ success: true });
   } catch (err) {
@@ -298,7 +330,10 @@ app.post('/api/book/:bookId/group/:groupName/comments', requireLogin, async (req
 // Circles Routes
 app.get('/api/circles', requireLogin, async (req, res) => {
   try {
-    const result = await query('SELECT * FROM circles WHERE $1 = ANY(member_ids)', [req.user.id]);
+    const result = await query(
+      'SELECT * FROM circles WHERE $1 = ANY(COALESCE(member_ids, \'{}\'))',
+      [req.user.id]
+    );
     res.json(result.rows);
   } catch (err) {
     console.error('Get Circles Error:', err);
@@ -311,14 +346,22 @@ app.post('/api/circles', requireLogin, async (req, res) => {
   if (!name || !bookId) {
     return res.status(400).json({ error: 'Name and book ID are required' });
   }
+  const sanitizedName = sanitizeInput(name);
+  if (sanitizedName.length > 50) {
+    return res.status(400).json({ error: 'Circle name must be 50 characters or less' });
+  }
   try {
     const bookCheck = await query('SELECT id FROM books WHERE id = $1 AND user_id = $2', [bookId, req.user.id]);
     if (bookCheck.rows.length === 0) {
       return res.status(404).json({ error: 'Book not found or not owned by user' });
     }
+    const duplicateCheck = await query('SELECT id FROM circles WHERE name = $1 AND book_id = $2', [sanitizedName, bookId]);
+    if (duplicateCheck.rows.length > 0) {
+      return res.status(400).json({ error: 'Circle name already exists for this book' });
+    }
     const result = await query(
       'INSERT INTO circles (name, book_id, member_ids) VALUES ($1, $2, $3) RETURNING id',
-      [name, bookId, [req.user.id]]
+      [sanitizedName, bookId, [req.user.id]]
     );
     res.status(201).json({ success: true, circleId: result.rows[0].id });
   } catch (err) {
@@ -362,7 +405,7 @@ app.post('/api/achievements', requireLogin, async (req, res) => {
   try {
     const result = await query(
       'INSERT INTO achievements (user_id, name, description, icon) VALUES ($1, $2, $3, $4) RETURNING id',
-      [req.user.id, name, description, icon]
+      [req.user.id, sanitizeInput(name), sanitizeInput(description), sanitizeInput(icon)]
     );
     res.status(201).json({ success: true, achievementId: result.rows[0].id });
   } catch (err) {
@@ -381,8 +424,17 @@ app.post('/api/onboarding', requireLogin, async (req, res) => {
            reading_pace = $5, goals = $6, to_read_list = $7, book_length = $8 
        WHERE id = $9 
        RETURNING id`,
-      [profile_picture || null, user_location, genres, favorite_authors.split(/[,;\n]/).map(a => a.trim()), 
-       parseInt(reading_pace, 10), goals, to_read_list.split(/[,;\n]/).map(b => b.trim()), book_length, req.user.id]
+      [
+        sanitizeInput(profile_picture) || null,
+        sanitizeInput(user_location),
+        genres, // Assuming genres is already an array
+        favorite_authors.split(/[,;\n]/).map(a => sanitizeInput(a.trim())),
+        parseInt(reading_pace, 10),
+        goals, // Assuming goals is already an array
+        to_read_list.split(/[,;\n]/).map(b => sanitizeInput(b.trim())),
+        sanitizeInput(book_length),
+        req.user.id
+      ]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -401,17 +453,29 @@ app.post('/api/generate-preview', requireLogin, async (req, res) => {
     return res.status(400).json({ error: 'Excerpt must be provided and at least 300 words' });
   }
   try {
+    const sanitizedExcerpt = sanitizeInput(excerpt);
     const response = await fetch('https://magicloops.dev/api/loop/cd17eed2-c28d-4960-bed5-087ab13ba3d5/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ excerpt }),
+      body: JSON.stringify({ excerpt: sanitizedExcerpt }),
     });
-    if (!response.ok) throw new Error(`MagicLoops API failed: ${response.status}`);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`MagicLoops API failed: ${response.status} - ${errorText}`);
+    }
+    
     const data = await response.json();
+    if (!data.preview) {
+      console.warn('No preview returned from MagicLoops API');
+    }
     res.json({ preview: data.preview || 'Preview not available' });
   } catch (err) {
     console.error('Preview Generation Error:', err);
-    res.status(500).json({ error: 'Failed to generate preview' });
+    res.status(500).json({ 
+      error: 'Failed to generate preview',
+      details: err.message 
+    });
   }
 });
 
