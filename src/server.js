@@ -95,7 +95,25 @@ app.get('/api/books', async (req, res) => {
 });
 
 app.post('/api/book', requireLogin, bookController.createBook);
-app.get('/api/book/:bookId', requireLogin, bookController.getBookDetails);
+app.get('/api/book/:bookId', async (req, res) => {
+    const bookId = req.params.bookId;
+
+    if (!bookId || isNaN(bookId)) {
+        return res.status(400).json({ error: 'Invalid book ID' });
+    }
+
+    try {
+        const result = await db.query('SELECT * FROM books WHERE id = $1', [bookId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Book not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error fetching book:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 // Backend: Filter books by the logged-in user
 app.get('/api/users/:username/books', async (req, res) => {

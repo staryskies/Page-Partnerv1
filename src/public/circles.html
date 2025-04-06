@@ -1287,24 +1287,20 @@
         async function loadComments(bookId, groupName) {
             selectedBookId = bookId;
             selectedGroupName = groupName;
+
             if (!selectedBookId || !groupName) {
                 showToast('error', 'Error', 'Select a book and group to view comments');
                 return;
             }
+
             try {
                 const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group/${encodeURIComponent(groupName)}/comments`, {
                     headers: { 'X-Username': localStorage.getItem('username') },
                 });
+
                 if (!response.ok) throw new Error(`Failed to fetch comments: ${response.status}`);
                 const comments = await response.json();
-                const commentsDiv = $('#comments') || document.createElement('div');
-                commentsDiv.innerHTML = '';
-                comments.forEach(comment => {
-                    const p = document.createElement('p');
-                    p.className = 'comment';
-                    p.innerText = `${comment.username}: ${comment.message}`;
-                    commentsDiv.appendChild(p);
-                });
+                // Handle comments...
             } catch (err) {
                 console.error('Load Comments Error:', err);
                 showToast('error', 'Error', err.message);
