@@ -1405,7 +1405,7 @@
         // Initialization
         async function init() {
             await updateSidebar();
-            await loadBooks(); // From client.js
+            
             const books = await fetch(`${baseUrl}/api/books`, {
                 headers: { 'X-Username': localStorage.getItem('username') }
             }).then(res => res.json());
