@@ -22,6 +22,7 @@
             align-items: center;
             height: 100vh;
         }
+
         .signup-container {
             background-color: #ffffff;
             padding: 40px;
@@ -112,8 +113,8 @@
         async function handleSignup() {
             const username = document.getElementById('username').value.trim();
             const email = document.getElementById('email').value.trim();
-            const name = document.getElementById('name').value.trim();
-            const age = document.getElementById('age').value.trim();
+            const name = document.getElementById('name').value.trim(); // Full Name
+            const age = document.getElementById('age').value.trim(); // Age
             const password = document.getElementById('password').value.trim();
             const errorElement = document.getElementById('error');
 
