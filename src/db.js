@@ -48,6 +48,7 @@ module.exports = {
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
           title VARCHAR(255) NOT NULL,
+          author VARCHAR(255) NOT NULL,
           genre VARCHAR(255) NOT NULL,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
           excerpt TEXT,
@@ -70,15 +71,15 @@ module.exports = {
 
       await pool.query(`
         CREATE TABLE IF NOT EXISTS circles (
-          id SERIAL PRIMARY KEY,
-          name VARCHAR(255) NOT NULL,
-          description TEXT,
-          book_id INT REFERENCES books(id) ON DELETE SET NULL,
-          member_ids INT[] DEFAULT '{}',
-          is_public BOOLEAN DEFAULT TRUE,
-          created_by INT REFERENCES users(id) ON DELETE SET NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          status VARCHAR(50) DEFAULT 'active'
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            book_id INT REFERENCES books(id) ON DELETE SET NULL,
+            creator VARCHAR(255) NOT NULL,
+            status VARCHAR(50) DEFAULT 'active',
+            members TEXT[] DEFAULT '{}',
+            description TEXT,
+            privacy VARCHAR(50) DEFAULT 'public',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
