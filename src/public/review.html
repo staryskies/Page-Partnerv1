@@ -129,7 +129,7 @@
 
         .nav-item.active {
             background: rgba(56, 178, 172, 0.15);
-            color: var(--accent-color);
+            color: var (--accent-color);
             font-weight: 600;
         }
 
@@ -686,7 +686,7 @@
 
         .modal-footer {
             padding: 20px;
-            border-top: 1px solid var(--border-color);
+            border-top: 1px solid var (--border-color);
             display: flex;
             justify-content: flex-end;
             gap: 10px;
@@ -880,33 +880,34 @@
     </style>
 </head>
 <body>
-    <body>
-        <div class="sidebar">
-            <div class="logo">
-              <img src="logo.png" alt="PagePartner Logo">
-              <span class="logo-text">PagePartner</span>
-            </div>
-            <nav class="nav-links">
-              <div class="nav-section">
+    <div class="sidebar">
+        <div class="logo">
+            <img src="logo.png" alt="PagePartner Logo">
+            <span class="logo-text">PagePartner</span>
+        </div>
+        <nav class="nav-links">
+            <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
                 <a href="add-book.html" class="nav-item active"><i class="fas fa-plus"></i> Add Book</a>
                 <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
                 <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
                 <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
-              </div>
-        
-              <div class="user-profile">
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
                 <div class="user-avatar" id="user-avatar-initials"></div>
-                <div class="user-info">
-                  <div class="user-name" id="user-display-name">Loading...</div>
-                  <div class="user-status" id="user-stats">Loading stats...</div>
+                <div class="user-details">
+                    <div class="user-name" id="username">Loading...</div>
+                    <div class="user-role" id="user-stats">Loading stats...</div>
                 </div>
-                <button class="logout-btn" id="logout-btn" title="Log Out"><i class="fas fa-sign-out-alt"></i></button>
-              </div>
-            </nav>
-          </div>
-
+            </div>
+            <button class="btn btn-light" id="logout-btn" onclick="logout()" title="Log Out">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
 
     <main class="main-content">
         <div class="page-header">
@@ -1102,7 +1103,9 @@
         <button class="toast-close" id="close-toast"><i class="fas fa-times"></i></button>
     </div>
 
+    <script src="client.js"></script>
     <script>
+        // Utility functions
         function $(selector) {
             return document.querySelector(selector);
         }
@@ -1118,6 +1121,59 @@
         function hideElement(element) {
             element.classList.add('hidden');
         }
+
+        function showToast(type, title, message, duration = 3000) {
+            const toast = $('#toast');
+            toast.className = 'toast';
+            toast.classList.add(`toast-${type}`);
+            const iconElement = toast.querySelector('.toast-icon i');
+            iconElement.className = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            toast.querySelector('.toast-title').textContent = title;
+            toast.querySelector('.toast-message').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+
+        // Update sidebar with user data
+        async function updateSidebar() {
+            const username = localStorage.getItem('username');
+            const usernameElement = $('#username');
+            const statsElement = $('#user-stats');
+            const avatarElement = $('#user-avatar-initials');
+
+            if (!usernameElement || !statsElement || !avatarElement) {
+                console.error('Sidebar elements not found');
+                return;
+            }
+
+            if (!username) {
+                usernameElement.textContent = 'Guest';
+                statsElement.textContent = 'Please log in';
+                avatarElement.textContent = 'G';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/api/user`, {
+                    headers: { 'X-Username': username }
+                });
+                if (!response.ok) throw new Error('Failed to fetch user data');
+                const userData = await response.json();
+
+                usernameElement.textContent = userData.displayName || username;
+                statsElement.textContent = `${userData.completedBooks} books completed`;
+                avatarElement.textContent = userData.displayName ? userData.displayName[0].toUpperCase() : username[0].toUpperCase();
+            } catch (err) {
+                console.error('Update Sidebar Error:', err);
+                usernameElement.textContent = username;
+                statsElement.textContent = 'Stats unavailable';
+                avatarElement.textContent = username[0].toUpperCase();
+                showToast('error', 'Error', 'Failed to load user data');
+            }
+        }
+
+        // Modified review creation to integrate with client.js
+
 
         function showToast(type, title, message, duration = 3000) {
             const toast = $('#toast');
@@ -1236,6 +1292,77 @@
             $('#my-reviews-count').textContent = reviews.length;
             $('#helpful-votes-count').textContent = Array.from(reviews).reduce((sum, r) => sum + parseInt(r.getAttribute('data-helpful')), 0);
             $('#comments-count').textContent = '0'; // Placeholder
+        }
+
+        async function publishReview() {
+            const formElements = {
+                bookTitle: { element: $('#book-title'), errorElement: $('#book-title-error'), validation: v => v.length > 0 },
+                bookAuthor: { element: $('#book-author'), errorElement: $('#book-author-error'), validation: v => v.length > 0 },
+                rating: { element: null, errorElement: $('#rating-error'), validation: () => $$('.star-rating-edit .star.filled').length > 0 },
+                reviewTitle: { element: $('#review-title'), errorElement: $('#review-title-error'), validation: v => v.length > 0 },
+                reviewText: { element: $('#review-text'), errorElement: $('#review-text-error'), validation: v => v.length >= 50 }
+            };
+
+            if (validateForm(formElements)) {
+                const tags = Array.from($$('.tag-item')).map(t => t.textContent.replace('×', '').trim());
+                const reviewData = {
+                    book_id: $('#book-select') ? $('#book-select').value : null, // Assuming we'll add book selection
+                    review_title: $('#review-title').value,
+                    rating: $$('.star-rating-edit .star.filled').length,
+                    review_text: $('#review-text').value,
+                    tags,
+                    contains_spoilers: $('#contains-spoilers').checked
+                };
+
+                try {
+                    await addReview(reviewData);
+                    const reviewCard = createReviewCard({
+                        bookTitle: $('#book-title').value,
+                        bookAuthor: $('#book-author').value,
+                        rating: reviewData.rating,
+                        reviewTitle: reviewData.review_title,
+                        reviewText: reviewData.review_text,
+                        tags
+                    });
+                    $('#my-reviews-list').insertBefore(reviewCard, $('#my-reviews-list').firstChild);
+                    showToast('success', 'Review Published', 'Your review has been added!');
+                    $('#write-review-modal').style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                    updateStats();
+                } catch (err) {
+                    showToast('error', 'Error', 'Failed to publish review');
+                }
+            }
+        }
+
+        // Initialize page
+        
+
+        // Your existing functions (setupTabs, createReviewCard, etc.) remain here
+        // Add these missing functions from your original code
+        function validateForm(formElements) {
+            let isValid = true;
+            Object.keys(formElements).forEach(key => {
+                const { element, errorElement, validation } = formElements[key];
+                const value = element ? element.value.trim() : '';
+                if (validation && !validation(value)) {
+                    isValid = false;
+                    if (element) element.classList.add('error');
+                    showElement(errorElement);
+                } else {
+                    if (element) element.classList.remove('error');
+                    hideElement(errorElement);
+                }
+            });
+            return isValid;
+        }
+
+        function debounce(func, delay = 300) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), delay);
+            };
         }
 
         function setupFilters() {
