@@ -48,7 +48,7 @@ module.exports = {
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
           title VARCHAR(255) NOT NULL,
-          author VARCHAR(255),  -- Nullable for flexibility
+          author VARCHAR(255),
           genre VARCHAR(100) NOT NULL,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
           excerpt TEXT,
@@ -62,13 +62,13 @@ module.exports = {
           id SERIAL PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
           book_id INT REFERENCES books(id) ON DELETE SET NULL,
-          creator INT REFERENCES users(id) ON DELETE CASCADE, -- Replace "creator" with "creator_id"
+          creator VARCHAR(255) NOT NULL, -- Reverted to VARCHAR(255) for username
           status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'archived')),
-          member TEXT[] DEFAULT '{}', -- Ensure this column exists
+          members TEXT[] DEFAULT '{}', -- Fixed typo from "member" to "members"
           description TEXT,
           privacy VARCHAR(50) DEFAULT 'public' CHECK (privacy IN ('public', 'private')),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          CONSTRAINT unique_circle_name_book UNIQUE (name, book_id) -- Prevent duplicate circles per book
+          CONSTRAINT unique_circle_name_book UNIQUE (name, book_id)
         )
       `);
 
@@ -111,7 +111,6 @@ module.exports = {
     }
   },
 
-  // Optional: Close the pool for graceful shutdown
   closeDB: async () => {
     try {
       await pool.end();
