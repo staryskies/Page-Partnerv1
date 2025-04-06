@@ -1,9 +1,24 @@
-// controllers/userController.js
-const { query } = require('../db'); // Assuming db.js from previous implementation
 const bcrypt = require('bcrypt');
 
 // Email validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Database query function (to be shared from index.js)
+const query = async (text, params) => {
+  const { Pool } = require('pg');
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+  });
+  try {
+    const result = await pool.query(text, params);
+    await pool.end(); // Close the pool after query
+    return result;
+  } catch (err) {
+    console.error('Query error:', err);
+    throw err;
+  }
+};
 
 module.exports = {
   signup: async (req, res) => {

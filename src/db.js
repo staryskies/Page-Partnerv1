@@ -1,4 +1,4 @@
-// db.js
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -48,13 +48,26 @@ module.exports = {
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
           title VARCHAR(255) NOT NULL,
-          author VARCHAR(255) NOT NULL,
-          genre VARCHAR(255) NOT NULL,
+          author VARCHAR(255),
+          genre VARCHAR(100) NOT NULL,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
           excerpt TEXT,
           groups TEXT[] DEFAULT '{}',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          completed_at TIMESTAMP
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS circles (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          book_id INT REFERENCES books(id) ON DELETE SET NULL,
+          creator VARCHAR(255) NOT NULL,
+          status VARCHAR(50) DEFAULT 'active',
+          members TEXT[] DEFAULT '{}',
+          description TEXT,
+          privacy VARCHAR(50) DEFAULT 'public',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
 
@@ -70,20 +83,6 @@ module.exports = {
       `);
 
       await pool.query(`
-        CREATE TABLE IF NOT EXISTS circles (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(255) NOT NULL,
-            book_id INT REFERENCES books(id) ON DELETE SET NULL,
-            creator VARCHAR(255) NOT NULL,
-            status VARCHAR(50) DEFAULT 'active',
-            members TEXT[] DEFAULT '{}',
-            description TEXT,
-            privacy VARCHAR(50) DEFAULT 'public',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      await pool.query(`
         CREATE TABLE IF NOT EXISTS achievements (
           id SERIAL PRIMARY KEY,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
@@ -91,23 +90,6 @@ module.exports = {
           description TEXT,
           icon VARCHAR(255),
           earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS reviews (
-          id SERIAL PRIMARY KEY,
-          user_id INT REFERENCES users(id) ON DELETE CASCADE,
-          book_id INT REFERENCES books(id) ON DELETE CASCADE,
-          review_title VARCHAR(255) NOT NULL,
-          rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-          review_text TEXT NOT NULL,
-          tags TEXT[] DEFAULT '{}',
-          contains_spoilers BOOLEAN DEFAULT FALSE,
-          helpful_votes INT DEFAULT 0,
-          status VARCHAR(50) DEFAULT 'pending',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP
         )
       `);
 

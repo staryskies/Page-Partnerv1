@@ -1,8 +1,7 @@
-require('dotenv').config(); // Add dotenv for environment variables
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { Pool } = require('pg');
-const bcrypt = require('bcrypt');
 const userController = require('./controllers/userController');
 
 const app = express();
@@ -55,7 +54,7 @@ async function initDB() {
         id SERIAL PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         genre VARCHAR(100) NOT NULL,
-        user_id INT REFERENCES users(id),
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
         excerpt TEXT,
         groups TEXT[] DEFAULT '{}',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -64,23 +63,27 @@ async function initDB() {
       CREATE TABLE IF NOT EXISTS circles (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
-        book_id INT REFERENCES books(id),
-        member_ids INT[] DEFAULT '{}',
+        book_id INT REFERENCES books(id) ON DELETE SET NULL,
+        creator VARCHAR(255) NOT NULL,
+        status VARCHAR(50) DEFAULT 'active',
+        members TEXT[] DEFAULT '{}',
+        description TEXT,
+        privacy VARCHAR(50) DEFAULT 'public',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE TABLE IF NOT EXISTS comments (
         id SERIAL PRIMARY KEY,
-        book_id INT REFERENCES books(id),
+        book_id INT REFERENCES books(id) ON DELETE CASCADE,
         group_name VARCHAR(255),
         message TEXT NOT NULL,
-        user_id INT REFERENCES users(id),
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE TABLE IF NOT EXISTS achievements (
         id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES users(id),
+        user_id INT REFERENCES users(id) ON DELETE CASCADE,
         name VARCHAR(255) NOT NULL,
         description TEXT,
         icon VARCHAR(255),
@@ -146,7 +149,6 @@ app.get('/discover.html', requireLogin, (req, res) => res.sendFile(path.join(__d
 app.post('/api/auth/register', userController.signup);
 app.post('/api/auth/login', userController.login);
 app.post('/api/auth/logout', (req, res) => {
-  // Since authentication is header-based with no server-side session, just confirm logout
   res.status(200).json({ success: true, message: 'Logged out successfully' });
 });
 
@@ -154,7 +156,7 @@ app.post('/api/auth/logout', (req, res) => {
 app.get('/api/user', requireLogin, async (req, res) => {
   const user = req.user;
   try {
-    const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(COALESCE(member_ids, \'{}\'))', [user.id]);
+    const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(COALESCE(members, \'{}\'))', [user.username]);
     const achievementsResult = await query('SELECT COUNT(*) FROM achievements WHERE user_id = $1', [user.id]);
     res.json({
       isLoggedIn: true,
@@ -190,7 +192,7 @@ app.patch('/api/user', requireLogin, async (req, res) => {
   }
 });
 
-// Book Routes with Pagination
+// Book Routes
 app.get('/api/books', requireLogin, async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -269,28 +271,68 @@ app.delete('/api/book/:id', requireLogin, async (req, res) => {
   }
 });
 
-// Group Routes
-app.post('/api/book/:bookId/group', requireLogin, async (req, res) => {
-  const { bookId } = req.params;
-  const { name } = req.body;
-  if (!name) {
-    return res.status(400).json({ error: 'Group name is required' });
+// Circles Routes
+app.get('/api/circles', requireLogin, async (req, res) => {
+  try {
+    const result = await query(`
+      SELECT c.id, c.name, c.book_id, c.creator, c.status, c.members, c.description, c.privacy,
+             b.genre AS bookGenre
+      FROM circles c
+      LEFT JOIN books b ON c.book_id = b.id
+      WHERE c.privacy = 'public' OR c.creator = $1 OR $1 = ANY(COALESCE(c.members, '{}'))
+    `, [req.user.username]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Get Circles Error:', err);
+    res.status(500).json({ error: 'Failed to fetch circles' });
+  }
+});
+
+app.post('/api/circles', requireLogin, async (req, res) => {
+  const { name, book_id, description, privacy } = req.body;
+  if (!name || !book_id) {
+    return res.status(400).json({ error: 'Name and book_id are required' });
   }
   const sanitizedName = sanitizeInput(name);
+  if (sanitizedName.length > 50) {
+    return res.status(400).json({ error: 'Circle name must be 50 characters or less' });
+  }
   try {
-    const bookResult = await query('SELECT groups FROM books WHERE id = $1 AND user_id = $2', [bookId, req.user.id]);
-    if (bookResult.rows.length === 0) {
+    const bookCheck = await query('SELECT id FROM books WHERE id = $1', [book_id]);
+    if (bookCheck.rows.length === 0) {
       return res.status(404).json({ error: 'Book not found' });
     }
-    const groups = bookResult.rows[0].groups || [];
-    if (!groups.includes(sanitizedName)) {
-      groups.push(sanitizedName);
-      await query('UPDATE books SET groups = $1 WHERE id = $2', [groups, bookId]);
+    const duplicateCheck = await query('SELECT id FROM circles WHERE name = $1 AND book_id = $2', [sanitizedName, book_id]);
+    if (duplicateCheck.rows.length > 0) {
+      return res.status(400).json({ error: 'Circle name already exists for this book' });
     }
-    res.status(201).json({ success: true });
+    const result = await query(
+      'INSERT INTO circles (name, book_id, creator, members, description, privacy) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [sanitizedName, book_id, req.user.username, [req.user.username], description || '', privacy || 'public']
+    );
+    res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error('Add Group Error:', err);
-    res.status(500).json({ error: 'Failed to add group' });
+    console.error('Create Circle Error:', err);
+    res.status(500).json({ error: 'Failed to create circle' });
+  }
+});
+
+app.post('/api/circles/:circleId/join', requireLogin, async (req, res) => {
+  const { circleId } = req.params;
+  try {
+    const circleResult = await query('SELECT members FROM circles WHERE id = $1', [circleId]);
+    if (circleResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Circle not found' });
+    }
+    const members = circleResult.rows[0].members || [];
+    if (!members.includes(req.user.username)) {
+      members.push(req.user.username);
+      await query('UPDATE circles SET members = $1 WHERE id = $2', [members, circleId]);
+    }
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Join Circle Error:', err);
+    res.status(500).json({ error: 'Failed to join circle' });
   }
 });
 
@@ -327,68 +369,6 @@ app.post('/api/book/:bookId/group/:groupName/comments', requireLogin, async (req
   } catch (err) {
     console.error('Post Comment Error:', err);
     res.status(500).json({ error: 'Failed to post comment' });
-  }
-});
-
-// Circles Routes
-app.get('/api/circles', requireLogin, async (req, res) => {
-  try {
-    const result = await query(
-      'SELECT * FROM circles WHERE $1 = ANY(COALESCE(member_ids, \'{}\'))',
-      [req.user.id]
-    );
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Get Circles Error:', err);
-    res.status(500).json({ error: 'Failed to fetch circles' });
-  }
-});
-
-app.post('/api/circles', requireLogin, async (req, res) => {
-  const { name, bookId } = req.body;
-  if (!name || !bookId) {
-    return res.status(400).json({ error: 'Name and book ID are required' });
-  }
-  const sanitizedName = sanitizeInput(name);
-  if (sanitizedName.length > 50) {
-    return res.status(400).json({ error: 'Circle name must be 50 characters or less' });
-  }
-  try {
-    const bookCheck = await query('SELECT id FROM books WHERE id = $1 AND user_id = $2', [bookId, req.user.id]);
-    if (bookCheck.rows.length === 0) {
-      return res.status(404).json({ error: 'Book not found or not owned by user' });
-    }
-    const duplicateCheck = await query('SELECT id FROM circles WHERE name = $1 AND book_id = $2', [sanitizedName, bookId]);
-    if (duplicateCheck.rows.length > 0) {
-      return res.status(400).json({ error: 'Circle name already exists for this book' });
-    }
-    const result = await query(
-      'INSERT INTO circles (name, book_id, member_ids) VALUES ($1, $2, $3) RETURNING id',
-      [sanitizedName, bookId, [req.user.id]]
-    );
-    res.status(201).json({ success: true, circleId: result.rows[0].id });
-  } catch (err) {
-    console.error('Create Circle Error:', err);
-    res.status(500).json({ error: 'Failed to create circle' });
-  }
-});
-
-app.post('/api/circles/:circleId/join', requireLogin, async (req, res) => {
-  const { circleId } = req.params;
-  try {
-    const circleResult = await query('SELECT member_ids FROM circles WHERE id = $1', [circleId]);
-    if (circleResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Circle not found' });
-    }
-    const members = circleResult.rows[0].member_ids || [];
-    if (!members.includes(req.user.id)) {
-      members.push(req.user.id);
-      await query('UPDATE circles SET member_ids = $1 WHERE id = $2', [members, circleId]);
-    }
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error('Join Circle Error:', err);
-    res.status(500).json({ error: 'Failed to join circle' });
   }
 });
 
@@ -430,11 +410,11 @@ app.post('/api/onboarding', requireLogin, async (req, res) => {
       [
         sanitizeInput(profile_picture) || null,
         sanitizeInput(user_location),
-        genres, // Assuming genres is already an array
-        favorite_authors.split(/[,;\n]/).map(a => sanitizeInput(a.trim())),
-        parseInt(reading_pace, 10),
-        goals, // Assuming goals is already an array
-        to_read_list.split(/[,;\n]/).map(b => sanitizeInput(b.trim())),
+        genres || '{}',
+        favorite_authors ? favorite_authors.split(/[,;\n]/).map(a => sanitizeInput(a.trim())) : '{}',
+        parseInt(reading_pace, 10) || 0,
+        goals || '{}',
+        to_read_list ? to_read_list.split(/[,;\n]/).map(b => sanitizeInput(b.trim())) : '{}',
         sanitizeInput(book_length),
         req.user.id
       ]
@@ -446,39 +426,6 @@ app.post('/api/onboarding', requireLogin, async (req, res) => {
   } catch (err) {
     console.error('Onboarding Error:', err);
     res.status(500).json({ error: 'Failed to save onboarding data' });
-  }
-});
-
-// Preview Generation Route
-app.post('/api/generate-preview', requireLogin, async (req, res) => {
-  const { excerpt } = req.body;
-  if (!excerpt || excerpt.split(' ').length < 300) {
-    return res.status(400).json({ error: 'Excerpt must be provided and at least 300 words' });
-  }
-  try {
-    const sanitizedExcerpt = sanitizeInput(excerpt);
-    const response = await fetch('https://magicloops.dev/api/loop/cd17eed2-c28d-4960-bed5-087ab13ba3d5/run', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ excerpt: sanitizedExcerpt }),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`MagicLoops API failed: ${response.status} - ${errorText}`);
-    }
-    
-    const data = await response.json();
-    if (!data.preview) {
-      console.warn('No preview returned from MagicLoops API');
-    }
-    res.json({ preview: data.preview || 'Preview not available' });
-  } catch (err) {
-    console.error('Preview Generation Error:', err);
-    res.status(500).json({ 
-      error: 'Failed to generate preview',
-      details: err.message 
-    });
   }
 });
 
