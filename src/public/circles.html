@@ -788,7 +788,7 @@
             display: flex;
             justify-content: space-between;
             font-size: 0.8rem;
-            color: var(--muted-text);
+            color: var (--muted-text);
         }
 
         .empty-state {
@@ -1001,7 +1001,7 @@
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-                <a href="add-book.html" class="nav-item"><i class="fas fa-plus"></i> Add Book</a>
+                <a href="add-book.html" class Ascendant class="nav-item"><i class="fas fa-plus"></i> Add Book</a>
                 <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
                 <a href="circles.html" class="nav-item active"><i class="fas fa-users"></i> Reading Circles</a>
                 <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
@@ -1160,22 +1160,138 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-light" id="cancel-create">Cancel</button>
-                <button class="btn btn-primary"ührte
-
-id="create-circle-btn">Create Circle</button>
+                <button class="btn btn-primary" id="create-circle-btn">Create Circle</button>
             </div>
         </div>
     </div>
 
-    <script src="client.js"></script>
     <script>
+        // Global variables
+        const baseUrl = window.location.origin;
+        let selectedBookId = null;
+        let selectedGroupName = null;
+
         // Utility functions
-        function $(selector) {
-            return document.querySelector(selector);
+        const $ = selector => document.querySelector(selector);
+        const $$ = selector => document.querySelectorAll(selector);
+
+        // Core functions
+        async function loadBooks() {
+            try {
+                const response = await fetch(`${baseUrl}/api/books`, {
+                    headers: { 'X-Username': localStorage.getItem('username') },
+                });
+                if (!response.ok) throw new Error(`Failed to fetch books: ${response.status}`);
+                const books = await response.json();
+                const bookSelect = $('#book-select');
+                if (bookSelect) {
+                    bookSelect.innerHTML = '<option value="">Select a book</option>';
+                    books.forEach(book => {
+                        const option = document.createElement('option');
+                        option.value = book.id;
+                        option.innerText = book.title;
+                        bookSelect.appendChild(option);
+                    });
+                }
+                return books;
+            } catch (err) {
+                console.error('Load Books Error:', err);
+                const errorEl = $('#error');
+                if (errorEl) errorEl.innerText = err.message;
+                return [];
+            }
         }
 
-        function $$(selector) {
-            return document.querySelectorAll(selector);
+        async function addGroup() {
+            if (!selectedBookId) {
+                $('#error').innerText = 'Please select a book first';
+                return;
+            }
+            const name = $('#new-group').value;
+            if (!name) return;
+            try {
+                const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-Username': localStorage.getItem('username') 
+                    },
+                    body: JSON.stringify({ name }),
+                });
+                if (!response.ok) throw new Error(`Failed to add group: ${response.status}`);
+                $('#new-group').value = '';
+                loadGroups();
+            } catch (err) {
+                console.error('Add Group Error:', err);
+                $('#error').innerText = err.message;
+            }
+        }
+
+        async function loadGroups() {
+            const bookId = $('#book-select').value;
+            selectedBookId = bookId;
+            if (!bookId) {
+                $('#group-select').innerHTML = '<option value="">Select a group</option>';
+                $('#book-details').innerText = 'Select a book to view details';
+                $('#comments').innerHTML = 'Select a book and group to view comments';
+                return;
+            }
+
+            try {
+                const bookResponse = await fetch(`${baseUrl}/api/book/${bookId}`, {
+                    headers: { 'X-Username': localStorage.getItem('username') },
+                });
+                if (!bookResponse.ok) throw new Error(`Failed to fetch book: ${bookResponse.status}`);
+                const book = await bookResponse.json();
+                $('#book-details').innerText = `${book.title} (${book.genre})`;
+
+                const groupSelect = $('#group-select');
+                groupSelect.innerHTML = '<option value="">Select a group</option>';
+                book.groups.forEach(group => {
+                    const option = document.createElement('option');
+                    option.value = group;
+                    option.innerText = group;
+                    groupSelect.appendChild(option);
+                });
+
+                $('#comments').innerHTML = 'Select a group to view comments';
+            } catch (err) {
+                console.error('Load Groups Error:', err);
+                $('#error').innerText = err.message;
+            }
+        }
+
+        async function loadComments(bookId, groupName) {
+            selectedBookId = bookId;
+            selectedGroupName = groupName;
+            if (!selectedBookId || !groupName) {
+                $('#comments').innerHTML = 'Select a book and group to view comments';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group/${encodeURIComponent(groupName)}/comments`, {
+                    headers: { 'X-Username': localStorage.getItem('username') },
+                });
+                if (!response.ok) throw new Error(`Failed to fetch comments: ${response.status}`);
+                const comments = await response.json();
+                const commentsDiv = $('#comments');
+                commentsDiv.innerHTML = '';
+                comments.forEach(comment => {
+                    const p = document.createElement('p');
+                    p.className = 'comment';
+                    p.innerText = `${comment.username}: ${comment.message}`;
+                    commentsDiv.appendChild(p);
+                });
+            } catch (err) {
+                console.error('Load Comments Error:', err);
+                $('#error').innerText = err.message;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('username');
+            window.location.href = '/homepage.html';
         }
 
         function showToast(type, title, message, duration = 3000) {
@@ -1193,7 +1309,7 @@ id="create-circle-btn">Create Circle</button>
             setTimeout(() => toast.remove(), duration);
         }
 
-        // Fetch all circles (groups) from books
+        // Page-specific functions
         async function fetchCircles() {
             const books = await loadBooks();
             const circles = [];
@@ -1208,8 +1324,8 @@ id="create-circle-btn">Create Circle</button>
                         circles.push({
                             book_id: book.id,
                             name: group,
-                            status: 'active', // Placeholder until status is tracked
-                            createdByMe: true // Placeholder until creator info is available
+                            status: 'active',
+                            createdByMe: true
                         });
                     });
                 } catch (err) {
@@ -1219,7 +1335,6 @@ id="create-circle-btn">Create Circle</button>
             return circles;
         }
 
-        // Sidebar update
         async function updateSidebar() {
             const username = localStorage.getItem('username');
             const usernameEl = $('#username');
@@ -1251,20 +1366,26 @@ id="create-circle-btn">Create Circle</button>
             }
         }
 
-        // Stats update
         function updateStats(circles) {
             const activeCircles = $('#active-circles');
             const currentReads = $('#current-reads');
             const discussions = $('#discussions');
             const upcoming = $('#upcoming');
 
+            if (!circles || circles.length === 0) {
+                if (activeCircles) activeCircles.textContent = '0';
+                if (currentReads) currentReads.textContent = '0';
+                if (discussions) discussions.textContent = '0';
+                if (upcoming) upcoming.textContent = '0';
+                return;
+            }
+
             if (activeCircles) activeCircles.textContent = circles.length;
-            if (currentReads) currentReads.textContent = new Set(circles.map(c => c.book_id)).size; // Unique books
-            if (discussions) discussions.textContent = '0'; // Requires comment counting
-            if (upcoming) upcoming.textContent = '0'; // Requires scheduling logic
+            if (currentReads) currentReads.textContent = new Set(circles.map(c => c.book_id)).size;
+            if (discussions) discussions.textContent = '0'; // Placeholder for discussion count
+            if (upcoming) upcoming.textContent = '0'; // Placeholder for upcoming events
         }
 
-        // Circles population
         async function populateCircles(circles) {
             const grid = $('#circles-grid');
             if (!grid) return;
@@ -1327,7 +1448,6 @@ id="create-circle-btn">Create Circle</button>
             }
         }
 
-        // Reading goal (placeholder - enhance with actual goal tracking)
         function populateReadingGoal() {
             const body = $('#reading-goal-body');
             if (!body) return;
@@ -1348,7 +1468,6 @@ id="create-circle-btn">Create Circle</button>
                 </div>`;
         }
 
-        // Recommendations (placeholder - needs actual recommendation logic)
         async function populateRecommendations() {
             const container = $('#recommended-books');
             if (!container) return;
@@ -1378,11 +1497,10 @@ id="create-circle-btn">Create Circle</button>
             }
         }
 
-        // Modal handling
         function setupModal() {
             const modal = $('#create-circle-modal');
             $('#open-create-circle-modal').addEventListener('click', async () => {
-                await loadBooks(); // Populate book select
+                await loadBooks();
                 modal.style.display = 'flex';
             });
             $('#close-modal').addEventListener('click', () => modal.style.display = 'none');
@@ -1406,7 +1524,6 @@ id="create-circle-btn">Create Circle</button>
             });
         }
 
-        // Filter handling
         function setupFilters() {
             const tabs = $$('.tab');
             const filterPills = $$('.filter-pill');
@@ -1450,6 +1567,29 @@ id="create-circle-btn">Create Circle</button>
 
         // Initialization
         async function init() {
+            // Redirect logic
+            if (window.location.pathname === '/homepage.html' && localStorage.getItem('username')) {
+                window.location.href = '/index.html';
+                return;
+            }
+
+            if (
+                !localStorage.getItem('username') &&
+                window.location.pathname !== '/' &&
+                window.location.pathname !== '/homepage.html' &&
+                window.location.pathname !== '/login.html' &&
+                window.location.pathname !== '/signup.html' &&
+                window.location.pathname !== '/onboarding.html' &&
+                window.location.pathname !== '/circles.html' &&
+                window.location.pathname !== '/add-book.html' &&
+                window.location.pathname !== '/achievements.html' &&
+                window.location.pathname !== '/discover.html' &&
+                window.location.pathname !== '/reviews.html'
+            ) {
+                window.location.href = '/login.html';
+                return;
+            }
+
             await updateSidebar();
             const circles = await fetchCircles();
             updateStats(circles);
@@ -1461,6 +1601,7 @@ id="create-circle-btn">Create Circle</button>
             setupModal();
         }
 
+        // Start the application
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
