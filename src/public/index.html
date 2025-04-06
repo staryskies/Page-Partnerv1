@@ -640,21 +640,21 @@
     }
 
     async function getUserBooks() {
-        try {
-            const username = localStorage.getItem('username');
-            if (!username) throw new Error('No username found in localStorage');
-            
-            const response = await fetch(`${baseUrl}/api/books`, {
-                headers: { 'X-Username': username }
-            });
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const data = await response.json();
-            return data; // Ensure the API returns only the user's books
-        } catch (error) {
-            console.error('Failed to fetch books:', error);
-            return [];
-        }
+    try {
+        const username = localStorage.getItem('username');
+        if (!username) throw new Error('No username found in localStorage');
+        
+        const response = await fetch(`${baseUrl}/api/users/${username}/books`, {
+            headers: { 'X-Username': username }
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        return data.books || []; // Ensure we return the user's books array or empty array if none
+    } catch (error) {
+        console.error('Failed to fetch user books:', error);
+        return [];
     }
+}
 
     async function updateUI() {
       const userData = await getUserData();
@@ -798,6 +798,18 @@
       });
     });
   </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordInput = document.getElementById('password');
+        const togglePasswordBtn = document.getElementById('toggle-password');
 
+        togglePasswordBtn.addEventListener('click', () => {
+            const isPasswordVisible = passwordInput.type === 'text';
+            passwordInput.type = isPasswordVisible ? 'password' : 'text';
+            togglePasswordBtn.textContent = isPasswordVisible ? 'Show' : 'Hide';
+        });
+    });
+  </script>
 </body>
 </html>
+

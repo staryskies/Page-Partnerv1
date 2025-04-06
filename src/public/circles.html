@@ -1095,7 +1095,6 @@
             font-size: 1rem;
         }
     </style>
-
 </head>
 <body>
     <div class="sidebar">
@@ -1167,87 +1166,15 @@
             </div>
         </div>
 
-        <div class="section">
-            <div class="section-header">
-                <h2 class="section-title">Live Reading</h2>
-                <a href="#" class="section-action">How it works <i class="fas fa-question-circle"></i></a>
-            </div>
-            <div class="section-body">
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-book-reader"></i>
-                    </div>
-                    <h3 class="empty-state-title">No Live Sessions Right Now</h3>
-                    <p class="empty-state-description">
-                        Join a reading circle or create your own to experience live reading sessions.
-                    </p>
-                    <button class="btn btn-primary" id="join-circle-btn">
-                        <i class="fas fa-plus"></i> Join a Circle
-                    </button>
-                </div>
-            </div>
-        </div>
-
         <section class="section" id="circles-section">
             <div class="section-header">
                 <h2 class="section-title">Your Reading Circles</h2>
                 <a href="#" class="section-action">View all <i class="fas fa-chevron-right"></i></a>
             </div>
             <div class="section-body">
-                <div class="tab-bar">
-                    <div class="tab active" data-filter="all">All Circles</div>
-                    <div class="tab" data-filter="active">Active</div>
-                    <div class="tab" data-filter="upcoming">Upcoming</div>
-                    <div class="tab" data-filter="past">Past</div>
-                    <div class="tab" data-filter="mine">My Circles</div>
-                </div>
-                <div class="filters" id="genre-filters">
-                    <div class="filter-pill active" data-genre="all">All</div>
-                    <div class="filter-pill" data-genre="Fiction">Fiction</div>
-                    <div class="filter-pill" data-genre="Non-Fiction">Non-Fiction</div>
-                    <div class="filter-pill" data-genre="Fantasy">Fantasy</div>
-                    <div class="filter-pill" data-genre="Science Fiction">Science Fiction</div>
-                    <div class="filter-pill" data-genre="Mystery">Mystery</div>
-                    <div class="filter-pill" data-genre="Biography">Biography</div>
-                </div>
                 <div class="circles-grid" id="circles-grid"></div>
             </div>
         </section>
-
-        <!-- Added Suggestions Section -->
-        <section class="section suggestions-section" id="suggestions-section">
-            <div class="section-header">
-                <h2 class="section-title">Suggested Circles</h2>
-                <span class="section-action" id="suggestion-count">0 suggestions</span>
-            </div>
-            <div class="genre-selector">
-                <form class="genre-form" id="genre-form">
-                    <div class="form-group">
-                        <label class="form-label" for="genre-select">Search Circles by Genre</label>
-                        <select class="form-select" id="genre-select">
-                            <option value="">Select a genre</option>
-                            <option value="Fiction">Fiction</option>
-                            <option value="Non-Fiction">Non-Fiction</option>
-                            <option value="Fantasy">Fantasy</option>
-                            <option value="Science Fiction">Science Fiction</option>
-                            <option value="Mystery">Mystery</option>
-                            <option value="Thriller">Thriller</option>
-                            <option value="Romance">Romance</option>
-                            <option value="Biography">Biography</option>
-                            <option value="History">History</option>
-                            <option value="Poetry">Poetry</option>
-                            <option value="Self-Help">Self-Help</option>
-                        </select>
-                    </div>
-                    <button class="search-btn" id="search-btn" title="Search Circles">
-                        <i class="fas fa-search"></i> Search
-                    </button>
-                </form>
-            </div>
-            
-        </section>
-
-        
     </main>
 
     <div class="modal" id="create-circle-modal">
@@ -1266,7 +1193,6 @@
                     <select class="form-input" id="book-select">
                         <option value="">Select a book from your library</option>
                     </select>
-                    <div class="form-help">What book will your circle start with?</div>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Circle Description</label>
@@ -1288,528 +1214,47 @@
     </div>
 
     <script>
-        // Global variables
         const baseUrl = window.location.origin;
-        let selectedBookId = null;
-        let selectedGroupName = null;
 
-        // Utility functions
-        const $ = selector => document.querySelector(selector);
-        const $$ = selector => document.querySelectorAll(selector);
-
-        // Core functions
-        async function loadBooks() {
-            try {
-                const response = await fetch(`${baseUrl}/api/books`, {
-                    headers: { 'X-Username': localStorage.getItem('username') },
-                });
-                if (!response.ok) throw new Error(`Failed to fetch books: ${response.status}`);
-                const data = await response.json();
-                const books = Array.isArray(data) ? data : data.books || [];
-                const bookSelect = $('#book-select');
-                if (bookSelect) {
-                    bookSelect.innerHTML = '<option value="">Select a book</option>';
-                    books.forEach(book => {
-                        const option = document.createElement('option');
-                        option.value = book.id;
-                        option.innerText = `${book.title} by ${book.author || 'Unknown'}`;
-                        bookSelect.appendChild(option);
-                    });
-                }
-                return books;
-            } catch (err) {
-                console.error('Load Books Error:', err);
-                return [];
-            }
-        }
-
-        async function addGroup() {
-            if (!selectedBookId) {
-                showToast('error', 'Error', 'Please select a book first');
-                return;
-            }
-            const name = $('#new-group').value;
-            const description = $('#circle-description').value;
-            const privacy = $('#circle-privacy').value;
-            if (!name) {
-                showToast('error', 'Error', 'Please enter a circle name');
-                return;
-            }
-            try {
-                const response = await fetch(`${baseUrl}/api/circles`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'X-Username': localStorage.getItem('username') 
-                    },
-                    body: JSON.stringify({ name, bookId: selectedBookId, description, privacy }),
-                });
-                if (!response.ok) throw new Error(`Failed to create circle: ${response.status}`);
-                $('#new-group').value = '';
-                $('#circle-description').value = '';
-                $('#book-select').value = '';
-                $('#circle-privacy').value = 'public';
-                return await response.json();
-            } catch (err) {
-                console.error('Add Group Error:', err);
-                showToast('error', 'Error', err.message);
-            }
-        }
-
-        async function loadComments(bookId, groupName) {
-            selectedBookId = bookId;
-            selectedGroupName = groupName;
-            if (!selectedBookId || !groupName) {
-                showToast('error', 'Error', 'Select a book and group to view comments');
-                return;
-            }
-            try {
-                const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group/${encodeURIComponent(groupName)}/comments`, {
-                    headers: { 'X-Username': localStorage.getItem('username') },
-                });
-                if (!response.ok) throw new Error(`Failed to fetch comments: ${response.status}`);
-                const comments = await response.json();
-                const commentsDiv = $('#comments') || document.createElement('div');
-                commentsDiv.innerHTML = '';
-                comments.forEach(comment => {
-                    const p = document.createElement('p');
-                    p.className = 'comment';
-                    p.innerText = `${comment.username}: ${comment.message}`;
-                    commentsDiv.appendChild(p);
-                });
-            } catch (err) {
-                console.error('Load Comments Error:', err);
-                showToast('error', 'Error', err.message);
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('username');
-            window.location.href = '/homepage.html';
-        }
-
-        function showToast(type, title, message, duration = 3000) {
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type} show`;
-            toast.innerHTML = `
-                <div class="toast-icon"><i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i></div>
-                <div class="toast-content">
-                    <div class="toast-title">${title}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-                <button class="toast-close"><i class="fas fa-times"></i></button>
-            `;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), duration);
-            toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
-        }
-
-        // Circle functions
         async function fetchCircles() {
             try {
                 const response = await fetch(`${baseUrl}/api/circles`, {
-                    headers: { 'X-Username': localStorage.getItem('username') }
+                    headers: { 'X-Username': localStorage.getItem('username') },
                 });
                 if (!response.ok) throw new Error('Failed to fetch circles');
-                const circles = await response.json();
-                return circles.map(circle => ({
-                    id: circle.id,
-                    name: circle.name,
-                    book_id: circle.bookId,
-                    creator: circle.creator,
-                    genre: circle.bookGenre,
-                    status: circle.status || 'active',
-                    isMine: circle.creator === localStorage.getItem('username'),
-                    isMember: circle.members.includes(localStorage.getItem('username')),
-                    description: circle.description,
-                    privacy: circle.privacy,
-                    members: circle.members
-                }));
+                return await response.json();
             } catch (err) {
                 console.error('Fetch Circles Error:', err);
                 return [];
             }
         }
 
-        async function fetchSuggestedCircles(genre) {
-            try {
-                // Show loading state
-                const container = $('#suggested-circles');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">
-                                <i class="fas fa-spinner fa-spin"></i>
-                            </div>
-                            <h3 class="empty-state-title">Searching Circles...</h3>
-                            <p class="empty-state-description">
-                                Finding ${genre} reading circles for you.
-                            </p>
-                        </div>
-                    `;
-                }
-
-                // Use your existing API endpoint instead of Magic Loops
-                const response = await fetch(`${baseUrl}/api/suggest-circles/${encodeURIComponent(genre)}`, {
-                    headers: { 'X-Username': localStorage.getItem('username') }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to fetch suggestions');
-                }
-
-                const circles = await response.json();
-                return circles;
-            } catch (err) {
-                console.error('Fetch Suggested Circles Error:', err);
-                showToast('error', 'Error', 'Failed to fetch suggested circles. Please try again.');
-                return [];
-            }
-        }
-
-        async function updateSidebar() {
-            const username = localStorage.getItem('username');
-            const usernameEl = $('#username');
-            const statsEl = $('#user-stats');
-            const avatarEl = $('#user-avatar-initials');
-
-            if (!usernameEl || !statsEl || !avatarEl) return;
-
-            if (!username) {
-                usernameEl.textContent = 'Guest';
-                statsEl.textContent = 'Please log in';
-                avatarEl.textContent = 'G';
-                return;
-            }
-
-            usernameEl.textContent = username;
-            avatarEl.textContent = username[0].toUpperCase();
-            const circles = await fetchCircles();
-            const myCircles = circles.filter(c => c.isMine || c.isMember);
-            statsEl.textContent = `${myCircles.length} circles`;
-        }
-
-        function updateStats(circles) {
-            const activeCircles = $('#active-circles');
-            const currentReads = $('#current-reads');
-            const discussions = $('#discussions');
-            const upcoming = $('#upcoming');
-
-            if (!circles || circles.length === 0) {
-                if (activeCircles) activeCircles.textContent = '0';
-                if (currentReads) currentReads.textContent = '0';
-                if (discussions) discussions.textContent = '0';
-                if (upcoming) upcoming.textContent = '0';
-                return;
-            }
-
-            const myCircles = circles.filter(c => c.isMine || c.isMember);
-            if (activeCircles) activeCircles.textContent = myCircles.length;
-            if (currentReads) currentReads.textContent = new Set(myCircles.map(c => c.book_id)).size;
-            if (discussions) discussions.textContent = '0';
-            if (upcoming) upcoming.textContent = '0';
-        }
-
         async function populateCircles(circles) {
-            const grid = $('#circles-grid');
+            const grid = document.getElementById('circles-grid');
             if (!grid) return;
 
             grid.innerHTML = '';
-            if (!circles || circles.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon"><i class="fas fa-users"></i></div>
-                        <h3 class="empty-state-title">No Reading Circles Found</h3>
-                        <p class="empty-state-description">
-                            Join or create a reading circle to connect with book lovers.
-                        </p>
-                        <button class="btn btn-primary" id="create-circle-card"><i class="fas fa-plus"></i> Create Circle</button>
-                    </div>`;
-                $('#create-circle-card')?.addEventListener('click', () => $('#open-create-circle-modal').click());
-            } else {
-                for (const circle of circles) {
-                    try {
-                        const bookResponse = await fetch(`${baseUrl}/api/book/${circle.book_id}`, {
-                            headers: { 'X-Username': localStorage.getItem('username') }
-                        });
-                        let book = { title: 'Unknown', author: 'Unknown', genre: '' };
-                        if (bookResponse.ok) book = await bookResponse.json();
-
-                        const card = document.createElement('div');
-                        card.className = 'circle-card';
-                        const statusIcon = circle.isMine ? '<i class="fas fa-crown"></i>' : circle.isMember ? '<i class="fas fa-user-check"></i>' : '';
-                        const privacyIcon = circle.privacy === 'private' ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-globe"></i>';
-                        card.innerHTML = `
-                            <div class="circle-cover">
-                                <div class="circle-book-image">${book.title}</div>
-                            </div>
-                            <div class="circle-content">
-                                <div class="circle-name">${circle.name} ${statusIcon}</div>
-                                <div class="circle-book">${book.title} by ${book.author} (${book.genre})</div>
-                                <div class="circle-members">
-                                    ${circle.members.slice(0, 3).map((_, i) => `<div class="circle-member">${i + 1}</div>`).join('')}
-                                    ${circle.members.length > 3 ? `<div class="circle-member more">+${circle.members.length - 3}</div>` : ''}
-                                </div>
-                                <div class="circle-progress">
-                                    <div class="progress-title">
-                                        <span>Progress</span>
-                                        <span>0%</span>
-                                    </div>
-                                    <div class="progress-bar-container">
-                                        <div class="progress-bar" style="width: 0%;"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="circle-footer">
-                                <div class="circle-status">${privacyIcon} ${circle.status}</div>
-                                <div class="circle-actions">
-                                    <button class="circle-action" onclick="loadComments('${circle.book_id}', '${circle.name}')"><i class="fas fa-comment"></i></button>
-                                    <button class="circle-action"><i class="fas fa-share"></i></button>
-                                    ${circle.isMine ? `<button class="circle-action delete-btn" data-circle-id="${circle.id}"><i class="fas fa-trash"></i></button>` : ''}
-                                </div>
-                            </div>`;
-                        grid.appendChild(card);
-                    } catch (err) {
-                        console.error('Error loading circle book:', err);
-                    }
-                }
-                $$('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', () => deleteCircle(btn.dataset.circleId));
-                });
-            }
-        }
-
-        async function populateSuggestedCircles(circles) {
-            const container = $('#suggested-circles');
-            if (!container) return;
-
-            $('#suggestion-count').textContent = `${circles.length} suggestions`;
-            if (!circles || circles.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon"><i class="fas fa-search"></i></div>
-                        <h3 class="empty-state-title">No Circles Found</h3>
-                        <p class="empty-state-description">
-                            No matching circles found. Try a different genre or create your own!
-                        </p>
-                        <button class="btn btn-primary" id="create-suggestion-circle"><i class="fas fa-plus"></i> Create a Circle</button>
-                    </div>`;
-                $('#create-suggestion-circle')?.addEventListener('click', () => $('#open-create-circle-modal').click());
+            if (circles.length === 0) {
+                grid.innerHTML = `<div class="empty-state">No circles found.</div>`;
                 return;
             }
 
-            container.innerHTML = '';
             circles.forEach(circle => {
                 const card = document.createElement('div');
                 card.className = 'circle-card';
                 card.innerHTML = `
-                    <div class="circle-cover">
-                        <div class="circle-book-image">${circle.bookTitle || 'Unknown'}</div>
-                    </div>
                     <div class="circle-content">
-                        <div class="circle-name">${circle.name}</div>
-                        <div class="circle-book">${circle.bookTitle || 'Unknown'} by ${circle.bookAuthor || 'Unknown'}</div>
-                        <p class="circle-description">${circle.description || 'No description available.'}</p>
+                        <h3>${circle.name}</h3>
+                        <p>${circle.description}</p>
                     </div>
-                    <div class="circle-footer">
-                        <div class="circle-status">
-                            <i class="fas fa-${circle.privacy === 'private' ? 'lock' : 'globe'}"></i>
-                            ${circle.status || 'active'}
-                        </div>
-                        <div class="circle-actions">
-                            <button class="btn btn-primary join-circle-btn" data-circle-id="${circle.id}">
-                                <i class="fas fa-sign-in-alt"></i> Join
-                            </button>
-                            ${circle.creator === localStorage.getItem('username') ? 
-                                `<button class="btn btn-danger delete-circle-btn" data-circle-id="${circle.id}">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>` : ''}
-                        </div>
-                    </div>`;
-                container.appendChild(card);
-            });
-
-            $$('.join-circle-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const circleId = btn.dataset.circleId;
-                    showToast('success', 'Success', 'You\'ve joined this circle!');
-                    setTimeout(() => init(), 1500);
-                });
-            });
-
-            $$('.delete-circle-btn').forEach(btn => {
-                btn.addEventListener('click', () => deleteCircle(btn.dataset.circleId));
+                `;
+                grid.appendChild(card);
             });
         }
 
-        async function deleteCircle(circleId) {
-            if (!confirm('Are you sure you want to delete this circle? This action cannot be undone.')) return;
-            try {
-                const response = await fetch(`${baseUrl}/api/circles/${circleId}`, {
-                    method: 'DELETE',
-                    headers: { 'X-Username': localStorage.getItem('username') }
-                });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to delete circle');
-                }
-                showToast('success', 'Success', 'Circle deleted successfully');
-                setTimeout(() => init(), 1000);
-            } catch (err) {
-                console.error('Delete Circle Error:', err);
-                showToast('error', 'Error', err.message);
-            }
-        }
-
-        function populateReadingGoal() {
-            const body = $('#reading-goal-body');
-            if (!body) return;
-
-            body.innerHTML = `
-                <div class="reading-goal">
-                    <div class="reading-goal-header">
-                        <div class="reading-goal-title">Reading Goal</div>
-                        <div class="reading-goal-value">0/10</div>
-                    </div>
-                    <div class="goal-progress-bar">
-                        <div class="goal-progress-value" style="width: 0%"></div>
-                    </div>
-                    <div class="goal-labels">
-                        <span>Start</span>
-                        <span>Goal</span>
-                    </div>
-                </div>`;
-        }
-
-        async function populateRecommendations() {
-            const container = $('#recommended-books');
-            if (!container) return;
-
-            const books = await loadBooks();
-            if (books.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon"><i class="fas fa-book"></i></div>
-                        <h3 class="empty-state-title">No Recommendations Yet</h3>
-                        <p class="empty-state-description">
-                            Add books to your library to get personalized recommendations.
-                        </p>
-                        <button class="btn btn-primary" onclick="window.location.href='add-book.html'"><i class="fas fa-plus"></i> Add Books</button>
-                    </div>`;
-            }
-        }
-
-        function setupModal() {
-            const modal = $('#create-circle-modal');
-            $('#open-create-circle-modal').addEventListener('click', async () => {
-                await loadBooks();
-                modal.style.display = 'flex';
-            });
-            $('#close-modal').addEventListener('click', () => modal.style.display = 'none');
-            $('#cancel-create').addEventListener('click', () => modal.style.display = 'none');
-            $('#create-circle-btn').addEventListener('click', async () => {
-                const name = $('#new-group').value;
-                const bookId = $('#book-select').value;
-                if (name && bookId) {
-                    selectedBookId = bookId;
-                    await addGroup();
-                    modal.style.display = 'none';
-                    showToast('success', 'Circle Created', 'Your reading circle has been created!');
-                    await init();
-                } else {
-                    showToast('error', 'Error', 'Please fill in all required fields');
-                }
-            });
-        }
-
-        function setupFilters() {
-            const tabs = $$('.tab');
-            const filterPills = $$('.filter-pill');
-            let allCircles = [];
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    filterCircles(tab.dataset.filter, $('.filter-pill.active').dataset.genre);
-                });
-            });
-
-            filterPills.forEach(pill => {
-                pill.addEventListener('click', () => {
-                    filterPills.forEach(p => p.classList.remove('active'));
-                    pill.classList.add('active');
-                    filterCircles($('.tab.active').dataset.filter, pill.dataset.genre);
-                });
-            });
-
-            function filterCircles(tabFilter, genreFilter) {
-                let filtered = [...allCircles];
-                const username = localStorage.getItem('username');
-
-                if (tabFilter === 'mine') {
-                    filtered = filtered.filter(circle => circle.isMine || circle.isMember);
-                } else if (tabFilter !== 'all') {
-                    filtered = filtered.filter(circle => circle.status === tabFilter);
-                }
-
-                if (genreFilter !== 'all') {
-                    filtered = filtered.filter(circle => circle.genre === genreFilter);
-                }
-
-                populateCircles(filtered);
-            }
-
-            return { setCircles: circles => allCircles = circles };
-        }
-
-        function setupSuggestions() {
-            $('#search-btn').addEventListener('click', async (e) => {
-                e.preventDefault(); // Prevent form submission
-                const genre = $('#genre-select').value;
-                if (!genre) {
-                    showToast('error', 'Error', 'Please select a genre first');
-                    return;
-                }
-                const suggestions = await fetchSuggestedCircles(genre);
-                await populateSuggestedCircles(suggestions);
-            });
-
-            $('#genre-select').addEventListener('change', async () => {
-                const genre = $('#genre-select').value;
-                if (genre) {
-                    const suggestions = await fetchSuggestedCircles(genre);
-                    await populateSuggestedCircles(suggestions);
-                }
-            });
-        }
-
-        // Initialization
         async function init() {
-            if (!localStorage.getItem('username')) {
-                window.location.href = '/homepage.html';
-                return;
-            }
-
-            await updateSidebar();
             const circles = await fetchCircles();
-            updateStats(circles);
-            const filterHandler = setupFilters();
-            filterHandler.setCircles(circles);
             await populateCircles(circles);
-            populateReadingGoal();
-            await populateRecommendations();
-            setupModal();
-            setupSuggestions();
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const genre = urlParams.get('genre');
-            if (genre) {
-                $('#genre-select').value = genre;
-                const suggestions = await fetchSuggestedCircles(genre);
-                await populateSuggestedCircles(suggestions);
-            }
         }
 
         document.addEventListener('DOMContentLoaded', init);

@@ -48,7 +48,7 @@ module.exports = {
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
           title VARCHAR(255) NOT NULL,
-          author VARCHAR(255),
+          author VARCHAR(255) NOT NULL
           genre VARCHAR(100) NOT NULL,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
           excerpt TEXT,
