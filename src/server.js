@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const db = require('./db');
 const userController = require('./controllers/userController');
+const bookController = require('./controllers/bookController');
 
 const app = express();
 
@@ -63,30 +64,9 @@ app.get('/api/user', requireLogin, async (req, res) => {
 });
 
 // Book Routes
-app.get('/api/books', requireLogin, async (req, res) => {
-  try {
-    const result = await db.query('SELECT * FROM books WHERE user_id = $1', [req.user.id]);
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Get Books Error:', err);
-    res.status(500).json({ error: 'Failed to fetch books' });
-  }
-});
-
-app.post('/api/book', requireLogin, async (req, res) => {
-  const { title, genre, excerpt } = req.body;
-  if (!title || !genre) return res.status(400).json({ error: 'Title and genre are required' });
-  try {
-    const result = await db.query(
-      'INSERT INTO books (title, genre, user_id, excerpt) VALUES ($1, $2, $3, $4) RETURNING id',
-      [title, genre, req.user.id, excerpt || null]
-    );
-    res.status(201).json({ success: true, bookId: result.rows[0].id });
-  } catch (err) {
-    console.error('Add Book Error:', err);
-    res.status(500).json({ error: 'Failed to add book' });
-  }
-});
+app.get('/api/books', requireLogin, bookController.getBooks);
+app.post('/api/book', requireLogin, bookController.createBook);
+app.get('/api/book/:bookId', requireLogin, bookController.getBookDetails); // New route
 
 // Circles Routes
 app.get('/api/circles', requireLogin, async (req, res) => {

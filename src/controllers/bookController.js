@@ -1,10 +1,10 @@
-const { createBook, getBooks, getBook, addGroup, getComments, addComment } = require('../models/book');
+const { createBook, getBooks, getBook } = require('../models/book');
 
 module.exports = {
   createBook: async (req, res) => {
-    const { title, genre } = req.body;
+    const { title, genre, author } = req.body;
     try {
-      const bookId = await createBook(title, genre);
+      const bookId = await createBook(title, genre, author);
       res.status(201).json({ success: true, bookId });
     } catch (err) {
       console.error('Create Book Error:', err);
@@ -12,47 +12,27 @@ module.exports = {
     }
   },
   getBooks: async (req, res) => {
-    const books = await getBooks();
-    res.json(books);
+    try {
+      const books = await getBooks();
+      res.json(books);
+    } catch (err) {
+      console.error('Get Books Error:', err);
+      res.status(500).json({ error: 'Failed to fetch books' });
+    }
   },
   getBookDetails: async (req, res) => {
     const { bookId } = req.params;
     console.log('Fetching book:', bookId);
-    const book = await getBook(bookId);
-    if (!book) {
-      console.log('Book not found:', bookId);
-      return res.status(404).json({ error: 'Book not found' });
-    }
-    res.json(book);
-  },
-  addGroup: async (req, res) => {
-    const { bookId } = req.params;
-    const { name } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ error: 'Group name is required' });
-    }
-
-    console.log('Adding group:', { bookId, name });
     try {
-      await addGroup(bookId, name);
-      res.status(201).json({ success: true });
+      const book = await getBook(bookId);
+      if (!book) {
+        console.log('Book not found:', bookId);
+        return res.status(404).json({ error: 'Book not found' });
+      }
+      res.json(book);
     } catch (err) {
-      console.error('Add Group Error:', err);
-      res.status(500).json({ error: 'Failed to add group' });
+      console.error('Get Book Details Error:', err);
+      res.status(500).json({ error: 'Failed to fetch book details' });
     }
-  },
-  getGroupComments: async (req, res) => {
-    const { bookId, groupName } = req.params;
-    console.log('Fetching comments for book:', bookId, 'group:', groupName);
-    const comments = await getComments(bookId, groupName);
-    res.json(comments);
-  },
-  postGroupComment: async (req, res) => {
-    const { bookId, groupName } = req.params;
-    const { message } = req.body;
-    console.log('Posting comment:', { bookId, groupName, message });
-    await addComment(bookId, groupName, message);
-    res.status(201).json({ success: true });
-  },
+  }
 };

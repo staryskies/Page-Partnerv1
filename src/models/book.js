@@ -8,10 +8,10 @@ const addGroup = async (bookId, groupName) => {
 };
 
 module.exports = {
-  createBook: async (title, genre) => {
+  createBook: async (title, genre, author) => {
     const result = await db.query(
-      'INSERT INTO books (title, genre, groups) VALUES ($1, $2, $3) RETURNING id',
-      [title, genre, []] // Start with an empty groups array
+      'INSERT INTO books (title, genre, author, groups) VALUES ($1, $2, $3, $4) RETURNING id',
+      [title, genre, author || 'Unknown', []]
     );
     return result.rows[0].id;
   },
