@@ -634,6 +634,14 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      const username = localStorage.getItem('username');
+
+      // Redirect to login page if not signed in
+      if (!username) {
+        window.location.href = 'login.html';
+        return;
+      }
+
       const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
       const sidebar = document.querySelector('.sidebar');
       const logoutBtn = document.getElementById('logout-btn');
