@@ -275,11 +275,11 @@ app.delete('/api/book/:id', requireLogin, async (req, res) => {
 app.get('/api/circles', requireLogin, async (req, res) => {
   try {
     const result = await query(`
-      SELECT c.id, c.name, c.book_id, c.creator, c.status, c.members, c.description, c.privacy,
+      SELECT circle.id, circle.name, circle.book_id, circle.creator, circle.status, circle.members, circle.description, circle.privacy,
              b.genre AS bookGenre
-      FROM circles c
-      LEFT JOIN books b ON c.book_id = b.id
-      WHERE c.privacy = 'public' OR c.creator = $1 OR $1 = ANY(COALESCE(c.members, '{}'))
+      FROM circles circle
+      LEFT JOIN books b ON circle.book_id = b.id
+      WHERE circle.privacy = 'public' OR circle.creator = $1 OR $1 = ANY(COALESCE(circle.members, '{}'))
     `, [req.user.username]);
     res.json(result.rows);
   } catch (err) {
