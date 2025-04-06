@@ -244,3 +244,25 @@ async function voteReview(reviewId, vote) {
     document.getElementById('error').innerText = err.message;
   }
 }
+
+app.get('/api/user', requireLogin, async (req, res) => {
+  try {
+    const user = req.user; // Assume `requireLogin` middleware attaches the user object
+    res.json({
+      isLoggedIn: true,
+      displayName: user.name,
+      completedBooks: user.completed_books || 0,
+      badges: user.badges || 0
+    });
+  } catch (err) {
+    console.error('Get User Data Error:', err);
+    res.status(500).json({ error: 'Failed to fetch user data' });
+  }
+});
+
+{
+  "isLoggedIn": true,
+  "displayName": "John Doe",
+  "completedBooks": 5,
+  "badges": 3
+}
