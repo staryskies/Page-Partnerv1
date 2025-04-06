@@ -1,148 +1,1276 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reading Circles - PagePartner</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PagePartner - Reading Circles</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #37BBAE;
+            --color-primary-light: rgba(55, 187, 174, 0.1);
+            --color-secondary: #FF6B6B;
+            --color-secondary-light: rgba(255, 107, 107, 0.1);
+            --color-accent-blue: #219ebc;
+            --color-accent-dark: #13293d;
+            --color-background: #f8f9fa;
+            --color-sidebar: #f6f8f9;
+            --color-white: #ffffff;
+            --color-text: #444444;
+            --color-text-light: #6c757d;
+            --color-gray-100: #f8f9fa;
+            --color-gray-200: #e9ecef;
+            --color-gray-300: #dee2e6;
+            --color-success: #4CAF50;
+           
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+           
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+           
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+            --shadow-lg: 0 10px 15px rgba(0,0,0,0.03);
+        }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 260px;
+            background-color: var(--color-sidebar);
+            border-right: 1px solid var(--color-gray-200);
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            padding: var(--spacing-md);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: var(--spacing-md);
+            margin-bottom: var(--spacing-lg);
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            text-decoration: none;
+        }
+
+        .logo img {
+            width: 28px;
+            height: 28px;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .nav-section {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .nav-section-title {
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+            font-weight: 600;
+            padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
+            letter-spacing: 0.5px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-xs);
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+        }
+
+        .nav-item.active {
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+
+        .nav-item i {
+            margin-right: var(--spacing-md);
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--color-gray-200);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            transition: all 0.2s ease;
+        }
+
+        .user-info:hover {
+            background-color: var(--color-primary-light);
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-weight: 600;
+        }
+
+        .user-details {
+            flex-grow: 1;
+        }
+
+        .user-name {
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex-grow: 1;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            overflow-y: auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: var(--spacing-md);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-sm) var(--spacing-lg);
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .btn i {
+            margin-right: var(--spacing-sm);
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+        }
+
+        .btn-primary:hover {
+            background-color: #32a89d;
+        }
+
+        .btn-secondary {
+            background-color: var(--color-secondary);
+            color: var(--color-white);
+        }
+
+        .btn-secondary:hover {
+            background-color: #ff5252;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--color-primary);
+            border: 1px solid var(--color-primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--color-primary-light);
+        }
+
+        .btn-light {
+            background-color: var(--color-white);
+            color: var(--color-text);
+            border: 1px solid var(--color-gray-300);
+        }
+
+        .btn-light:hover {
+            background-color: var(--color-gray-100);
+        }
+
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .stat-card {
+            background-color: var(--color-white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-icon {
+            position: absolute;
+            top: var(--spacing-lg);
+            right: var(--spacing-lg);
+            font-size: 1.2rem;
+            color: var(--color-primary);
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .stat-description {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+        }
+
+        /* Content Card Styles */
+        .section {
+            background-color: var(--color-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+            overflow: hidden;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        .section-action {
+            color: var(--color-primary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-action i {
+            margin-left: var(--spacing-xs);
+        }
+
+        .section-body {
+            padding: var(--spacing-lg);
+        }
+
+        /* Reading Circles */
+        .circles-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-lg);
+        }
+
+        @media (max-width: 1200px) {
+            .circles-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .circles-grid, .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+        }
+
+        .circle-card {
+            background-color: var(--color-white);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            border: 1px solid var(--color-gray-200);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .circle-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .circle-cover {
+            height: 100px;
+            background-color: var(--color-primary-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .circle-book-image {
+            height: 100px;
+            width: 70px;
+            background-color: var(--color-secondary);
+            border-radius: var(--radius-sm);
+            position: absolute;
+            right: var(--spacing-lg);
+            bottom: -30px;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: var(--spacing-xs);
+            text-align: center;
+        }
+
+        .circle-content {
+            padding: var(--spacing-lg);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .circle-name {
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+            font-size: 1.1rem;
+        }
+
+        .circle-book {
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .circle-members {
+            display: flex;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .circle-member {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-weight: 500;
+            font-size: 0.7rem;
+        }
+
+        .circle-member:nth-child(2) {
+            background-color: var(--color-secondary);
+        }
+
+        .circle-member:nth-child(3) {
+            background-color: var(--color-accent-blue);
+        }
+
+        .circle-member.more {
+            background-color: var(--color-gray-200);
+            color: var(--color-text);
+        }
+
+        .circle-progress {
+            margin-top: auto;
+        }
+
+        .progress-title {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--color-gray-200);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--color-primary);
+            border-radius: 3px;
+        }
+
+        .circle-footer {
+            padding: var(--spacing-md);
+            border-top: 1px solid var(--color-gray-200);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .circle-status {
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--color-success);
+        }
+
+        .circle-status i {
+            margin-right: var(--spacing-xs);
+        }
+
+        .circle-actions {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .circle-action {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--color-gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-text);
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+        }
+
+        .circle-action:hover {
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+        }
+
+        /* Create Circle Card */
+        .create-circle-card {
+            border: 2px dashed var(--color-gray-300);
+            background-color: var(--color-white);
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-xl);
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .create-circle-card:hover {
+            border-color: var(--color-primary);
+            background-color: var(--color-primary-light);
+        }
+
+        .create-circle-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--color-primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            font-size: 1.5rem;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .create-circle-text {
+            font-weight: 500;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .create-circle-subtext {
+            font-size: 0.85rem;
+            color: var(--color-text-light);
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            display: flex;
+            margin-bottom: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-gray-200);
+            overflow-x: auto;
+            padding-bottom: 1px;
+        }
+
+        .tab {
+            padding: var(--spacing-md) var(--spacing-lg);
+            color: var(--color-text-light);
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            color: var(--color-primary);
+        }
+
+        .tab.active {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-primary);
+        }
+
+        /* Live Reading Preview */
+        .live-reading-preview {
+            background-color: var(--color-white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .live-reading-header {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            padding: var(--spacing-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .live-reading-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .live-reading-status {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: var(--radius-md);
+        }
+
+        .live-reading-status i {
+            margin-right: var(--spacing-xs);
+        }
+
+        .live-reading-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: var(--spacing-lg);
+            padding: var(--spacing-lg);
+        }
+
+        .reading-area {
+            background-color: var(--color-gray-100);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-md);
+            overflow-y: auto;
+            max-height: 300px;
+        }
+
+        .reading-text {
+            line-height: 1.8;
+        }
+
+        .reading-text p {
+            margin-bottom: var(--spacing-md);
+        }
+
+        .comments-area {
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+        }
+
+        .comments-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .comment {
+            margin-bottom: var(--spacing-md);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid var(--color-gray-200);
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .comment-author {
+            font-weight: 500;
+            margin-right: var(--spacing-sm);
+        }
+
+        .comment-time {
+            font-size: 0.75rem;
+            color: var(--color-text-light);
+        }
+
+        .comment-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .comment-input {
+            display: flex;
+            gap: var(--spacing-sm);
+        }
+
+        .comment-input input {
+            flex-grow: 1;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+        }
+
+        /* Recommendations */
+        .recommended-books {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: var(--spacing-lg);
+        }
+
+        .book-card {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .book-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .book-cover {
+            height: 200px;
+            background-color: var(--color-secondary);
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-white);
+            font-weight: 600;
+            text-align: center;
+            padding: 0 var(--spacing-sm);
+        }
+
+        .book-title {
+            font-weight: 500;
+            font-size: 0.9rem;
+            line-height: 1.3;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .book-author {
+            font-size: 0.8rem;
+            color: var(--color-text-light);
+        }
+
+        /* Reading Goal Progress */
+        .reading-goal {
+            background-color: var(--color-white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .reading-goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .reading-goal-title {
+            font-weight: 600;
+        }
+
+        .reading-goal-value {
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .goal-progress-bar {
+            height: 8px;
+            background-color: var(--color-gray-200);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .goal-progress-value {
+            height: 100%;
+            background-color: var(--color-primary);
+            border-radius: 4px;
+            width: 35%;
+        }
+
+        .goal-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--color-text-light);
+        }
+
+        /* Empty State */
+        .empty-state {
+            background-color: var(--color-white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            width: 80px;
+            height: 80px;
+            background-color: var(--color-primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--color-primary);
+            font-size: 2rem;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .empty-state-title {
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
+            font-size: 1.1rem;
+        }
+
+        .empty-state-description {
+            color: var(--color-text-light);
+            margin-bottom: var(--spacing-lg);
+            max-width: 400px;
+        }
+
+        /* Reading Circle Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: var(--color-white);
+            border-radius: var(--radius-lg);
+            width: 500px;
+            max-width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: var(--spacing-lg);
+            border-bottom: 1px solid var(--color-gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: var(--color-text-light);
+        }
+
+        .modal-body {
+            padding: var(--spacing-lg);
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border: 1px solid var(--color-gray-300);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+        }
+
+        .form-input:focus {
+            border-color: var(--color-primary);
+            outline: none;
+        }
+
+        .form-help {
+            font-size: 0.8rem;
+            color: var(--color-text-light);
+            margin-top: var(--spacing-xs);
+        }
+
+        .modal-footer {
+            padding: var(--spacing-lg);
+            border-top: 1px solid var(--color-gray-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-md);
+        }
+
+        /* Filter pills */
+        .filters {
+            display: flex;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-lg);
+            flex-wrap: wrap;
+        }
+
+        .filter-pill {
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-pill:not(.active) {
+            background-color: var(--color-white);
+            color: var(--color-text);
+            border: 1px solid var(--color-gray-300);
+        }
+
+        .filter-pill.active {
+            background-color: var(--color-primary);
+            color: var(--color-white);
+            border: 1px solid var(--color-primary);
+        }
+
+        .filter-pill:hover:not(.active) {
+            background-color: var(--color-gray-100);
+        }
+    </style>
 </head>
 <body>
-  <button class="mobile-nav-toggle"><i class="fas fa-bars"></i></button>
-  <div class="sidebar">
-    <div class="logo">
-      <img src="logo.png" alt="PagePartner Logo">
-      <span class="logo-text">PagePartner</span>
-    </div>
-    <nav class="nav-links">
-        <div class="nav-section">
-            <div class="nav-section-title">Main</div>
-            <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="add-book.html" class="nav-item"><i class="fas fa-plus"></i> Add Book</a>
-            <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
-            <a href="read.html" class="nav-item active"><i class="fas fa-book"></i> Read</a>
-          </div>
-          <div class="nav-section">
-            <div class="nav-section-title">Social</div>
-            <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
-          </div>
-          <div class="nav-section">
-            <div class="nav-section-title">Personal</div>
-            <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <a href="#" class="logo">
+                <img src="/api/placeholder/28/28" alt="PagePartner">
+                <span class="logo-text">PagePartner</span>
+            </a>
         </div>
-    </nav>
-    <div class="user-profile">
-      <div class="user-avatar" id="user-avatar-initials"></div>
-      <div class="user-info">
-        <div class="user-name" id="user-display-name">Sign in</div>
-        <div class="user-status" id="user-stats">Start your reading journey</div>
-      </div>
-    </div>
-  </div>
-  <div class="main-content">
-    <div class="section-header">
-      <h2 class="section-title">Reading Circles</h2>
-      <a href="#" class="see-all">Create Circle <i class="fas fa-plus"></i></a>
-    </div>
-    <div class="circle-cards" id="circles-grid">
-      <!-- Dynamic circles will be added here -->
-    </div>
-    <div class="chat-container" id="chat-container">
-      <div class="chat-header" id="chat-header">Chat for [Circle Name]</div>
-      <div class="chat-messages" id="chat-messages"></div>
-      <div class="chat-input">
-        <input type="text" id="chat-input" placeholder="Type a message...">
-        <button onclick="sendMessage()">Send</button>
-      </div>
-    </div>
-  </div>
-  <script>
-    const baseUrl = window.location.origin;
-    let selectedCircle = null;
-  
-    document.addEventListener('DOMContentLoaded', async () => {
-      const username = localStorage.getItem('username');
-      const userResponse = await fetch(`${baseUrl}/api/user`, { headers: { 'X-Username': username } });
-      const userData = await userResponse.json();
-      updateUserProfile(userData);
-  
-      const circlesResponse = await fetch(`${baseUrl}/api/circles`, { headers: { 'X-Username': username } });
-      const circles = await circlesResponse.json();
-      renderCircles(circles);
-      
-      // Mobile nav toggle functionality
-      document.querySelector('.mobile-nav-toggle').addEventListener('click', () => {
-        document.querySelector('.sidebar').classList.toggle('open');
-      });
-    });
-  
-    function updateUserProfile(data) {
-      const userAvatar = document.getElementById('user-avatar-initials');
-      const userName = document.getElementById('user-display-name');
-      const userStats = document.getElementById('user-stats');
-      if (data.isLoggedIn && data.displayName) {
-        const initials = data.displayName.split(' ').map(n => n.charAt(0)).join('');
-        userAvatar.textContent = initials;
-        userName.textContent = data.displayName;
-        userStats.textContent = `${data.completedBooks} books • ${data.badges} badges`;
-      }
-    }
-  
-    function renderCircles(circles) {
-      const grid = document.getElementById('circles-grid');
-      grid.innerHTML = '';
-      circles.forEach(circle => {
-        const card = document.createElement('div');
-        card.className = 'circle-card';
-        card.innerHTML = `
-          <div class="circle-header">
-            <div class="circle-icon"><i class="fas fa-users"></i></div>
-            <div class="circle-info">
-              <div class="circle-name">${circle.name}</div>
-              <div class="circle-meta">${circle.member_ids.length} members</div>
+       
+        <div class="nav-section">
+            <div class="nav-section-title">MAIN</div>
+            <a href="#" class="nav-item">
+                <i class="fas fa-home"></i>
+                Dashboard
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-book"></i>
+                My Library
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-compass"></i>
+                Discover
+            </a>
+        </div>
+       
+        <div class="nav-section">
+            <div class="nav-section-title">SOCIAL</div>
+            <a href="#" class="nav-item">
+                <i class="fas fa-user-friends"></i>
+                Friends
+            </a>
+            <a href="#" class="nav-item active">
+                <i class="fas fa-users"></i>
+                Reading Circles
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                Activity
+            </a>
+        </div>
+       
+        <div class="nav-section">
+            <div class="nav-section-title">PERSONAL</div>
+            <a href="#" class="nav-item">
+                <i class="fas fa-trophy"></i>
+                Achievements
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-star"></i>
+                Reviews
+            </a>
+            <a href="#" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                Statistics
+            </a>
+        </div>
+       
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <div class="user-name">Sign In</div>
+                    <div class="user-role">Create an account</div>
+                </div>
+                <i class="fas fa-sign-in-alt"></i>
             </div>
-          </div>
-        `;
-        card.addEventListener('click', () => showChat(circle));
-        grid.appendChild(card);
-      });
-    }
-  
-    async function showChat(circle) {
-      selectedCircle = circle;
-      const chatContainer = document.getElementById('chat-container');
-      const chatHeader = document.getElementById('chat-header');
-      const chatMessages = document.getElementById('chat-messages');
-      chatContainer.style.display = 'block';
-      chatHeader.textContent = `Chat for ${circle.name}`;
-      chatMessages.innerHTML = '';
-  
-      const response = await fetch(`${baseUrl}/api/book/${circle.book_id}/group/${circle.name}/comments`, {
-        headers: { 'X-Username': localStorage.getItem('username') },
-      });
-      const comments = await response.json();
-      comments.forEach(comment => {
-        const msg = document.createElement('div');
-        msg.className = 'chat-message';
-        msg.innerHTML = `<span>User ${comment.user_id}:</span> ${comment.message}`;
-        chatMessages.appendChild(msg);
-      });
-    }
-  
-    async function sendMessage() {
-      const input = document.getElementById('chat-input');
-      const message = input.value.trim();
-      if (message && selectedCircle) {
-        await fetch(`${baseUrl}/api/book/${selectedCircle.book_id}/group/${selectedCircle.name}/comments`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-Username': localStorage.getItem('username') },
-          body: JSON.stringify({ message }),
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Reading Circles</h1>
+            <div class="header-actions">
+                <button id="open-create-circle-modal" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create Circle
+                </button>
+                <button class="btn btn-light">
+                    <i class="fas fa-search"></i> Find Circles
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-title">Active Circles</div>
+                <div class="stat-value">0</div>
+                <div class="stat-description">Circles you're participating in</div>
+            </div>
+           
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+                <div class="stat-title">Current Reads</div>
+                <div class="stat-value">0</div>
+                <div class="stat-description">Books you're reading in circles</div>
+            </div>
+           
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-comment"></i></div>
+                <div class="stat-title">Discussions</div>
+                <div class="stat-value">0</div>
+                <div class="stat-description">Active discussions this week</div>
+            </div>
+           
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-calendar"></i></div>
+                <div class="stat-title">Upcoming</div>
+                <div class="stat-value">0</div>
+                <div class="stat-description">Scheduled reading sessions</div>
+            </div>
+        </div>
+
+        <!-- Empty State for Live Reading -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Live Reading</h2>
+                <a href="#" class="section-action">How it works <i class="fas fa-question-circle"></i></a>
+            </div>
+            <div class="section-body">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-book-reader"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Live Sessions Right Now</h3>
+                    <p class="empty-state-description">
+                        Join a reading circle or create your own to experience live reading sessions with friends and fellow book lovers.
+                    </p>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Join a Circle
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reading Circles Section -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Your Reading Circles</h2>
+                <a href="#" class="section-action">View all <i class="fas fa-chevron-right"></i></a>
+            </div>
+           
+            <div class="section-body">
+                <div class="tab-bar">
+                    <div class="tab active">All Circles</div>
+                    <div class="tab">Active</div>
+                    <div class="tab">Upcoming</div>
+                    <div class="tab">Past</div>
+                    <div class="tab">Created by Me</div>
+                </div>
+               
+                <div class="filters">
+                    <div class="filter-pill active">All</div>
+                    <div class="filter-pill">Fiction</div>
+                    <div class="filter-pill">Non-Fiction</div>
+                    <div class="filter-pill">Fantasy</div>
+                    <div class="filter-pill">Science Fiction</div>
+                    <div class="filter-pill">Mystery</div>
+                    <div class="filter-pill">Biography</div>
+                </div>
+               
+                <!-- Empty State for Reading Circles -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Reading Circles Yet</h3>
+                    <p class="empty-state-description">
+                        Join or create a reading circle to connect with fellow book lovers and discover new reads together.
+                    </p>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn btn-primary" id="create-circle-card">
+                            <i class="fas fa-plus"></i> Create Circle
+                        </button>
+                        <button class="btn btn-outline">
+                            <i class="fas fa-search"></i> Find Circles
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reading Goal Progress - Empty State -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Reading Goal</h2>
+                <a href="#" class="section-action">Set a goal <i class="fas fa-plus"></i></a>
+            </div>
+            <div class="section-body">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Reading Goal Set</h3>
+                    <p class="empty-state-description">
+                        Challenge yourself by setting a reading goal. Track your progress and celebrate your achievements.
+                    </p>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-bullseye"></i> Set Reading Goal
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommended Books Section - Empty State -->
+        <section class="section">
+            <div class="section-header">
+                <h2 class="section-title">Recommendations</h2>
+                <a href="#" class="section-action">Explore <i class="fas fa-compass"></i></a>
+            </div>
+           
+            <div class="section-body">
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Recommendations Yet</h3>
+                    <p class="empty-state-description">
+                        Add books to your library and join reading circles to get personalized recommendations.
+                    </p>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Books to Library
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Create Circle Modal -->
+    <div class="modal" id="create-circle-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Create Reading Circle</div>
+                <button class="modal-close" id="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Circle Name</label>
+                    <input type="text" class="form-input" placeholder="e.g., Fantasy Book Club">
+                </div>
+               
+                <div class="form-group">
+                    <label class="form-label">Current Book</label>
+                    <input type="text" class="form-input" placeholder="Search for a book">
+                    <div class="form-help">What book will your circle start with?</div>
+                </div>
+               
+                <div class="form-group">
+                    <label class="form-label">Circle Description</label>
+                    <input type="text" class="form-input" placeholder="Describe what your circle is about">
+                </div>
+               
+                <div class="form-group">
+                    <label class="form-label">Privacy</label>
+                    <select class="form-input">
+                        <option>Public - Anyone can join</option>
+                        <option>Private - Invitation only</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-light" id="cancel-create">Cancel</button>
+                <button class="btn btn-primary">Create Circle</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functionality
+        const createCircleModal = document.getElementById('create-circle-modal');
+        const openCreateCircleModal = document.getElementById('open-create-circle-modal');
+        const createCircleCard = document.getElementById('create-circle-card');
+        const closeModal = document.getElementById('close-modal');
+        const cancelCreate = document.getElementById('cancel-create');
+       
+        function openModal() {
+            createCircleModal.style.display = 'flex';
+        }
+       
+        function closeModalFunction() {
+            createCircleModal.style.display = 'none';
+        }
+       
+        openCreateCircleModal.addEventListener('click', openModal);
+        createCircleCard.addEventListener('click', openModal);
+        closeModal.addEventListener('click', closeModalFunction);
+        cancelCreate.addEventListener('click', closeModalFunction);
+       
+        // Tabs functionality
+        const tabs = document.querySelectorAll('.tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+            });
         });
-        input.value = '';
-        showChat(selectedCircle);
-      }
-    }
-  </script>
+       
+        // Filter pills functionality
+        const filterPills = document.querySelectorAll('.filter-pill');
+        filterPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                filterPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+            });
+        });
+       
+        // Set reading goal progress width
+        document.querySelector('.goal-progress-value').style.width = '35%';
+    </script>
 </body>
 </html>
