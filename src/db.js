@@ -62,13 +62,13 @@ module.exports = {
           id SERIAL PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
           book_id INT REFERENCES books(id) ON DELETE SET NULL,
-          creator VARCHAR(255) NOT NULL,
+          creator_id INT REFERENCES users(id) ON DELETE CASCADE, -- Replace "creator" with "creator_id"
           status VARCHAR(50) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'archived')),
-          members TEXT[] DEFAULT '{}',
+          member_ids TEXT[] DEFAULT '{}', -- Ensure this column exists
           description TEXT,
           privacy VARCHAR(50) DEFAULT 'public' CHECK (privacy IN ('public', 'private')),
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          CONSTRAINT unique_circle_name_book UNIQUE (name, book_id)  -- Prevent duplicate circles per book
+          CONSTRAINT unique_circle_name_book UNIQUE (name, book_id) -- Prevent duplicate circles per book
         )
       `);
 
