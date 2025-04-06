@@ -73,7 +73,27 @@ app.get('/api/user', requireLogin, async (req, res) => {
 });
 
 // Book Routes
-app.get('/api/books', getUsername, bookController.getBooks);
+app.get('/api/books', async (req, res) => {
+  const username = req.headers['x-username'];
+  if (!username) {
+    return res.status(401).json({ error: 'Unauthorized: Username required' });
+  }
+
+  try {
+    const userResult = await db.query('SELECT id FROM users WHERE username = $1', [username]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userId = userResult.rows[0].id;
+    const booksResult = await db.query('SELECT * FROM books WHERE user_id = $1', [userId]);
+    res.json({ books: booksResult.rows });
+  } catch (err) {
+    console.error('Error fetching books:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/api/book', requireLogin, bookController.createBook);
 app.get('/api/book/:bookId', requireLogin, bookController.getBookDetails);
 

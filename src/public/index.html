@@ -662,9 +662,18 @@
     }
 
     async function getUserBooks() {
-      try {
+    try {
+        const username = localStorage.getItem('username');
+        if (!username) {
+            console.error('No username found in localStorage');
+            return []; // Return early if no username
+        }
+
         const response = await fetch(`${baseUrl}/api/books`, {
-            headers: { 'Content-Type': 'application/json' }
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Username': username // Include the username in the headers
+            }
         });
 
         if (!response.ok) {
@@ -685,7 +694,7 @@
         console.error('Failed to fetch all books:', error.message);
         return []; // Return empty array on any error
     }
-  }
+}
 
     async function updateUI() {
       const userData = await getUserData();
