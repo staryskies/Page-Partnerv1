@@ -718,7 +718,7 @@
 
         .book-cover {
             height: 200px;
-            background: var(--secondary-color);
+            background: var (--secondary-color);
             border-radius: 8px;
             margin-bottom: 10px;
             display: flex;
@@ -1039,6 +1039,78 @@
                 box-shadow: 0 0 0 0 rgba(56, 178, 172, 0);
             }
         }
+
+        .genre-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .genre-form {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: var(--light-text);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s;
+            background: white;
+        }
+
+        .form-select:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(56, 178, 172, 0.2);
+        }
+
+        .search-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            background: var(--accent-color);
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-btn:hover {
+            background: #2e908a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(56, 178, 172, 0.3);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(56, 178, 172, 0.2);
+        }
+
+        .search-btn i {
+            font-size: 1rem;
+        }
     </style>
 
 </head>
@@ -1168,7 +1240,7 @@
             <div class="genre-selector">
                 <form class="genre-form" id="genre-form">
                     <div class="form-group">
-                        <label class="form-label" for="genre-select">Find Suggested Circles by Genre</label>
+                        <label class="form-label" for="genre-select">Search Circles by Genre</label>
                         <select class="form-select" id="genre-select">
                             <option value="">Select a genre</option>
                             <option value="Fiction">Fiction</option>
@@ -1184,20 +1256,20 @@
                             <option value="Self-Help">Self-Help</option>
                         </select>
                     </div>
-                    <div class="magic-loop" id="magic-loop" title="Find Suggested Circles">
-                        <i class="fas fa-magic"></i>
-                    </div>
+                    <button class="search-btn" id="search-btn" title="Search Circles">
+                        <i class="fas fa-search"></i> Search
+                    </button>
                 </form>
             </div>
             <div class="section-body">
                 <div class="circles-grid" id="suggested-circles">
                     <div class="empty-state">
                         <div class="empty-state-icon">
-                            <i class="fas fa-wand-magic-sparkles"></i>
+                            <i class="fas fa-search"></i>
                         </div>
                         <h3 class="empty-state-title">No Suggestions Yet</h3>
                         <p class="empty-state-description">
-                            Select a genre above and click the magic button to get personalized suggestions.
+                            Select a genre above and click Search to find circles.
                         </p>
                     </div>
                 </div>
@@ -1404,19 +1476,17 @@
                             <div class="empty-state-icon">
                                 <i class="fas fa-spinner fa-spin"></i>
                             </div>
-                            <h3 class="empty-state-title">Finding Circles...</h3>
+                            <h3 class="empty-state-title">Searching Circles...</h3>
                             <p class="empty-state-description">
-                                Looking for the best ${genre} reading circles for you.
+                                Finding ${genre} reading circles for you.
                             </p>
                         </div>
                     `;
                 }
 
-                // Call the Magic Loop API
-                const response = await fetch("https://magicloops.dev/api/loop/8efda255-508b-4667-8225-fbfdc295c985/run", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ genre })
+                // Use your existing API endpoint instead of Magic Loops
+                const response = await fetch(`${baseUrl}/api/suggest-circles/${encodeURIComponent(genre)}`, {
+                    headers: { 'X-Username': localStorage.getItem('username') }
                 });
 
                 if (!response.ok) {
@@ -1424,8 +1494,8 @@
                     throw new Error(errorData.error || 'Failed to fetch suggestions');
                 }
 
-                const data = await response.json();
-                return data.circles || []; // Return the circles array from the response
+                const circles = await response.json();
+                return circles;
             } catch (err) {
                 console.error('Fetch Suggested Circles Error:', err);
                 showToast('error', 'Error', 'Failed to fetch suggested circles. Please try again.');
@@ -1730,22 +1800,13 @@
         }
 
         function setupSuggestions() {
-            $('#magic-loop').addEventListener('click', async () => {
+            $('#search-btn').addEventListener('click', async (e) => {
+                e.preventDefault(); // Prevent form submission
                 const genre = $('#genre-select').value;
                 if (!genre) {
                     showToast('error', 'Error', 'Please select a genre first');
                     return;
                 }
-                $('#suggested-circles').innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">
-                            <i class="fas fa-spinner fa-spin"></i>
-                        </div>
-                        <h3 class="empty-state-title">Finding Circles...</h3>
-                        <p class="empty-state-description">
-                            Looking for the best ${genre} reading circles for you.
-                        </p>
-                    </div>`;
                 const suggestions = await fetchSuggestedCircles(genre);
                 await populateSuggestedCircles(suggestions);
             });
