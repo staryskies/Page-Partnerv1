@@ -364,6 +364,12 @@
     .carousel-btn:hover {
         background: var(--primary-color);
     }
+    /* Remove grid-related styles */
+    .results-area,
+    .books-grid,
+    .book-card {
+        display: none;
+    }
   </style>
 </head>
 <body>
@@ -394,13 +400,14 @@
   </div>
   <div class="main-content">
     <h1>Book Discovery</h1>
-    <div id="book-discovery-container"></div>
+
+    <!-- Carousel Section -->
     <div class="carousel-container">
-      <div class="carousel" id="book-carousel">
-          <!-- Books will be dynamically added here -->
-      </div>
-      <button class="carousel-btn prev" id="carousel-prev"><i class="fas fa-chevron-left"></i></button>
-      <button class="carousel-btn next" id="carousel-next"><i class="fas fa-chevron-right"></i></button>
+        <div class="carousel" id="book-carousel">
+            <!-- Books will be dynamically added here -->
+        </div>
+        <button class="carousel-btn prev" id="carousel-prev"><i class="fas fa-chevron-left"></i></button>
+        <button class="carousel-btn next" id="carousel-next"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>
 
