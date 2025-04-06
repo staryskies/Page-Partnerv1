@@ -1,3 +1,4 @@
+// client.js
 const baseUrl = window.location.origin;
 let selectedBookId = null;
 let selectedGroupName = null;
@@ -13,12 +14,7 @@ if (
   window.location.pathname !== '/homepage.html' &&
   window.location.pathname !== '/login.html' &&
   window.location.pathname !== '/signup.html' &&
-  window.location.pathname !== '/onboarding.html' &&
-  window.location.pathname !== '/circles.html' &&
-  window.location.pathname !== '/add-book.html' &&
-  window.location.pathname !== '/achievements.html' &&
-  window.location.pathname !== '/read.html' &&
-  window.location.pathname !== '/discover.html'
+  window.location.pathname !== '/onboarding.html'
 ) {
   window.location.href = '/login.html';
 }
@@ -29,6 +25,7 @@ if (window.location.pathname === '/index.html') {
   if (username) {
     document.getElementById('username').innerText = username;
     loadBooks();
+    loadReviews();
   }
 }
 
@@ -39,7 +36,6 @@ async function handleLogin() {
   const errorElement = document.getElementById('error');
 
   errorElement.textContent = '';
-
   if (!identifier || !password) {
     errorElement.textContent = 'Please enter both username/email and password.';
     return;
@@ -56,7 +52,6 @@ async function handleLogin() {
     localStorage.setItem('username', result.username);
     window.location.href = '/index.html';
   } catch (err) {
-    console.error('Login Error:', err);
     errorElement.textContent = err.message;
   }
 }
@@ -71,7 +66,6 @@ async function handleSignup() {
   const errorElement = document.getElementById('error');
 
   errorElement.textContent = '';
-
   if (!username || !email || !name || !age || !password) {
     errorElement.textContent = 'Please fill in all fields.';
     return;
@@ -88,7 +82,6 @@ async function handleSignup() {
     localStorage.setItem('username', result.username);
     window.location.href = '/onboarding.html';
   } catch (err) {
-    console.error('Signup Error:', err);
     errorElement.textContent = err.message;
   }
 }
@@ -105,7 +98,7 @@ async function loadBooks() {
     const response = await fetch(`${baseUrl}/api/books`, {
       headers: { 'X-Username': localStorage.getItem('username') },
     });
-    if (!response.ok) throw new Error(`Failed to fetch books: ${response.status}`);
+    if (!response.ok) throw new Error('Failed to fetch books');
     const books = await response.json();
     const bookSelect = document.getElementById('book-select');
     bookSelect.innerHTML = '<option value="">Select a book</option>';
@@ -116,7 +109,6 @@ async function loadBooks() {
       bookSelect.appendChild(option);
     });
   } catch (err) {
-    console.error('Load Books Error:', err);
     document.getElementById('error').innerText = err.message;
   }
 }
@@ -126,409 +118,129 @@ async function addBook() {
   const title = document.getElementById('book-title').value;
   const genre = document.getElementById('book-genre').value;
   if (!title || !genre) return;
+
   try {
     const response = await fetch(`${baseUrl}/api/book`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Username': localStorage.getItem('username') },
       body: JSON.stringify({ title, genre }),
     });
-    if (!response.ok) throw new Error(`Failed to add book: ${response.status}`);
+    if (!response.ok) throw new Error('Failed to add book');
     document.getElementById('book-title').value = '';
     document.getElementById('book-genre').value = '';
     loadBooks();
   } catch (err) {
-    console.error('Add Book Error:', err);
     document.getElementById('error').innerText = err.message;
   }
 }
 
-// Load groups for the selected book
-async function loadGroups() {
+// Load reviews
+async function loadReviews() {
+  try {
+    const response = await fetch(`${baseUrl}/api/reviews`, {
+      headers: { 'X-Username': localStorage.getItem('username') },
+    });
+    if (!response.ok) throw new Error('Failed to fetch reviews');
+    const data = await response.json();
+    const reviewsDiv = document.getElementById('reviews');
+    reviewsDiv.innerHTML = '';
+    data.reviews.forEach(review => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <h3>${review.review_title}</h3>
+        <p>Book: ${review.book_title} (${review.book_genre})</p>
+        <p>Rating: ${review.rating}/5</p>
+        <p>${review.review_text}</p>
+        <p>Helpful votes: ${review.helpful_votes}</p>
+        <button onclick="deleteReview(${review.id})">Delete</button>
+      `;
+      reviewsDiv.appendChild(div);
+    });
+  } catch (err) {
+    document.getElementById('error').innerText = err.message;
+  }
+}
+
+// Load community reviews
+async function loadCommunityReviews() {
+  try {
+    const response = await fetch(`${baseUrl}/api/reviews/community`, {
+      headers: { 'X-Username': localStorage.getItem('username') },
+    });
+    if (!response.ok) throw new Error('Failed to fetch community reviews');
+    const data = await response.json();
+    const communityDiv = document.getElementById('community-reviews');
+    communityDiv.innerHTML = '';
+    data.reviews.forEach(review => {
+      const div = document.createElement('div');
+      div.innerHTML = `
+        <h3>${review.review_title}</h3>
+        <p>By: ${review.username}</p>
+        <p>Book: ${review.book_title} (${review.book_genre})</p>
+        <p>Rating: ${review.rating}/5</p>
+        <p>${review.review_text}</p>
+        <p>Helpful votes: ${review.helpful_votes}</p>
+        <button onclick="voteReview(${review.id}, 'helpful')">Helpful</button>
+      `;
+      communityDiv.appendChild(div);
+    });
+  } catch (err) {
+    document.getElementById('error').innerText = err.message;
+  }
+}
+
+// Add a new review
+async function addReview() {
   const bookId = document.getElementById('book-select').value;
-  selectedBookId = bookId;
-  if (!bookId) {
-    document.getElementById('group-select').innerHTML = '<option value="">Select a group</option>';
-    document.getElementById('book-details').innerText = 'Select a book to view details';
-    document.getElementById('comments').innerHTML = 'Select a book and group to view comments';
+  const reviewTitle = document.getElementById('review-title').value;
+  const rating = document.getElementById('rating').value;
+  const reviewText = document.getElementById('review-text').value;
+  const tags = document.getElementById('review-tags').value.split(',').map(tag => tag.trim());
+  const containsSpoilers = document.getElementById('contains-spoilers').checked;
+
+  if (!bookId || !reviewTitle || !rating || !reviewText) {
+    document.getElementById('error').innerText = 'All fields are required';
     return;
   }
 
   try {
-    const bookResponse = await fetch(`${baseUrl}/api/book/${bookId}`, {
-      headers: { 'X-Username': localStorage.getItem('username') },
-    });
-    if (!bookResponse.ok) throw new Error(`Failed to fetch book: ${bookResponse.status}`);
-    const book = await bookResponse.json();
-    document.getElementById('book-details').innerText = `${book.title} (${book.genre})`;
-
-    const groupSelect = document.getElementById('group-select');
-    groupSelect.innerHTML = '<option value="">Select a group</option>';
-    book.groups.forEach(group => {
-      const option = document.createElement('option');
-      option.value = group;
-      option.innerText = group;
-      groupSelect.appendChild(option);
-    });
-
-    document.getElementById('comments').innerHTML = 'Select a group to view comments';
-  } catch (err) {
-    console.error('Load Groups Error:', err);
-    document.getElementById('error').innerText = err.message;
-  }
-}
-
-// Add a new group
-async function addGroup() {
-  if (!selectedBookId) {
-    document.getElementById('error').innerText = 'Please select a book first';
-    return;
-  }
-  const name = document.getElementById('new-group').value;
-  if (!name) return;
-  try {
-    const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group`, {
+    const response = await fetch(`${baseUrl}/api/reviews`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Username': localStorage.getItem('username') },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ book_id: bookId, review_title: reviewTitle, rating, review_text: reviewText, tags, contains_spoilers }),
     });
-    if (!response.ok) throw new Error(`Failed to add group: ${response.status}`);
-    document.getElementById('new-group').value = '';
-    loadGroups();
+    if (!response.ok) throw new Error('Failed to add review');
+    loadReviews();
   } catch (err) {
-    console.error('Add Group Error:', err);
     document.getElementById('error').innerText = err.message;
   }
 }
-
-// Load comments for the selected group
-async function loadComments() {
-  const groupName = document.getElementById('group-select').value;
-  selectedGroupName = groupName;
-  if (!selectedBookId || !groupName) {
-    document.getElementById('comments').innerHTML = 'Select a book and group to view comments';
-    return;
-  }
-
-  try {
-    const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group/${encodeURIComponent(groupName)}/comments`, {
-      headers: { 'X-Username': localStorage.getItem('username') },
-    });
-    if (!response.ok) throw new Error(`Failed to fetch comments: ${response.status}`);
-    const comments = await response.json();
-    const commentsDiv = document.getElementById('comments');
-    commentsDiv.innerHTML = '';
-    comments.forEach(comment => {
-      const p = document.createElement('p');
-      p.className = 'comment';
-      p.innerText = `${comment.username}: ${comment.message}`;
-      commentsDiv.appendChild(p);
-    });
-  } catch (err) {
-    console.error('Load Comments Error:', err);
-    document.getElementById('error').innerText = err.message;
-  }
-}
-
-// Post a comment
-async function postComment() {
-  if (!selectedBookId || !selectedGroupName) {
-    document.getElementById('error').innerText = 'Please select a book and group';
-    return;
-  }
-  const message = document.getElementById('new-comment').value;
-  if (!message) return;
-  try {
-    const response = await fetch(`${baseUrl}/api/book/${selectedBookId}/group/${encodeURIComponent(selectedGroupName)}/comments`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Username': localStorage.getItem('username') },
-      body: JSON.stringify({ message }),
-    });
-    if (!response.ok) throw new Error(`Failed to post comment: ${response.status}`);
-    document.getElementById('new-comment').value = '';
-    loadComments();
-  } catch (err) {
-    console.error('Post Comment Error:', err);
-    document.getElementById('error').innerText = err.message;
-  }
-}
-
-app.get('/api/user', requireLogin, async (req, res) => {
-  try {
-    const user = req.user; // Assume `requireLogin` middleware attaches the user object
-    res.json({
-      displayName: user.name,
-      currentlyReading: user.currently_reading || 0,
-      completedBooks: user.completed_books || 0,
-      readingStreak: user.reading_streak || 0,
-      badges: user.badges || 0,
-      points: user.points || 0,
-    });
-  } catch (err) {
-    console.error('Get User Data Error:', err);
-    res.status(500).json({ error: 'Failed to fetch user data' });
-  }
-});
-
-javascript
-
-Collapse
-
-Wrap
-
-Copy
-// Review Routes
-
-// Get all reviews for the logged-in user (My Reviews tab)
-app.get('/api/reviews', requireLogin, async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = (page - 1) * limit;
-  const filter = sanitizeInput(req.query.filter) || 'all'; // e.g., 'all', '5', 'helpful'
-  const search = sanitizeInput(req.query.search || '');
-
-  try {
-    let queryText = `
-      SELECT r.*, b.title AS book_title, b.genre AS book_genre
-      FROM reviews r
-      JOIN books b ON r.book_id = b.id
-      WHERE r.user_id = $1
-    `;
-    const params = [req.user.id];
-
-    if (search) {
-      queryText += ` AND (r.review_title ILIKE $2 OR r.review_text ILIKE $2 OR b.title ILIKE $2)`;
-      params.push(`%${search}%`);
-    }
-
-    if (filter !== 'all' && filter !== 'helpful') {
-      queryText += ` AND r.rating = $${params.length + 1}`;
-      params.push(parseInt(filter));
-    } else if (filter === 'helpful') {
-      queryText += ` AND r.helpful_votes > 0`;
-    }
-
-    queryText += ` ORDER BY r.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-    params.push(limit, offset);
-
-    const result = await query(queryText, params);
-    const totalResult = await query('SELECT COUNT(*) FROM reviews WHERE user_id = $1', [req.user.id]);
-    const totalReviews = parseInt(totalResult.rows[0].count);
-
-    res.json({
-      reviews: result.rows,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalReviews / limit),
-        totalReviews: totalReviews,
-        limit: limit,
-      },
-    });
-  } catch (err) {
-    console.error('Get Reviews Error:', err);
-    res.status(500).json({ error: 'Failed to fetch reviews' });
-  }
-});
-
-// Get community reviews (Community tab)
-app.get('/api/reviews/community', requireLogin, async (req, res) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-  const offset = (page - 1) * limit;
-  const filter = sanitizeInput(req.query.filter) || 'recent'; // e.g., 'recent', 'top', 'discussed'
-  const search = sanitizeInput(req.query.search || '');
-
-  try {
-    let queryText = `
-      SELECT r.*, u.username, b.title AS book_title, b.genre AS book_genre
-      FROM reviews r
-      JOIN users u ON r.user_id = u.id
-      JOIN books b ON r.book_id = b.id
-      WHERE r.status = 'approved' AND r.user_id != $1
-    `;
-    const params = [req.user.id];
-
-    if (search) {
-      queryText += ` AND (r.review_title ILIKE $2 OR r.review_text ILIKE $2 OR b.title ILIKE $2 OR u.username ILIKE $2)`;
-      params.push(`%${search}%`);
-    }
-
-    if (filter === 'top') {
-      queryText += ` ORDER BY r.rating DESC, r.helpful_votes DESC`;
-    } else if (filter === 'discussed') {
-      queryText += ` ORDER BY r.helpful_votes DESC, r.created_at DESC`;
-    } else {
-      queryText += ` ORDER BY r.created_at DESC`;
-    }
-
-    queryText += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-    params.push(limit, offset);
-
-    const result = await query(queryText, params);
-    const totalResult = await query(
-      "SELECT COUNT(*) FROM reviews WHERE status = 'approved' AND user_id != $1",
-      [req.user.id]
-    );
-    const totalReviews = parseInt(totalResult.rows[0].count);
-
-    res.json({
-      reviews: result.rows,
-      pagination: {
-        currentPage: page,
-        totalPages: Math.ceil(totalReviews / limit),
-        totalReviews: totalReviews,
-        limit: limit,
-      },
-    });
-  } catch (err) {
-    console.error('Get Community Reviews Error:', err);
-    res.status(500).json({ error: 'Failed to fetch community reviews' });
-  }
-});
-
-// Create a new review
-app.post('/api/reviews', requireLogin, async (req, res) => {
-  const {
-    book_id,
-    review_title,
-    rating,
-    review_text,
-    tags,
-    contains_spoilers,
-  } = req.body;
-
-  if (!book_id || !review_title || !rating || !review_text) {
-    return res.status(400).json({ error: 'Book ID, review title, rating, and review text are required' });
-  }
-
-  if (rating < 1 || rating > 5) {
-    return res.status(400).json({ error: 'Rating must be between 1 and 5' });
-  }
-
-  if (review_text.length < 50) {
-    return res.status(400).json({ error: 'Review text must be at least 50 characters' });
-  }
-
-  try {
-    // Verify the book exists and belongs to the user
-    const bookCheck = await query('SELECT id FROM books WHERE id = $1 AND user_id = $2', [book_id, req.user.id]);
-    if (bookCheck.rows.length === 0) {
-      return res.status(404).json({ error: 'Book not found or not owned by user' });
-    }
-
-    const sanitizedReviewTitle = sanitizeInput(review_title);
-    const sanitizedReviewText = sanitizeInput(review_text);
-    const sanitizedTags = Array.isArray(tags) ? tags.map(t => sanitizeInput(t)) : [];
-
-    const result = await query(
-      `INSERT INTO reviews (user_id, book_id, review_title, rating, review_text, tags, contains_spoilers)
-       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-      [req.user.id, book_id, sanitizedReviewTitle, rating, sanitizedReviewText, sanitizedTags, contains_spoilers || false]
-    );
-
-    res.status(201).json({ success: true, reviewId: result.rows[0].id });
-  } catch (err) {
-    console.error('Create Review Error:', err);
-    res.status(500).json({ error: 'Failed to create review' });
-  }
-});
-
-// Update a review
-app.patch('/api/reviews/:id', requireLogin, async (req, res) => {
-  const { id } = req.params;
-  const { review_title, rating, review_text, tags, contains_spoilers } = req.body;
-
-  try {
-    const reviewCheck = await query('SELECT * FROM reviews WHERE id = $1 AND user_id = $2', [id, req.user.id]);
-    if (reviewCheck.rows.length === 0) {
-      return res.status(404).json({ error: 'Review not found or not owned by user' });
-    }
-
-    const updates = [];
-    const params = [id, req.user.id];
-    let paramIndex = 3;
-
-    if (review_title) {
-      updates.push(`review_title = $${paramIndex++}`);
-      params.push(sanitizeInput(review_title));
-    }
-    if (rating) {
-      if (rating < 1 || rating > 5) {
-        return res.status(400).json({ error: 'Rating must be between 1 and 5' });
-      }
-      updates.push(`rating = $${paramIndex++}`);
-      params.push(rating);
-    }
-    if (review_text) {
-      if (review_text.length < 50) {
-        return res.status(400).json({ error: 'Review text must be at least 50 characters' });
-      }
-      updates.push(`review_text = $${paramIndex++}`);
-      params.push(sanitizeInput(review_text));
-    }
-    if (tags) {
-      updates.push(`tags = $${paramIndex++}`);
-      params.push(Array.isArray(tags) ? tags.map(t => sanitizeInput(t)) : []);
-    }
-    if (typeof contains_spoilers === 'boolean') {
-      updates.push(`contains_spoilers = $${paramIndex++}`);
-      params.push(contains_spoilers);
-    }
-
-    if (updates.length > 0) {
-      updates.push(`updated_at = CURRENT_TIMESTAMP`);
-      const queryText = `UPDATE reviews SET ${updates.join(', ')} WHERE id = $1 AND user_id = $2`;
-      await query(queryText, params);
-    }
-
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error('Update Review Error:', err);
-    res.status(500).json({ error: 'Failed to update review' });
-  }
-});
 
 // Delete a review
-app.delete('/api/reviews/:id', requireLogin, async (req, res) => {
-  const { id } = req.params;
-
+async function deleteReview(reviewId) {
   try {
-    const result = await query('DELETE FROM reviews WHERE id = $1 AND user_id = $2 RETURNING id', [id, req.user.id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Review not found or not owned by user' });
-    }
-
-    res.status(200).json({ success: true });
+    const response = await fetch(`${baseUrl}/api/reviews/${reviewId}`, {
+      method: 'DELETE',
+      headers: { 'X-Username': localStorage.getItem('username') },
+    });
+    if (!response.ok) throw new Error('Failed to delete review');
+    loadReviews();
   } catch (err) {
-    console.error('Delete Review Error:', err);
-    res.status(500).json({ error: 'Failed to delete review' });
+    document.getElementById('error').innerText = err.message;
   }
-});
+}
 
-// Vote on a review (helpful/not helpful)
-app.post('/api/reviews/:id/vote', requireLogin, async (req, res) => {
-  const { id } = req.params;
-  const { vote } = req.body; // 'helpful' or 'not_helpful'
-
-  if (vote !== 'helpful' && vote !== 'not_helpful') {
-    return res.status(400).json({ error: 'Invalid vote type' });
-  }
-
+// Vote on a review
+async function voteReview(reviewId, vote) {
   try {
-    const reviewCheck = await query('SELECT user_id, helpful_votes FROM reviews WHERE id = $1', [id]);
-    if (reviewCheck.rows.length === 0) {
-      return res.status(404).json({ error: 'Review not found' });
-    }
-    if (reviewCheck.rows[0].user_id === req.user.id) {
-      return res.status(403).json({ error: 'Cannot vote on your own review' });
-    }
-
-    // Simplified voting: increment helpful_votes (no tracking of individual user votes here)
-    const newVotes = vote === 'helpful' ? reviewCheck.rows[0].helpful_votes + 1 : reviewCheck.rows[0].helpful_votes;
-    await query('UPDATE reviews SET helpful_votes = $1 WHERE id = $2', [newVotes, id]);
-
-    res.status(200).json({ success: true, helpful_votes: newVotes });
+    const response = await fetch(`${baseUrl}/api/reviews/${reviewId}/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Username': localStorage.getItem('username') },
+      body: JSON.stringify({ vote }),
+    });
+    if (!response.ok) throw new Error('Failed to vote on review');
+    loadCommunityReviews();
   } catch (err) {
-    console.error('Vote Review Error:', err);
-    res.status(500).json({ error: 'Failed to vote on review' });
+    document.getElementById('error').innerText = err.message;
   }
-});
+}

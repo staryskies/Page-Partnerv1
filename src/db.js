@@ -1,3 +1,4 @@
+// db.js
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -23,7 +24,10 @@ module.exports = {
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           username VARCHAR(255) UNIQUE NOT NULL,
+          email VARCHAR(255) UNIQUE NOT NULL,
           password VARCHAR(255) NOT NULL,
+          name VARCHAR(255) NOT NULL,
+          age INT NOT NULL,
           profile_picture TEXT,
           user_location VARCHAR(255),
           genres TEXT[] DEFAULT '{}',
@@ -35,10 +39,6 @@ module.exports = {
           completed_books INT DEFAULT 0,
           reading_streak INT DEFAULT 0,
           badges INT DEFAULT 0,
-          recommendations JSON DEFAULT '[]',
-          previews JSON DEFAULT '[]',
-          circles JSON DEFAULT '[]',
-          friends JSON DEFAULT '[]',
           points INT DEFAULT 0,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
@@ -94,38 +94,19 @@ module.exports = {
       `);
 
       await pool.query(`
-        CREATE TABLE IF NOT EXISTS friendships (
+        CREATE TABLE IF NOT EXISTS reviews (
           id SERIAL PRIMARY KEY,
           user_id INT REFERENCES users(id) ON DELETE CASCADE,
-          friend_id INT REFERENCES users(id) ON DELETE CASCADE,
+          book_id INT REFERENCES books(id) ON DELETE CASCADE,
+          review_title VARCHAR(255) NOT NULL,
+          rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+          review_text TEXT NOT NULL,
+          tags TEXT[] DEFAULT '{}',
+          contains_spoilers BOOLEAN DEFAULT FALSE,
+          helpful_votes INT DEFAULT 0,
           status VARCHAR(50) DEFAULT 'pending',
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE (user_id, friend_id)
-        )
-      `);
-
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS reading_sessions (
-          id SERIAL PRIMARY KEY,
-          circle_id INT REFERENCES circles(id) ON DELETE CASCADE,
-          start_time TIMESTAMP,
-          end_time TIMESTAMP,
-          is_active BOOLEAN DEFAULT FALSE,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS reading_goals (
-          id SERIAL PRIMARY KEY,
-          user_id INT REFERENCES users(id) ON DELETE CASCADE,
-          target_books INT NOT NULL,
-          timeframe VARCHAR(50) NOT NULL, -- e.g., 'year', 'month'
-          start_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          end_date TIMESTAMP,
-          progress INT DEFAULT 0,
-          is_active BOOLEAN DEFAULT TRUE,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          updated_at TIMESTAMP
         )
       `);
 
