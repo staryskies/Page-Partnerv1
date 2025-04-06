@@ -1336,10 +1336,11 @@
                 });
                 if (!response.ok) throw new Error('Failed to fetch circles');
                 const circles = await response.json();
+                console.log('Raw Circles API Response:', circles); // Log raw data
                 return circles.map(circle => ({
                     id: circle.id,
                     name: circle.name,
-                    book_id: circle.bookId,
+                    book_id: circle.bookId, // Check if this matches the API key
                     creator: circle.creator,
                     genre: circle.bookGenre,
                     status: circle.status || 'active',
@@ -1354,7 +1355,6 @@
                 return [];
             }
         }
-
 
         async function updateSidebar() {
             const username = localStorage.getItem('username');

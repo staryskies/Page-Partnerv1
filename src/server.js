@@ -132,18 +132,32 @@ app.get('/api/users/:username/books', async (req, res) => {
 
 // Circles Routes
 app.get('/api/circles', getUsername, async (req, res) => {
-  try {
-    const result = await db.query(`
-      SELECT c.*, b.genre AS bookGenre 
-      FROM circles c 
-      LEFT JOIN books b ON c.book_id = b.id
-      WHERE c.privacy = 'public' OR c.creator = $1 OR $1 = ANY(COALESCE(c.members, '{}'))
-    `, [req.username]);
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Get Circles Error:', err);
-    res.status(500).json({ error: 'Failed to fetch circles' });
-  }
+    try {
+        const result = await db.query(`
+            SELECT c.*, b.genre AS bookGenre 
+            FROM circles c 
+            LEFT JOIN books b ON c.book_id = b.id
+            WHERE c.privacy = 'public' OR c.creator = $1 OR $1 = ANY(COALESCE(c.members, '{}'))
+        `, [req.username]);
+
+        // Map the result to match frontend expectations
+        const circles = result.rows.map(row => ({
+            id: row.id,
+            name: row.name,
+            bookId: row.book_id, // Ensure this matches frontend expectation
+            creator: row.creator,
+            status: row.status,
+            members: row.members,
+            description: row.description,
+            privacy: row.privacy,
+            genre: row.bookGenre // Include genre from the joined books table
+        }));
+
+        res.json(circles);
+    } catch (err) {
+        console.error('Get Circles Error:', err);
+        res.status(500).json({ error: 'Failed to fetch circles' });
+    }
 });
 
 app.post('/api/circles', getUsername, async (req, res) => {
