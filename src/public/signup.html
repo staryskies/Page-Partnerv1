@@ -80,34 +80,48 @@
         const baseUrl = window.location.origin;
 
         async function handleSignup() {
-            const username = document.getElementById('username').value;
-            const email = document.getElementById('email').value;
-            const name = document.getElementById('name').value;
-            const age = document.getElementById('age').value;
-            const password = document.getElementById('password').value;
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const name = document.getElementById('name').value.trim();
+            const age = document.getElementById('age').value.trim();
+            const password = document.getElementById('password').value.trim();
             const errorElement = document.getElementById('error');
 
+            // Clear previous error messages
             errorElement.textContent = '';
 
+            // Validate input fields
             if (!username || !email || !name || !age || !password) {
                 errorElement.textContent = 'Please fill in all fields.';
                 return;
             }
 
+            if (password.length < 6) {
+                errorElement.textContent = 'Password must be at least 6 characters long.';
+                return;
+            }
+
             try {
+                // Send signup request to the server
                 const response = await fetch(`${baseUrl}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, email, name, age, password }),
                 });
+
                 const result = await response.json();
 
                 if (!response.ok) {
                     throw new Error(result.error || 'Signup failed');
                 }
 
-                // Automatically log in by setting username in localStorage
+                // Automatically log in the user by storing their data in localStorage
                 localStorage.setItem('username', result.username);
+                localStorage.setItem('email', result.email);
+                localStorage.setItem('name', result.name);
+                localStorage.setItem('age', result.age);
+
+                // Show success message and redirect to onboarding
                 errorElement.textContent = 'Signup successful! Redirecting to onboarding...';
                 errorElement.style.color = 'green';
                 setTimeout(() => {

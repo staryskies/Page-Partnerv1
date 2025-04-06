@@ -490,23 +490,23 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
       updateProgressBar(0, 8);
 
       // Range slider
       const paceSlider = document.getElementById('reading-pace');
       const paceValue = document.getElementById('pace-value');
-      paceSlider.addEventListener('input', function() {
+      paceSlider.addEventListener('input', function () {
         paceValue.textContent = this.value + ' books per month';
       });
 
       // Profile picture preview
       const profileInput = document.getElementById('profile-picture');
       const profilePreview = document.getElementById('profile-preview');
-      profileInput.addEventListener('change', function() {
+      profileInput.addEventListener('change', function () {
         if (this.files && this.files[0]) {
           const reader = new FileReader();
-          reader.onload = function(e) {
+          reader.onload = function (e) {
             profilePreview.src = e.target.result;
             profilePreview.style.display = 'block';
           };
@@ -517,7 +517,7 @@
       // Multi-select functionality
       ['genre', 'goals'].forEach(type => {
         document.querySelectorAll(`#${type}-selection .selection-item`).forEach(item => {
-          item.addEventListener('click', function() {
+          item.addEventListener('click', function () {
             this.classList.toggle('selected');
             validateSection(type === 'genre' ? 4 : 8);
           });
@@ -526,7 +526,7 @@
 
       // Single-select functionality
       document.querySelectorAll('#length-selection .selection-item').forEach(item => {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function () {
           document.querySelectorAll('#length-selection .selection-item').forEach(i => i.classList.remove('selected'));
           this.classList.add('selected');
           validateSection(10);
@@ -544,10 +544,12 @@
         input.addEventListener('input', () => validateSection(9));
       });
 
-      document.getElementById('onboarding-form').addEventListener('submit', function(e) {
+      // Submit event handler
+      document.getElementById('onboarding-form').addEventListener('submit', function (e) {
         e.preventDefault();
         if (validateSection(10)) {
           alert('Thank you for sharing your preferences! Your personalized reading experience is ready.');
+          window.location.href = 'index.html'; // Redirect to the dashboard
         }
       });
     });
