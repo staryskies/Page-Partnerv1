@@ -1418,9 +1418,16 @@
             } else {
                 for (const circle of circles) {
                     try {
+                        console.log('Circle:', circle); // Debug log
+                        if (!circle.book_id) {
+                            console.warn('Circle has no book_id:', circle);
+                            continue; // Skip circles without a valid book_id
+                        }
+
                         const bookResponse = await fetch(`${baseUrl}/api/book/${circle.book_id}`, {
                             headers: { 'X-Username': localStorage.getItem('username') }
                         });
+
                         let book = { title: 'Unknown', author: 'Unknown', genre: '' };
                         if (bookResponse.ok) book = await bookResponse.json();
 

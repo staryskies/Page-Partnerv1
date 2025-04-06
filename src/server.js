@@ -147,20 +147,22 @@ app.get('/api/circles', getUsername, async (req, res) => {
 });
 
 app.post('/api/circles', getUsername, async (req, res) => {
-  const { name, bookId, description, privacy } = req.body;
-  if (!name || !bookId) return res.status(400).json({ error: 'Name and bookId are required' });
-  try {
-    const bookCheck = await db.query('SELECT id FROM books WHERE id = $1', [bookId]);
-    if (bookCheck.rows.length === 0) return res.status(404).json({ error: 'Book not found' });
-    const result = await db.query(
-      'INSERT INTO circles (name, book_id, creator, members, description, privacy) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [name, bookId, req.username, [req.username], description || '', privacy || 'public']
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error('Create Circle Error:', err);
-    res.status(500).json({ error: 'Failed to create circle' });
-  }
+    const { name, bookId, description, privacy } = req.body;
+    if (!name || !bookId) return res.status(400).json({ error: 'Name and bookId are required' });
+
+    try {
+        const bookCheck = await db.query('SELECT id FROM books WHERE id = $1', [bookId]);
+        if (bookCheck.rows.length === 0) return res.status(404).json({ error: 'Book not found' });
+
+        const result = await db.query(
+            'INSERT INTO circles (name, book_id, creator, members, description, privacy) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [name, bookId, req.username, [req.username], description || '', privacy || 'public']
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error('Create Circle Error:', err);
+        res.status(500).json({ error: 'Failed to create circle' });
+    }
 });
 
 app.post('/api/circles/:id/join', getUsername, async (req, res) => {
