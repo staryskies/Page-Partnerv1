@@ -120,7 +120,7 @@ app.get('/api/users/:username/books', async (req, res) => {
   const { username } = req.params;
   try {
     const result = await db.query(
-      'SELECT * FROM books WHERE user_id = (SELECT id FROM users WHERE username = $1)',
+      'SELECT * FROM books WHERE userID= (SELECT id FROM users WHERE username = $1)',
       [username]
     );
     res.json({ books: result.rows });
