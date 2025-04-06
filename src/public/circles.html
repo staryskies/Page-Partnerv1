@@ -1692,26 +1692,6 @@
             return { setCircles: circles => allCircles = circles };
         }
 
-        function setupSuggestions() {
-            $('#search-btn').addEventListener('click', async (e) => {
-                e.preventDefault(); // Prevent form submission
-                const genre = $('#genre-select').value;
-                if (!genre) {
-                    showToast('error', 'Error', 'Please select a genre first');
-                    return;
-                }
-                const suggestions = await fetchSuggestedCircles(genre);
-                await populateSuggestedCircles(suggestions);
-            });
-
-            $('#genre-select').addEventListener('change', async () => {
-                const genre = $('#genre-select').value;
-                if (genre) {
-                    const suggestions = await fetchSuggestedCircles(genre);
-                    await populateSuggestedCircles(suggestions);
-                }
-            });
-        }
 
         // Initialization
         async function init() {
