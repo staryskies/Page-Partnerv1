@@ -216,7 +216,7 @@ app.delete('/api/circles/:id', getUsername, async (req, res) => {
   }
 });
 
-// Comments Routes
+// Comments Rsdfsdfsd
 app.get('/api/book/:bookId/group/:groupName/comments', getUsername, async (req, res) => {
   try {
     const result = await db.query(`
