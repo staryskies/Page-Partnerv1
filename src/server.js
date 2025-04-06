@@ -1,9 +1,109 @@
+// server.js
 const express = require('express');
 const path = require('path');
-const { connectDB, initDB, query } = require('./db');
+const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
 const userController = require('./controllers/userController');
 
 const app = express();
+
+// Database Connection
+const pool = new Pool({
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'pagepartner',
+  password: process.env.DB_PASSWORD || 'your_password',
+  port: process.env.DB_PORT || 5432,
+});
+
+async function connectDB() {
+  try {
+    await pool.connect();
+    console.log('Connected to database');
+  } catch (err) {
+    console.error('Database connection error:', err);
+    throw err;
+  }
+}
+
+async function initDB() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        age INT NOT NULL,
+        profile_picture TEXT,
+        user_location VARCHAR(255),
+        genres TEXT[],
+        favorite_authors TEXT[],
+        reading_pace INT,
+        goals TEXT[],
+        to_read_list TEXT[],
+        book_length VARCHAR(50),
+        currently_reading INT DEFAULT 0,
+        completed_books INT DEFAULT 0,
+        reading_streak INT DEFAULT 0,
+        badges INT DEFAULT 0,
+        points INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS books (
+        id SERIAL PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        genre VARCHAR(100) NOT NULL,
+        user_id INT REFERENCES users(id),
+        excerpt TEXT,
+        groups TEXT[] DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS circles (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        book_id INT REFERENCES books(id),
+        member_ids INT[] DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS comments (
+        id SERIAL PRIMARY KEY,
+        book_id INT REFERENCES books(id),
+        group_name VARCHAR(255),
+        message TEXT NOT NULL,
+        user_id INT REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS achievements (
+        id SERIAL PRIMARY KEY,
+        user_id INT REFERENCES users(id),
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        icon VARCHAR(255),
+        earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    console.log('Database initialized');
+  } catch (err) {
+    console.error('Database initialization error:', err);
+    throw err;
+  }
+}
+
+const query = async (text, params) => {
+  try {
+    const result = await pool.query(text, params);
+    return result;
+  } catch (err) {
+    console.error('Query error:', err);
+    throw err;
+  }
+};
 
 // Middleware
 app.use(express.json());
@@ -44,19 +144,27 @@ app.post('/api/auth/login', userController.login);
 // User Data
 app.get('/api/user', requireLogin, async (req, res) => {
   const user = req.user;
-  const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(member_ids)', [user.id]);
-  const achievementsResult = await query('SELECT COUNT(*) FROM achievements WHERE user_id = $1', [user.id]);
-  res.json({
-    isLoggedIn: true,
-    displayName: user.username, // Adjusted to match table
-    currentlyReading: user.currently_reading || 0,
-    completedBooks: user.completed_books || 0,
-    readingStreak: user.reading_streak || 0,
-    badges: parseInt(achievementsResult.rows[0].count, 10),
-    points: user.points || 0,
-    goals: user.goals || [],
-    recommendations: user.recommendations || []
-  });
+  try {
+    const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(member_ids)', [user.id]);
+    const achievementsResult = await query('SELECT COUNT(*) FROM achievements WHERE user_id = $1', [user.id]);
+    res.json({
+      isLoggedIn: true,
+      displayName: user.username,
+      email: user.email,
+      name: user.name,
+      age: user.age,
+      currentlyReading: user.currently_reading || 0,
+      completedBooks: user.completed_books || 0,
+      readingStreak: user.reading_streak || 0,
+      badges: parseInt(achievementsResult.rows[0].count, 10),
+      points: user.points || 0,
+      goals: user.goals || [],
+      recommendations: user.recommendations || []
+    });
+  } catch (err) {
+    console.error('User Data Error:', err);
+    res.status(500).json({ error: 'Failed to fetch user data' });
+  }
 });
 
 app.patch('/api/user', requireLogin, async (req, res) => {
@@ -204,6 +312,10 @@ app.post('/api/circles', requireLogin, async (req, res) => {
     return res.status(400).json({ error: 'Name and book ID are required' });
   }
   try {
+    const bookCheck = await query('SELECT id FROM books WHERE id = $1 AND user_id = $2', [bookId, req.user.id]);
+    if (bookCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Book not found or not owned by user' });
+    }
     const result = await query(
       'INSERT INTO circles (name, book_id, member_ids) VALUES ($1, $2, $3) RETURNING id',
       [name, bookId, [req.user.id]]
@@ -212,6 +324,25 @@ app.post('/api/circles', requireLogin, async (req, res) => {
   } catch (err) {
     console.error('Create Circle Error:', err);
     res.status(500).json({ error: 'Failed to create circle' });
+  }
+});
+
+app.post('/api/circles/:circleId/join', requireLogin, async (req, res) => {
+  const { circleId } = req.params;
+  try {
+    const circleResult = await query('SELECT member_ids FROM circles WHERE id = $1', [circleId]);
+    if (circleResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Circle not found' });
+    }
+    const members = circleResult.rows[0].member_ids || [];
+    if (!members.includes(req.user.id)) {
+      members.push(req.user.id);
+      await query('UPDATE circles SET member_ids = $1 WHERE id = $2', [members, circleId]);
+    }
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error('Join Circle Error:', err);
+    res.status(500).json({ error: 'Failed to join circle' });
   }
 });
 
@@ -296,56 +427,6 @@ const startServer = async () => {
   try {
     await connectDB();
     await initDB();
-
-    await query(`
-      ALTER TABLE users
-      ADD COLUMN IF NOT EXISTS profile_picture TEXT,
-      ADD COLUMN IF NOT EXISTS user_location VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS genres TEXT[],
-      ADD COLUMN IF NOT EXISTS favorite_authors TEXT[],
-      ADD COLUMN IF NOT EXISTS reading_pace INT,
-      ADD COLUMN IF NOT EXISTS goals TEXT[],
-      ADD COLUMN IF NOT EXISTS to_read_list TEXT[],
-      ADD COLUMN IF NOT EXISTS book_length VARCHAR(50),
-      ADD COLUMN IF NOT EXISTS currently_reading INT DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS completed_books INT DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS reading_streak INT DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS badges INT DEFAULT 0,
-      ADD COLUMN IF NOT EXISTS points INT DEFAULT 0
-    `);
-
-    await query(`
-      ALTER TABLE books
-      ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id),
-      ADD COLUMN IF NOT EXISTS excerpt TEXT
-    `);
-
-    await query(`
-      CREATE TABLE IF NOT EXISTS circles (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        book_id INT REFERENCES books(id),
-        member_ids INT[] DEFAULT '{}'
-      )
-    `);
-
-    await query(`
-      ALTER TABLE comments
-      ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id)
-    `);
-
-    await query(`
-      CREATE TABLE IF NOT EXISTS achievements (
-        id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES users(id),
-        name VARCHAR(255) NOT NULL,
-        description TEXT,
-        icon VARCHAR(255),
-        earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    console.log('Database schema updated');
     const port = process.env.PORT || 3000;
     app.listen(port, () => console.log(`Server running on port ${port}`));
   } catch (err) {
