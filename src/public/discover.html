@@ -472,11 +472,17 @@
 
     // Fetch Functions
     async function fetchUserData() {
-        const response = await fetch('/api/user', { headers: { 'X-Username': username } });
-        if (!response.ok) throw new Error('Failed to fetch user data');
-        const data = await response.json();
-        const goals = await fetch('/api/reading-goals', { headers: { 'X-Username': username } }).then(res => res.json());
-        return { ...data, goals };
+        try {
+            const response = await fetch('/api/user', { headers: { 'X-Username': username } });
+            if (!response.ok) throw new Error('Failed to fetch user data');
+            const data = await response.json();
+            const goals = await fetch('/api/reading-goals', { headers: { 'X-Username': username } }).then(res => res.json());
+            return { ...data, goals };
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            alert('Failed to load user data. Please try again later.');
+            return null;
+        }
     }
 
     async function fetchCircles() {
@@ -504,16 +510,12 @@
 
     // UI Updates
     function updateSidebar(userData) {
-        const avatar = document.getElementById('user-avatar');
-        const name = document.getElementById('user-name');
+        const avatar = document.getElementById('user-avatar-initials');
+        const name = document.getElementById('user-display-name');
         const stats = document.getElementById('user-stats');
         avatar.textContent = userData.displayName.charAt(0).toUpperCase();
         name.textContent = userData.displayName;
         stats.textContent = `${userData.completedBooks} books • ${userData.badges} badges`;
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('username');
-            window.location.href = '/';
-        });
     }
 
     function updateStats(circles, userData) {
@@ -713,10 +715,9 @@
     function openGoalModal() { setGoalModal.style.display = 'flex'; }
     function closeGoalModal() { setGoalModal.style.display = 'none'; }
 
-    document.getElementById('open-create-circle-modal').addEventListener('click', openCreateModal);
-    document.getElementById('close-modal').addEventListener('click', closeCreateModal);
-    document.getElementById('cancel-create').addEventListener('click', closeCreateModal);
-    document.getElementById('create-circle-btn').addEventListener('click', createCircle);
+    document.getElementById('open-create-circle-modal').addEventListener('click', () => openModal('create-circle-modal'));
+    document.getElementById('close-modal').addEventListener('click', () => closeModal('create-circle-modal'));
+    document.getElementById('cancel-create').addEventListener('click', () => closeModal('create-circle-modal'));
 
     document.getElementById('open-find-circle-modal').addEventListener('click', openFindModal);
     document.getElementById('close-find-modal').addEventListener('click', closeFindModal);
@@ -732,6 +733,15 @@
     document.getElementById('set-goal-btn').addEventListener('click', setReadingGoal);
 
     document.getElementById('join-circle-btn').addEventListener('click', openFindModal);
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) modal.style.display = 'none';
+    }
+
+    document.getElementById('close-modal').addEventListener('click', () => closeModal('create-circle-modal'));
+    document.getElementById('close-find-modal').addEventListener('click', () => closeModal('find-circle-modal'));
+    document.getElementById('close-goal-modal').addEventListener('click', () => closeModal('set-goal-modal'));
 
     // Tabs and Filters (unchanged)
     const tabs = document.querySelectorAll('.tab');
@@ -788,6 +798,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', init);
+
+    document.addEventListener('click', (event) => {
+      if (event.target && event.target.id === 'join-circle-btn') {
+        openFindModal();
+      }
+    });
 </script>
 </body>
 </html>
