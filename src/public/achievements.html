@@ -370,18 +370,6 @@
             box-shadow: var(--hover-shadow);
         }
 
-        .badge-type {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 0.7rem;
-            background-color: rgba(56, 178, 172, 0.1);
-            color: var(--accent-color);
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-weight: 500;
-        }
-
         .badge-icon {
             width: 80px;
             height: 80px;
@@ -760,8 +748,8 @@
             card.setAttribute('data-badge-xp', badge.xp);
             card.setAttribute('data-badge-title', badge.title);
             
+            // Remove the badge-type div that was here before
             card.innerHTML = `
-                <div class="badge-type">${badgeTypes[badge.type]}</div>
                 <div class="badge-icon"><i class="${badge.icon}"></i></div>
                 <h3 class="badge-title">${badge.title}</h3>
                 <p class="badge-description">${badge.description}</p>
@@ -815,7 +803,7 @@
         }
 
         function updateBadgeCards(badge) {
-            const cards = $$(`[data-badge-id="${badge.id}"]`);
+            const cards = $(`[data-badge-id="${badge.id}"]`);
             const isUnlocked = badge.progress >= badge.goal;
             cards.forEach(card => {
                 card.classList.toggle('unlocked', isUnlocked);
@@ -874,11 +862,11 @@
         }
 
         function setupTabs() {
-            $$('.tab').forEach(tab => {
+            $('.tab').forEach(tab => {
                 tab.addEventListener('click', function() {
-                    $$('.tab').forEach(t => t.classList.remove('active'));
+                    $('.tab').forEach(t => t.classList.remove('active'));
                     this.classList.add('active');
-                    $$('.tab-content').forEach(content => hideElement(content));
+                    $('.tab-content').forEach(content => hideElement(content));
                     const tabId = this.getAttribute('data-tab');
                     showElement(`#${tabId}-tab`);
                     
