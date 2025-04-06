@@ -49,50 +49,38 @@
             border-right: 1px solid var(--border-color);
             z-index: 10;
             box-shadow: var(--card-shadow);
-            transition: transform 0.3s ease;
             display: flex;
             flex-direction: column;
         }
 
-        .sidebar-header {
-            margin-bottom: 30px;
-            padding: 0 10px;
-        }
-
-        .logo {
+        .sidebar .logo {
             display: flex;
             align-items: center;
-            text-decoration: none;
+            margin-bottom: 30px;
         }
 
-        .logo img {
-            width: 28px;
-            height: 28px;
-            margin-right: 12px;
+        .sidebar .logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
         }
 
-        .logo-text {
+        .sidebar .logo-text {
             font-weight: 700;
             font-size: 1.4rem;
             color: var(--primary-color);
-            letter-spacing: -0.5px;
         }
 
-        .nav-section {
-            margin-bottom: 25px;
-        }
-
-        .nav-section-title {
+        .nav-links .nav-section-title {
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 1.2px;
             color: var(--muted-text);
             margin-bottom: 12px;
             font-weight: 600;
-            padding: 0 10px;
         }
 
-        .nav-item {
+        .nav-links .nav-item {
             display: flex;
             align-items: center;
             padding: 12px 15px;
@@ -104,7 +92,7 @@
             font-weight: 500;
         }
 
-        .nav-item i {
+        .nav-links .nav-item i {
             margin-right: 12px;
             font-size: 1.1rem;
             width: 24px;
@@ -113,22 +101,22 @@
             transition: color 0.3s;
         }
 
-        .nav-item:hover {
+        .nav-links .nav-item:hover {
             background: rgba(56, 178, 172, 0.1);
             color: var(--accent-color);
         }
 
-        .nav-item:hover i {
+        .nav-links .nav-item:hover i {
             color: var(--accent-color);
         }
 
-        .nav-item.active {
+        .nav-links .nav-item.active {
             background: rgba(56, 178, 172, 0.15);
             color: var(--accent-color);
             font-weight: 600;
         }
 
-        .nav-item.active i {
+        .nav-links .nav-item.active i {
             color: var(--accent-color);
         }
 
@@ -157,18 +145,13 @@
             margin-right: 12px;
         }
 
-        .user-details {
-            flex: 1;
-        }
-
-        .user-name {
+        .user-details .user-name {
             font-weight: 600;
             font-size: 0.95rem;
             color: var(--light-text);
-            margin-bottom: 2px;
         }
 
-        .user-role {
+        .user-details .user-role {
             font-size: 0.8rem;
             color: var(--muted-text);
         }
@@ -485,7 +468,7 @@
             display: flex;
             align-items: center;
             font-size: 0.8rem;
-            color: var(--accent-color);
+            color: var (--accent-color);
         }
 
         .circle-status i {

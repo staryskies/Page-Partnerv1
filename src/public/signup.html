@@ -43,6 +43,12 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .signup-container input:focus {
+            border-color: #2A9D8F;
+            outline: none;
+            box-shadow: 0 0 5px rgba(42, 157, 143, 0.3);
         }
         .signup-container button {
             background-color: #2A9D8F;
@@ -54,13 +60,35 @@
             cursor: pointer;
             width: 100%;
             margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
         .signup-container button:hover {
             background-color: #238177;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+        }
+        .signup-container button:active {
+            background-color: #1E6F63;
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(42, 157, 143, 0.2);
+        }
+        .signup-container p {
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        .signup-container a {
+            color: #2A9D8F;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        .signup-container a:hover {
+            color: #238177;
         }
         .error {
             color: red;
             margin-top: 10px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -69,11 +97,13 @@
         <h1>Sign Up</h1>
         <input type="text" id="username" placeholder="Username" required>
         <input type="email" id="email" placeholder="Email" required>
-        <input type="text" id="name" placeholder="Full Name" required>
-        <input type="number" id="age" placeholder="Age" required>
         <input type="password" id="password" placeholder="Password" required>
         <button onclick="handleSignup()">Sign Up</button>
         <p id="error" class="error"></p>
+        <p>
+            Already have an account? 
+            <a href="login.html" style="color: #2A9D8F; text-decoration: none; font-weight: 600;">Log in</a>
+        </p>
     </div>
 
     <script>

@@ -427,6 +427,66 @@
     .logout-btn:hover {
       color: var(--secondary-color);
     }
+    .tutorial-modal {
+      display: none; /* Hidden by default */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .tutorial-content {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    .tutorial-content h2 {
+      font-size: 1.8rem;
+      color: #2A9D8F;
+      margin-bottom: 15px;
+    }
+
+    .tutorial-content p {
+      font-size: 1rem;
+      color: #4A5568;
+      margin-bottom: 20px;
+    }
+
+    .tutorial-content ul {
+      text-align: left;
+      margin-bottom: 20px;
+      color: #1A365D;
+    }
+
+    .tutorial-content ul li {
+      margin-bottom: 10px;
+      font-size: 0.95rem;
+    }
+
+    .tutorial-btn {
+      padding: 10px 20px;
+      background-color: #2A9D8F;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .tutorial-btn:hover {
+      background-color: #238177;
+    }
   </style>
 </head>
 <body>
@@ -508,6 +568,21 @@
         </div>
         <div class="books-grid" id="books-grid" style="display: none;"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- Tutorial Modal -->
+  <div id="tutorial-modal" class="tutorial-modal">
+    <div class="tutorial-content">
+      <h2>Welcome to PagePartner!</h2>
+      <p>Let us guide you through the key features of your dashboard:</p>
+      <ul>
+        <li><strong>Dashboard:</strong> View your reading stats and progress.</li>
+        <li><strong>Add Books:</strong> Add books to your library.</li>
+        <li><strong>Discover:</strong> Find new books and recommendations.</li>
+        <li><strong>Reading Circles:</strong> Connect with fellow readers.</li>
+      </ul>
+      <button id="close-tutorial-btn" class="tutorial-btn">Got it!</button>
     </div>
   </div>
 
@@ -657,6 +732,44 @@
       }
 
       updateUI();
+
+      // Show tutorial modal on first visit
+      const tutorialModal = document.getElementById('tutorial-modal');
+      const closeTutorialBtn = document.getElementById('close-tutorial-btn');
+      const isFirstVisit = localStorage.getItem('isFirstVisit') !== 'false';
+
+      if (isFirstVisit) {
+        tutorialModal.classList.add('show');
+        localStorage.setItem('isFirstVisit', 'false');
+      }
+
+      if (closeTutorialBtn) {
+        closeTutorialBtn.addEventListener('click', () => {
+          tutorialModal.classList.remove('show');
+        });
+      }
+    });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tutorialModal = document.getElementById('tutorial-modal');
+      const closeTutorialBtn = document.getElementById('close-tutorial-btn');
+
+      // Check if the tutorial has already been shown
+      const tutorialShown = localStorage.getItem('tutorialShown');
+
+      if (!tutorialShown) {
+        // Show the tutorial modal
+        tutorialModal.style.display = 'flex';
+
+        // Mark the tutorial as shown in localStorage
+        localStorage.setItem('tutorialShown', 'true');
+      }
+
+      // Close the tutorial modal when the button is clicked
+      closeTutorialBtn.addEventListener('click', () => {
+        tutorialModal.style.display = 'none';
+      });
     });
   </script>
 </body>

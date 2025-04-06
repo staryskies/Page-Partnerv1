@@ -49,56 +49,38 @@
             border-right: 1px solid var(--border-color);
             z-index: 10;
             box-shadow: var(--card-shadow);
-            transition: transform 0.3s ease;
             display: flex;
             flex-direction: column;
         }
 
-        .sidebar-header {
-            margin-bottom: 30px;
-            padding: 0 10px;
-        }
-
-        .logo {
+        .sidebar .logo {
             display: flex;
             align-items: center;
-            text-decoration: none;
+            margin-bottom: 30px;
         }
 
-        .logo i {
-            font-size: 1.8rem;
-            color: var(--primary-color);
-            margin-right: 12px;
+        .sidebar .logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
         }
 
-        .logo-text {
+        .sidebar .logo-text {
             font-weight: 700;
             font-size: 1.4rem;
             color: var(--primary-color);
-            letter-spacing: -0.5px;
         }
 
-        .logo img {
-            width: 50px; /* Adjust the size as needed */
-            height: auto; /* Maintain aspect ratio */
-            object-fit: contain; /* Ensure the image fits within the container */
-        }
-
-        .nav-section {
-            margin-bottom: 25px;
-        }
-
-        .nav-section-title {
+        .nav-links .nav-section-title {
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 1.2px;
             color: var(--muted-text);
             margin-bottom: 12px;
             font-weight: 600;
-            padding: 0 10px;
         }
 
-        .nav-item {
+        .nav-links .nav-item {
             display: flex;
             align-items: center;
             padding: 12px 15px;
@@ -110,7 +92,7 @@
             font-weight: 500;
         }
 
-        .nav-item i {
+        .nav-links .nav-item i {
             margin-right: 12px;
             font-size: 1.1rem;
             width: 24px;
@@ -119,22 +101,22 @@
             transition: color 0.3s;
         }
 
-        .nav-item:hover {
+        .nav-links .nav-item:hover {
             background: rgba(56, 178, 172, 0.1);
             color: var(--accent-color);
         }
 
-        .nav-item:hover i {
+        .nav-links .nav-item:hover i {
             color: var(--accent-color);
         }
 
-        .nav-item.active {
+        .nav-links .nav-item.active {
             background: rgba(56, 178, 172, 0.15);
             color: var(--accent-color);
             font-weight: 600;
         }
 
-        .nav-item.active i {
+        .nav-links .nav-item.active i {
             color: var(--accent-color);
         }
 
@@ -163,18 +145,13 @@
             margin-right: 12px;
         }
 
-        .user-details {
-            flex: 1;
-        }
-
-        .user-name {
+        .user-details .user-name {
             font-weight: 600;
             font-size: 0.95rem;
             color: var(--light-text);
-            margin-bottom: 2px;
         }
 
-        .user-role {
+        .user-details .user-role {
             font-size: 0.8rem;
             color: var(--muted-text);
         }
@@ -234,7 +211,7 @@
         .btn-outline {
             background: transparent;
             border: 1px solid var(--accent-color);
-            color: var(--accent-color);
+            color: var (--accent-color);
         }
 
         .btn-outline:hover {
@@ -328,7 +305,7 @@
 
         .tab-bar {
             display: flex;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var (--border-color);
             margin-bottom: 20px;
             overflow-x: auto;
         }
@@ -423,6 +400,17 @@
             font-size: 0.8rem;
             color: var(--muted-text);
             margin-top: 5px;
+        }
+
+        .badge-xp {
+            display: inline-block;
+            background-color: rgba(33, 150, 243, 0.1);
+            color: var(--number-color);
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-top: 8px;
         }
 
         .leaderboard-table {
@@ -554,6 +542,11 @@
         .toast-message { font-size: 0.9rem; color: var(--muted-text); }
         .toast-close { background: none; border: none; color: var(--muted-text); cursor: pointer; }
 
+        /* Added hidden class for tab content */
+        .hidden {
+            display: none;
+        }
+
         @media (max-width: 1024px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -609,17 +602,17 @@
           <div class="nav-section">
             <div class="nav-section-title">Main</div>
             <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-            <a href="add-book.html" class="nav-item active"><i class="fas fa-plus"></i> Add Book</a>
+            <a href="add-book.html" class="nav-item"><i class="fas fa-plus"></i> Add Book</a>
             <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
             <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
-            <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
+            <a href="achievements.html" class="nav-item active"><i class="fas fa-award"></i> Achievements</a>
           </div>
-    
+   
           <div class="user-profile">
             <div class="user-avatar" id="user-avatar-initials"></div>
             <div class="user-info">
-              <div class="user-name" id="user-display-name">Loading...</div>
-              <div class="user-status" id="user-stats">Loading stats...</div>
+              <div class="user-name" id="user-display-name"></div>
+              <div class="user-status" id="user-stats"></div>
             </div>
             <button class="logout-btn" id="logout-btn" title="Log Out"><i class="fas fa-sign-out-alt"></i></button>
           </div>
@@ -651,9 +644,9 @@
             </div>
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-users"></i></div>
-                <div class="stat-title">Social Points</div>
-                <div class="stat-value" id="social-points">0</div>
-                <div class="stat-description">From interactions</div>
+                <div class="stat-title">Total XP</div>
+                <div class="stat-value" id="total-xp">0</div>
+                <div class="stat-description">Experience points earned</div>
             </div>
         </div>
 
@@ -699,14 +692,14 @@
                             <th class="leaderboard-rank">Rank</th>
                             <th>User</th>
                             <th>Badges</th>
-                            <th>Points</th>
+                            <th>XP</th>
                         </tr>
                     </thead>
                     <tbody id="leaderboard-body">
                         <tr>
                             <td class="leaderboard-rank">1</td>
                             <td class="leaderboard-user">
-                                <div class="leaderboard-avatar">You</div>
+                                <div class="leaderboard-avatar">Y</div>
                                 <span>You</span>
                             </td>
                             <td id="leaderboard-badges">0</td>
@@ -728,6 +721,7 @@
     </div>
 
     <script>
+        // Helper functions
         function $(selector) {
             return document.querySelector(selector);
         }
@@ -737,11 +731,19 @@
         }
 
         function showElement(element) {
-            element.classList.remove('hidden');
+            if (typeof element === 'string') {
+                $(element).classList.remove('hidden');
+            } else {
+                element.classList.remove('hidden');
+            }
         }
 
         function hideElement(element) {
-            element.classList.add('hidden');
+            if (typeof element === 'string') {
+                $(element).classList.add('hidden');
+            } else {
+                element.classList.add('hidden');
+            }
         }
 
         function showToast(type, title, message, duration = 3000) {
@@ -753,38 +755,44 @@
             toast.querySelector('.toast-title').textContent = title;
             toast.querySelector('.toast-message').textContent = message;
             toast.classList.add('show');
+            
+            // Close toast automatically after duration
             setTimeout(() => toast.classList.remove('show'), duration);
         }
 
+        // Badge data with XP values
         const badges = {
             genre: [
-                { id: 'fantasy', title: 'Fantasy Explorer', description: 'Read 5 fantasy books', icon: 'fas fa-dragon', goal: 5, progress: 0 },
-                { id: 'mystery', title: 'Mystery Sleuth', description: 'Read 5 mystery books', icon: 'fas fa-search', goal: 5, progress: 0 },
-                { id: 'scifi', title: 'Sci-Fi Voyager', description: 'Read 5 sci-fi books', icon: 'fas fa-rocket', goal: 5, progress: 0 }
+                { id: 'fantasy', title: 'Fantasy Explorer', description: 'Read 5 fantasy books', icon: 'fas fa-dragon', goal: 5, progress: 0, xp: 100 },
+                { id: 'mystery', title: 'Mystery Sleuth', description: 'Read 5 mystery books', icon: 'fas fa-search', goal: 5, progress: 0, xp: 100 },
+                { id: 'scifi', title: 'Sci-Fi Voyager', description: 'Read 5 sci-fi books', icon: 'fas fa-rocket', goal: 5, progress: 0, xp: 100 }
             ],
             reading: [
-                { id: 'reader10', title: '10 Book Club', description: 'Read 10 books in a year', icon: 'fas fa-book', goal: 10, progress: 0 },
-                { id: 'reader25', title: '25 Book Elite', description: 'Read 25 books in a year', icon: 'fas fa-books', goal: 25, progress: 0 },
-                { id: 'reader50', title: '50 Book Legend', description: 'Read 50 books in a year', icon: 'fas fa-trophy', goal: 50, progress: 0 }
+                { id: 'reader10', title: '10 Book Club', description: 'Read 10 books in a year', icon: 'fas fa-book', goal: 10, progress: 0, xp: 200 },
+                { id: 'reader25', title: '25 Book Elite', description: 'Read 25 books in a year', icon: 'fas fa-books', goal: 25, progress: 0, xp: 500 },
+                { id: 'reader50', title: '50 Book Legend', description: 'Read 50 books in a year', icon: 'fas fa-trophy', goal: 50, progress: 0, xp: 1000 }
             ],
             social: [
-                { id: 'friend', title: 'Social Butterfly', description: 'Make 5 friends', icon: 'fas fa-user-friends', goal: 5, progress: 0 },
-                { id: 'commentator', title: 'Commentator', description: 'Post 10 comments', icon: 'fas fa-comment-dots', goal: 10, progress: 0 },
-                { id: 'circle', title: 'Circle Leader', description: 'Join 3 reading circles', icon: 'fas fa-users', goal: 3, progress: 0 }
+                { id: 'friend', title: 'Social Butterfly', description: 'Make 5 friends', icon: 'fas fa-user-friends', goal: 5, progress: 0, xp: 150 },
+                { id: 'commentator', title: 'Commentator', description: 'Post 10 comments', icon: 'fas fa-comment-dots', goal: 10, progress: 0, xp: 200 },
+                { id: 'circle', title: 'Circle Leader', description: 'Join 3 reading circles', icon: 'fas fa-users', goal: 3, progress: 0, xp: 300 }
             ],
             special: [
-                { id: 'streak', title: 'Reading Streak', description: 'Read daily for 7 days', icon: 'fas fa-fire', goal: 7, progress: 0 },
-                { id: 'reviewer', title: 'Top Reviewer', description: 'Write 10 reviews', icon: 'fas fa-star', goal: 10, progress: 0 },
-                { id: 'earlybird', title: 'Early Bird', description: 'Join in the first month', icon: 'fas fa-clock', goal: 1, progress: 0 },
-                { id: 'marathon', title: 'Marathon Reader', description: 'Read 1000 pages in a month', icon: 'fas fa-running', goal: 1000, progress: 0 }
+                { id: 'streak', title: 'Reading Streak', description: 'Read daily for 7 days', icon: 'fas fa-fire', goal: 7, progress: 0, xp: 350 },
+                { id: 'reviewer', title: 'Top Reviewer', description: 'Write 10 reviews', icon: 'fas fa-star', goal: 10, progress: 0, xp: 400 },
+                { id: 'earlybird', title: 'Early Bird', description: 'Join in the first month', icon: 'fas fa-clock', goal: 1, progress: 0, xp: 100 },
+                { id: 'marathon', title: 'Marathon Reader', description: 'Read 1000 pages in a month', icon: 'fas fa-running', goal: 1000, progress: 0, xp: 500 }
             ]
         };
+
+        // No sample leaderboard data - we'll only show the current user
 
         function createBadgeCard(badge) {
             const card = document.createElement('div');
             const isUnlocked = badge.progress >= badge.goal;
             card.className = `badge-card ${isUnlocked ? 'unlocked' : ''}`;
-            card.setAttribute('data-category', badge.category);
+            card.setAttribute('data-badge-id', badge.id);
+            
             card.innerHTML = `
                 <div class="badge-icon"><i class="${badge.icon}"></i></div>
                 <h3 class="badge-title">${badge.title}</h3>
@@ -793,89 +801,186 @@
                     <div class="badge-progress-bar" style="width: ${Math.min((badge.progress / badge.goal) * 100, 100)}%"></div>
                 </div>
                 <div class="badge-status">${isUnlocked ? 'Unlocked!' : `${badge.progress}/${badge.goal}`}</div>
+                <div class="badge-xp">${badge.xp} XP</div>
             `;
             return card;
         }
 
         function populateBadges() {
-            const allList = $('#all-badges-list');
-            const genreList = $('#genre-badges-list');
-            const readingList = $('#reading-badges-list');
-            const socialList = $('#social-badges-list');
-            const specialList = $('#special-badges-list');
+            // Clear all badge lists first
+            const lists = ['all-badges-list', 'genre-badges-list', 'reading-badges-list', 'social-badges-list', 'special-badges-list'];
+            lists.forEach(listId => {
+                $(`#${listId}`).innerHTML = '';
+            });
 
+            // Populate each category list and the all badges list
             Object.entries(badges).forEach(([category, badgeList]) => {
                 badgeList.forEach(badge => {
-                    badge.category = category;
-                    allList.appendChild(createBadgeCard(badge));
-                    if (category === 'genre') genreList.appendChild(createBadgeCard(badge));
-                    else if (category === 'reading') readingList.appendChild(createBadgeCard(badge));
-                    else if (category === 'social') socialList.appendChild(createBadgeCard(badge));
-                    else if (category === 'special') specialList.appendChild(createBadgeCard(badge));
+                    // Add to category-specific list
+                    $(`#${category}-badges-list`).appendChild(createBadgeCard(badge));
+                    
+                    // Also add to all badges list
+                    $(`#all-badges-list`).appendChild(createBadgeCard(badge));
                 });
             });
         }
 
+        function updateBadgeCards(badge) {
+            // Update all instances of this badge card
+            const cards = $$(`[data-badge-id="${badge.id}"]`);
+            const isUnlocked = badge.progress >= badge.goal;
+            
+            cards.forEach(card => {
+                card.classList.toggle('unlocked', isUnlocked);
+                const progressBar = card.querySelector('.badge-progress-bar');
+                progressBar.style.width = `${Math.min((badge.progress / badge.goal) * 100, 100)}%`;
+                card.querySelector('.badge-status').textContent = isUnlocked ? 'Unlocked!' : `${badge.progress}/${badge.goal}`;
+            });
+        }
+
+        function calculateTotalXP() {
+            let totalXP = 0;
+            let unlockedBadges = 0;
+            let totalBooks = 0;
+            
+            Object.values(badges).flat().forEach(badge => {
+                if (badge.progress >= badge.goal) {
+                    unlockedBadges++;
+                    totalXP += badge.xp;
+                }
+                
+                // Count books read from reading badges
+                if (badge.id.includes('reader') && badge.progress > 0) {
+                    totalBooks += badge.progress;
+                }
+            });
+            
+            return { totalXP, unlockedBadges, totalBooks };
+        }
+
         function updateStats() {
-            const earned = $$('.badge-card.unlocked').length;
-            const books = badges.reading.reduce((sum, b) => sum + b.progress, 0);
-            const social = badges.social.reduce((sum, b) => sum + b.progress, 0);
-            $('#badges-earned').textContent = earned;
-            $('#books-read').textContent = books;
-            $('#social-points').textContent = social * 10;
-            $('#leaderboard-badges').textContent = earned;
-            $('#leaderboard-points').textContent = (books * 50 + social * 10);
+            const stats = calculateTotalXP();
+            
+            $('#badges-earned').textContent = stats.unlockedBadges;
+            $('#books-read').textContent = stats.totalBooks;
+            $('#total-xp').textContent = stats.totalXP;
+            
+            // Update leaderboard
+            $('#leaderboard-badges').textContent = stats.unlockedBadges;
+            $('#leaderboard-points').textContent = stats.totalXP;
+            
+            updateLeaderboard();
+        }
+
+        function updateLeaderboard() {
+            // Display only the current user's stats
+            const userStats = calculateTotalXP();
+            
+            // Update the user's stats in the leaderboard
+            $('#leaderboard-badges').textContent = userStats.unlockedBadges;
+            $('#leaderboard-points').textContent = userStats.totalXP;
         }
 
         function checkBadgeUnlock(badge) {
             if (badge.progress >= badge.goal && !badge.unlocked) {
                 badge.unlocked = true;
-                showToast('success', 'Badge Earned!', `You've unlocked "${badge.title}"!`);
-                const cards = $$(`.badge-card[data-category="${badge.category}"]`);
-                cards.forEach(card => {
-                    if (card.querySelector('.badge-title').textContent === badge.title) {
-                        card.classList.add('unlocked');
-                        card.querySelector('.badge-progress-bar').style.width = '100%';
-                        card.querySelector('.badge-status').textContent = 'Unlocked!';
-                    }
-                });
+                showToast('success', 'Badge Earned!', `You've unlocked "${badge.title}" for ${badge.xp} XP!`);
+                updateBadgeCards(badge);
                 updateStats();
+            } else {
+                updateBadgeCards(badge);
             }
         }
 
         function simulateActivity() {
-            const randomBadge = () => {
-                const categories = Object.keys(badges);
-                const category = categories[Math.floor(Math.random() * categories.length)];
-                const badgeList = badges[category];
-                return badgeList[Math.floor(Math.random() * badgeList.length)];
-            };
-
-            const badge = randomBadge();
+            // Select a random category
+            const categories = Object.keys(badges);
+            const category = categories[Math.floor(Math.random() * categories.length)];
+            
+            // Select a random badge from that category
+            const badgeList = badges[category];
+            const badge = badgeList[Math.floor(Math.random() * badgeList.length)];
+            
+            // Increase progress
             badge.progress = Math.min(badge.progress + Math.floor(Math.random() * 3) + 1, badge.goal + 1);
+            
+            // Check if badge is now unlocked
             checkBadgeUnlock(badge);
-            updateStats();
         }
 
         function setupTabs() {
-            $$('.tab-bar .tab').forEach(tab => {
-                tab.addEventListener('click', function () {
-                    const tabBar = this.closest('.tab-bar');
-                    tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            $$('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // Remove active class from all tabs
+                    $$('.tab').forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
                     this.classList.add('active');
+                    
+                    // Hide all tab content
+                    $$('.tab-content').forEach(content => {
+                        hideElement(content);
+                    });
+                    
+                    // Show selected tab content
                     const tabId = this.getAttribute('data-tab');
-                    $$('.tab-content').forEach(content => hideElement(content));
                     showElement(`#${tabId}-tab`);
                 });
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // Event Listeners
+        // Check for logged in user
+        function checkUserLogin() {
+            // In a real app, this would check a session or token
+            // This is a simulated version
+            const isLoggedIn = localStorage.getItem('pagePartnerLoggedIn');
+            const userName = localStorage.getItem('pagePartnerUserName');
             
+            if (isLoggedIn && userName) {
+                // User is logged in, display their info
+                $('#user-avatar-initials').textContent = userName.charAt(0).toUpperCase();
+                $('#user-display-name').textContent = userName;
+                $('#user-stats').textContent = "Reader";
+                return true;
+            } else {
+                // No user logged in, display empty state
+                $('#user-avatar-initials').textContent = "";
+                $('#user-display-name').textContent = "User";
+                $('#user-stats').textContent = "Reader";
+                return false;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check user login status
+            checkUserLogin();
+            
+            // Initialize the badges
             populateBadges();
+            
+            // Initialize stats and leaderboard
             updateStats();
+            
+            // Set up tabs
             setupTabs();
+            
+            // Set up simulate activity button
+            $('#simulate-activity-btn').addEventListener('click', simulateActivity);
+            
+            // Set up toast close button
+            $('#close-toast').addEventListener('click', function() {
+                $('#toast').classList.remove('show');
+            });
+            
+            // Simulate login/logout for testing
+            $('#logout-btn').addEventListener('click', function() {
+                localStorage.removeItem('pagePartnerLoggedIn');
+                localStorage.removeItem('pagePartnerUserName');
+                checkUserLogin();
+            });
         });
     </script>
 </body>
 </html>
+

@@ -304,6 +304,34 @@
       margin: 20px auto; /* Center the image */
       display: block; /* Ensures proper alignment */
     }
+
+    /* Add styles for the quest features button */
+    .start-quest-btn {
+        padding: 12px 25px;
+        background-color: #2A9D8F;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    .start-quest-btn:hover {
+        background-color: #238177;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+    }
+
+    .start-quest-btn:active {
+        background-color: #1E6F63;
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(42, 157, 143, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -558,7 +586,7 @@
       document.getElementById('onboarding-form').addEventListener('submit', function (e) {
         e.preventDefault();
         if (validateSection(10)) {
-          alert('Thank you for sharing your preferences! Your personalized reading experience is ready.');
+          
           window.location.href = 'index.html'; // Redirect to the dashboard
         }
       });

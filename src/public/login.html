@@ -43,6 +43,12 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .login-container input:focus {
+            border-color: #2A9D8F;
+            outline: none;
+            box-shadow: 0 0 5px rgba(42, 157, 143, 0.3);
         }
         .login-container button {
             background-color: #2A9D8F;
@@ -54,13 +60,35 @@
             cursor: pointer;
             width: 100%;
             margin-top: 10px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
         }
         .login-container button:hover {
             background-color: #238177;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 157, 143, 0.3);
+        }
+        .login-container button:active {
+            background-color: #1E6F63;
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(42, 157, 143, 0.2);
+        }
+        .login-container p {
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        .login-container a {
+            color: #2A9D8F;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        .login-container a:hover {
+            color: #238177;
         }
         .error {
             color: red;
             margin-top: 10px;
+            font-size: 0.9rem;
         }
         .signup-btn {
             background-color: #ffffff;
@@ -105,6 +133,10 @@
         <input type="password" id="password" placeholder="Password" required>
         <button onclick="handleLogin()">Login</button>
         <p id="error" class="error"></p>
+        <p>
+            Don't have an account? 
+            <a href="signup.html" style="color: #2A9D8F; text-decoration: none; font-weight: 600;">Sign up</a>
+        </p>
     </div>
 
     <script src="/script.js"></script>
