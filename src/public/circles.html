@@ -485,7 +485,7 @@
             display: flex;
             align-items: center;
             font-size: 0.8rem;
-            color: var(--accent-color);
+            color: var (--accent-color);
         }
 
         .circle-status i {
@@ -848,7 +848,7 @@
 
         .modal-header {
             padding: 20px;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var (--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1181,8 +1181,18 @@
                 const response = await fetch(`${baseUrl}/api/books`, {
                     headers: { 'X-Username': localStorage.getItem('username') },
                 });
-                if (!response.ok) throw new Error(`Failed to fetch books: ${response.status}`);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch books: ${response.status}`);
+                }
+
                 const books = await response.json();
+
+                // Validate that the response is an array
+                if (!Array.isArray(books)) {
+                    throw new Error('Invalid response format: Expected an array of books');
+                }
+
                 const bookSelect = $('#book-select');
                 if (bookSelect) {
                     bookSelect.innerHTML = '<option value="">Select a book</option>';
@@ -1193,12 +1203,13 @@
                         bookSelect.appendChild(option);
                     });
                 }
+
                 return books;
             } catch (err) {
                 console.error('Load Books Error:', err);
                 const errorEl = $('#error');
                 if (errorEl) errorEl.innerText = err.message;
-                return [];
+                return []; // Return an empty array to prevent further errors
             }
         }
 
