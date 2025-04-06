@@ -662,39 +662,39 @@
     }
 
     async function getUserBooks() {
-    try {
-        const username = localStorage.getItem('username');
-        if (!username) {
-            console.error('No username found in localStorage');
-            return []; // Return early if no username
-        }
+      try {
+          const username = localStorage.getItem('username');
+          if (!username) {
+              console.error('No username found in localStorage');
+              return []; // Return early if no username
+          }
 
-        const response = await fetch(`${baseUrl}/api/books`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Username': username // Include the username in the headers
-            }
-        });
+          const response = await fetch(`${baseUrl}/api/books`, {
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-Username': username // Include the username in the headers
+              }
+          });
 
-        if (!response.ok) {
-            const errorText = await response.text(); // Get more error details
-            throw new Error(`Failed to fetch books: ${response.status} - ${errorText}`);
-        }
+          if (!response.ok) {
+              const errorText = await response.text(); // Get more error details
+              throw new Error(`Failed to fetch books: ${response.status} - ${errorText}`);
+          }
 
-        const data = await response.json();
+          const data = await response.json();
 
-        // Validate that data.books is an array; return empty array if not
-        if (!Array.isArray(data.books)) {
-            console.warn('Unexpected response format: data.books is not an array', data);
-            return [];
-        }
+          // Validate that data.books is an array; return empty array if not
+          if (!Array.isArray(data.books)) {
+              console.warn('Unexpected response format: data.books is not an array', data);
+              return [];
+          }
 
-        return data.books; // Return the books array
-    } catch (error) {
-        console.error('Failed to fetch all books:', error.message);
-        return []; // Return empty array on any error
+          return data.books; // Return the books array
+      } catch (error) {
+          console.error('Failed to fetch all books:', error.message);
+          return []; // Return empty array on any error
+      }
     }
-}
 
     async function updateUI() {
       const userData = await getUserData();
