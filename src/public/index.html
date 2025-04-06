@@ -447,7 +447,7 @@
     .logout-btn {
       background: none;
       border: none;
-      color: var(--muted-text);
+      color: var (--muted-text);
       font-size: 1.2rem;
       cursor: pointer;
       transition: color 0.2s;
@@ -699,6 +699,12 @@
     async function updateUI() {
       const userData = await getUserData();
       const books = await getUserBooks();
+
+      console.log('User Data:', userData); // Log the entire user data object
+      console.log('Currently Reading:', userData.currentlyReading || 0);
+      console.log('Completed Books:', userData.completedBooks || 0);
+      console.log('Reading Streak:', userData.readingStreak || 0);
+      console.log('Badges:', userData.badges || 0);
 
       const userAvatar = document.getElementById('user-avatar-initials');
       const userName = document.getElementById('user-display-name');
