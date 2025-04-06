@@ -1,109 +1,414 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Book - PagePartner</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Book - PagePartner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        :root {
+            --primary-color: #1e3a5f;
+            --secondary-color: #ff6b6b;
+            --accent-color: #38b2ac;
+            --number-color: #2196f3;
+            --dark-bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --light-text: #212529;
+            --muted-text: #8a8a8a;
+            --border-color: #e0e0e0;
+            --gradient-start: #f5f7fa;
+            --gradient-end: #f8f9fa;
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: var(--light-text);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--card-bg);
+            padding: 30px 20px;
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid var(--border-color);
+            z-index: 10;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar .logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .sidebar .logo img {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .sidebar .logo-text {
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--primary-color);
+        }
+
+        .nav-links .nav-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--muted-text);
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+
+        .nav-links .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            color: var(--light-text);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-links .nav-item i {
+            margin-right: 12px;
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+            color: var(--muted-text);
+            transition: color 0.3s;
+        }
+
+        .nav-links .nav-item:hover {
+            background: rgba(56, 178, 172, 0.1);
+            color: var(--accent-color);
+        }
+
+        .nav-links .nav-item:hover i {
+            color: var(--accent-color);
+        }
+
+        .nav-links .nav-item.active {
+            background: rgba(56, 178, 172, 0.15);
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .nav-links .nav-item.active i {
+            color: var(--accent-color);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            padding: 15px 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .user-details .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--light-text);
+        }
+
+        .user-details .user-role {
+            font-size: 0.8rem;
+            color: var(--muted-text);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            margin-left: 280px;
+            width: calc(100% - 280px);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            border: none;
+            color: var(--light-text);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2e908a;
+            transform: translateY(-2px);
+        }
+
+        .btn-light {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-light:hover {
+            background: var(--dark-bg);
+            transform: translateY(-2px);
+        }
+
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: var(--light-text);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+        }
+
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .error {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 260px;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 15px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="logo">
-      <img src="logo.png" alt="PagePartner Logo">
-      <span class="logo-text">PagePartner</span>
+    <div class="sidebar">
+        <div class="logo">
+            <img src="logo.png" alt="PagePartner Logo">
+            <span class="logo-text">PagePartner</span>
+        </div>
+        <nav class="nav-links">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="add-book.html" class="nav-item active"><i class="fas fa-plus"></i> Add Book</a>
+                <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
+                <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
+                <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
+            </div>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="user-avatar-initials"></div>
+                <div class="user-details">
+                    <div class="user-name" id="user-display-name">Loading...</div>
+                    <div class="user-role" id="user-stats">Loading stats...</div>
+                </div>
+            </div>
+            <button class="btn btn-light" id="logout-btn" onclick="logout()" title="Log Out"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
     </div>
-    <nav class="nav-links">
-      <div class="nav-section">
-        <div class="nav-section-title">Main</div>
-        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="add-book.html" class="nav-item active"><i class="fas fa-plus"></i> Add Book</a>
-        <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
-        <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
-        <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
-      </div>
 
-      <div class="user-profile">
-        <div class="user-avatar" id="user-avatar-initials"></div>
-        <div class="user-info">
-          <div class="user-name" id="user-display-name">Loading...</div>
-          <div class="user-status" id="user-stats">Loading stats...</div>
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">Add a New Book</h1>
         </div>
-        <button class="logout-btn" id="logout-btn" title="Log Out"><i class="fas fa-sign-out-alt"></i></button>
-      </div>
-    </nav>
-  </div>
-  <div class="main-content">
-    <div class="container">
-      <section class="add-book-section">
-        <h2>Add a New Book</h2>
-        <div class="form-group">
-          <label for="book-title">Book Title</label>
-          <input type="text" id="book-title" placeholder="Enter book title" required>
-        </div>
-        <div class="form-group">
-          <label for="book-author">Author</label>
-          <input type="text" id="book-author" placeholder="Enter author name" required>
-        </div>
-        <div class="form-group">
-          <label for="book-genre">Genre</label>
-          <input type="text" id="book-genre" placeholder="Enter book genre" required>
-        </div>
-        <div class="form-group">
-          <label for="book-excerpt">Excerpt (Optional)</label>
-          <textarea id="book-excerpt" placeholder="Enter a short excerpt"></textarea>
-        </div>
-        <button onclick="addBook()">Add Book</button>
-        <p id="error" class="error"></p>
-      </section>
+        <section class="section">
+            <h2 class="section-title">Book Details</h2>
+            <div class="form-group">
+                <label class="form-label" for="book-title">Book Title</label>
+                <input type="text" class="form-input" id="book-title" placeholder="Enter book title" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="book-author">Author</label>
+                <input type="text" class="form-input" id="book-author" placeholder="Enter author name" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="book-genre">Genre</label>
+                <input type="text" class="form-input" id="book-genre" placeholder="Enter book genre" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="book-excerpt">Excerpt (Optional)</label>
+                <textarea class="form-input" id="book-excerpt" placeholder="Enter a short excerpt"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="addBook()">Add Book</button>
+            <p id="error" class="error"></p>
+        </section>
     </div>
-  </div>
-  <script>
-    const baseUrl = window.location.origin;
 
-    async function addBook() {
-      const title = document.getElementById('book-title').value;
-      const author = document.getElementById('book-author').value;
-      const genre = document.getElementById('book-genre').value;
-      const excerpt = document.getElementById('book-excerpt').value || '';
-      const errorElement = document.getElementById('error');
-      
-      // Reset error state
-      errorElement.style.display = 'none';
-      errorElement.textContent = '';
+    <script>
+        const baseUrl = window.location.origin;
 
-      const username = localStorage.getItem('username');
-      if (!username) {
-        errorElement.textContent = 'You must be logged in to add a book.';
-        errorElement.style.display = 'block';
-        return;
-      }
+        function updateSidebar() {
+            const username = localStorage.getItem('username');
+            const avatar = document.getElementById('user-avatar-initials');
+            const name = document.getElementById('user-display-name');
+            const stats = document.getElementById('user-stats');
+            if (username) {
+                avatar.textContent = username.charAt(0).toUpperCase();
+                name.textContent = username;
+                stats.textContent = "Reader";
+            } else {
+                avatar.textContent = "G";
+                name.textContent = "Guest";
+                stats.textContent = "Please log in";
+            }
+        }
 
-      if (!title || !author || !genre) {
-        errorElement.textContent = 'Title, author, and genre are required.';
-        errorElement.style.display = 'block';
-        return;
-      }
+        async function addBook() {
+            const title = document.getElementById('book-title').value;
+            const author = document.getElementById('book-author').value;
+            const genre = document.getElementById('book-genre').value;
+            const excerpt = document.getElementById('book-excerpt').value || '';
+            const errorElement = document.getElementById('error');
+            
+            errorElement.style.display = 'none';
+            errorElement.textContent = '';
 
-      try {
-        const bookResponse = await fetch(`${baseUrl}/api/book`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json', 
-            'X-Username': username 
-          },
-          body: JSON.stringify({ title, author, genre, excerpt }),
+            const username = localStorage.getItem('username');
+            if (!username) {
+                errorElement.textContent = 'You must be logged in to add a book.';
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            if (!title || !author || !genre) {
+                errorElement.textContent = 'Title, author, and genre are required.';
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            try {
+                const bookResponse = await fetch(`${baseUrl}/api/book`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-Username': username 
+                    },
+                    body: JSON.stringify({ title, author, genre, excerpt }),
+                });
+                const bookResult = await bookResponse.json();
+                if (!bookResponse.ok) throw new Error(bookResult.error || 'Failed to add book');
+                window.location.href = '/index.html';
+            } catch (err) {
+                console.error('Add Book Error:', err);
+                errorElement.textContent = err.message;
+                errorElement.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('username');
+            window.location.href = '/homepage.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!localStorage.getItem('username')) window.location.href = '/homepage.html';
+            updateSidebar();
         });
-        const bookResult = await bookResponse.json();
-        if (!bookResponse.ok) throw new Error(bookResult.error || 'Failed to add book');
-
-        window.location.href = '/index.html';
-      } catch (err) {
-        console.error('Add Book Error:', err);
-        errorElement.textContent = err.message;
-        errorElement.style.display = 'block';
-      }
-    }
-  </script>
+    </script>
 </body>
 </html>
