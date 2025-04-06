@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -603,7 +602,7 @@
         .toast-close {
             background: none;
             border: none;
-            color: var(--muted-text);
+            color: var (--muted-text);
             cursor: pointer;
             transition: all 0.3s;
         }
@@ -729,16 +728,13 @@
     </main>
 
     <script>
-        // Utility functions
         const $ = selector => document.querySelector(selector);
         const $$ = selector => document.querySelectorAll(selector);
         const baseUrl = window.location.origin;
 
-        // Initialize page
         document.addEventListener('DOMContentLoaded', init);
 
         async function init() {
-            // Check authentication
             if (!localStorage.getItem('username')) {
                 window.location.href = '/homepage.html';
                 return;
@@ -747,12 +743,13 @@
             await updateSidebar();
             setupGenreSelector();
 
-            // Check for genre in URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const genre = urlParams.get('genre');
             if (genre) {
                 $('#genre-select').value = genre;
                 fetchSuggestedCircles(genre);
+            } else {
+                fetchAllCircles();
             }
         }
 
@@ -789,7 +786,6 @@
                 fetchSuggestedCircles(genre);
             });
 
-            // Also fetch when changing the select directly
             $('#genre-select').addEventListener('change', () => {
                 const genre = $('#genre-select').value;
                 if (genre) {
@@ -800,7 +796,6 @@
 
         async function fetchSuggestedCircles(genre) {
             try {
-                // Show loading state
                 $('#suggested-circles').innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">
@@ -822,7 +817,6 @@
                 const circles = await response.json();
                 displaySuggestedCircles(circles);
 
-                // Update URL with the genre for sharing
                 history.replaceState(null, null, `?genre=${encodeURIComponent(genre)}`);
             } catch (err) {
                 console.error('Error fetching circle suggestions:', err);
@@ -840,9 +834,44 @@
             }
         }
 
+        async function fetchAllCircles() {
+            try {
+                $('#suggested-circles').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                        <h3 class="empty-state-title">Loading All Circles...</h3>
+                    </div>
+                `;
+
+                const response = await fetch(`${baseUrl}/api/circles`, {
+                    headers: { 'X-Username': localStorage.getItem('username') }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch all circles');
+
+                const circles = await response.json();
+                displaySuggestedCircles(circles);
+            } catch (err) {
+                console.error('Error fetching all circles:', err);
+                $('#suggested-circles').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <h3 class="empty-state-title">Oops! Something went wrong</h3>
+                        <p class="empty-state-description">
+                            We couldn't load all circles. Please try again later.
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
         function displaySuggestedCircles(circles) {
             const container = $('#suggested-circles');
-            $('#suggestion-count').textContent = `${circles.length} suggestions`;
+            $('#suggestion-count').textContent = `${circles.length} circles available`;
 
             if (!circles || circles.length === 0) {
                 container.innerHTML = `
@@ -852,7 +881,7 @@
                         </div>
                         <h3 class="empty-state-title">No Circles Found</h3>
                         <p class="empty-state-description">
-                            We couldn't find any reading circles for this genre. Try a different genre or create your own circle!
+                            We couldn't find any reading circles. Try creating your own circle!
                         </p>
                         <a href="circles.html" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Create a Circle
@@ -894,22 +923,16 @@
                 container.appendChild(card);
             });
 
-            // Add event listeners to the join buttons
             $$('.join-circle-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const circleId = btn.dataset.circleId;
-                    // In a real implementation, this would call an API to join the circle
-                    // For now, we'll just show a success message
                     showToast('success', 'Success', 'You\'ve joined this circle!');
-                    
-                    // Redirect to the circles page
                     setTimeout(() => {
                         window.location.href = '/circles.html';
                     }, 1500);
                 });
             });
 
-            // Add event listeners to the delete buttons
             $$('.delete-circle-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const circleId = btn.dataset.circleId;
@@ -933,11 +956,11 @@
                 }
 
                 showToast('success', 'Success', 'Circle deleted successfully');
-                
-                // Refresh the current genre suggestions
                 const genre = $('#genre-select').value;
                 if (genre) {
                     setTimeout(() => fetchSuggestedCircles(genre), 1000);
+                } else {
+                    setTimeout(() => fetchAllCircles(), 1000);
                 }
             } catch (err) {
                 console.error('Delete circle error:', err);
@@ -946,7 +969,6 @@
         }
 
         function showToast(type, title, message, duration = 3000) {
-            // Remove any existing toasts
             const existingToast = $('.toast');
             if (existingToast) existingToast.remove();
 
@@ -961,14 +983,10 @@
                 <button class="toast-close"><i class="fas fa-times"></i></button>
             `;
             document.body.appendChild(toast);
-            
-            // Show the toast after a small delay
+
             setTimeout(() => toast.classList.add('show'), 10);
-            
-            // Auto-hide after duration
             const timeoutId = setTimeout(() => toast.remove(), duration);
-            
-            // Allow manual close
+
             toast.querySelector('.toast-close').addEventListener('click', () => {
                 clearTimeout(timeoutId);
                 toast.remove();
