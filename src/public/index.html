@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PagePartner - Modern Reading Experience</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0-beta3/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -178,12 +178,12 @@
   <div class="main-container">
     <!-- Sidebar -->
     <nav class="sidebar">
-      <a href="/index.html">Dashboard</a>
-      <a href="/add-book.html">Add Book</a>
-      <a href="/previews.html">Previews</a>
-      <a href="/circles.html">Reading Circles</a>
-      <a href="/friends.html">Friends</a>
-      <a href="/points.html">Points</a>
+      <a href="/index.html"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="/add-book.html"><i class="fas fa-plus"></i> Add Book</a>
+      <a href="/discover.html"><i class="fas fa-compass"></i> Discover</a>
+      <a href="/circles.html"><i class="fas fa-users"></i> Reading Circles</a>
+      <a href="/read.html"><i class="fas fa-book"></i> Read</a>
+      <a href="/achievements.html"><i class="fas fa-award"></i> Achievements</a>
     </nav>
 
     <!-- Content -->
@@ -213,148 +213,5 @@
       </div>
     </div>
   </div>
-
-  <script>
-    const baseUrl = window.location.origin;
-
-    // Logout functionality
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      localStorage.removeItem('username');
-      window.location.href = '/login.html';
-    });
-
-    // Mobile navigation toggle
-    const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
-    const sidebar = document.querySelector('.sidebar');
-    if (mobileNavToggle) {
-      mobileNavToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('open');
-      });
-    }
-  
-    // Collection tabs
-    const collectionTabs = document.querySelectorAll('.collection-tab');
-    collectionTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        collectionTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-      });
-    });
-  
-    // Initialize the app
-    document.addEventListener('DOMContentLoaded', async function() {
-      const username = localStorage.getItem('username');
-  
-      // Fetch user data from the server
-      async function fetchUserData() {
-        try {
-          const response = await fetch(`${baseUrl}/api/user`, {
-            headers: { 'X-Username': username },
-          });
-          if (!response.ok) throw new Error('Failed to fetch user data');
-          return await response.json();
-        } catch (err) {
-          console.error('Fetch User Data Error:', err);
-          return {
-            isLoggedIn: false,
-            displayName: '',
-            currentlyReading: 0,
-            completedBooks: 0,
-            readingStreak: 0,
-            badges: 0,
-            hasRecommendations: false,
-            hasPreviews: false,
-            hasCircles: false,
-            hasFriends: false,
-            hasPoints: false,
-          };
-        }
-      }
-  
-      const userData = await fetchUserData();
-  
-      // Update UI based on user data
-      function updateUI(data) {
-        const userAvatar = document.getElementById('user-avatar-initials');
-        const userName = document.getElementById('user-display-name');
-        const userStats = document.getElementById('user-stats');
-        const userGreeting = document.getElementById('user-greeting');
-  
-        if (data.isLoggedIn && data.displayName) {
-          const initials = data.displayName.split(' ').map(name => name.charAt(0)).join('');
-          userAvatar.textContent = initials;
-          userName.textContent = data.displayName;
-          userStats.textContent = `${data.completedBooks} books • ${data.badges} badges`;
-          userGreeting.textContent = `Welcome back, ${data.displayName.split(' ')[0]}!`;
-        } else {
-          userAvatar.textContent = '?';
-          userName.textContent = 'Sign in';
-          userStats.textContent = 'Start your reading journey';
-          userGreeting.textContent = 'Welcome to PagePartner!';
-        }
-  
-        document.getElementById('currently-reading-count').textContent = data.currentlyReading;
-        document.getElementById('completed-count').textContent = data.completedBooks;
-        document.getElementById('streak-count').textContent = data.readingStreak;
-        document.getElementById('badge-count').textContent = data.badges;
-  
-        if (data.currentlyReading > 0) {
-          document.getElementById('currently-reading-info').textContent =
-            data.currentlyReading === 1 ? '1 book in progress' : `${data.currentlyReading} books in progress`;
-        }
-        if (data.completedBooks > 0) {
-          document.getElementById('completed-info').textContent =
-            data.completedBooks === 1 ? '1 book this year' : `${data.completedBooks} this year`;
-        }
-        if (data.badges > 0) {
-          document.getElementById('badge-info').textContent =
-            data.badges === 1 ? '1 badge earned' : `${data.badges} badges earned`;
-        }
-  
-        toggleVisibility('empty-recommendations', 'recommendations-grid', data.hasRecommendations);
-        toggleVisibility('empty-previews', 'previews-grid', data.hasPreviews);
-        toggleVisibility('empty-circles', 'circles-grid', data.hasCircles);
-        toggleVisibility('empty-activity', 'activity-feed', data.hasFriends);
-        toggleVisibility('empty-points', 'points-list', data.hasPoints);
-      }
-  
-      function toggleVisibility(emptyStateId, contentId, hasContent) {
-        const emptyState = document.getElementById(emptyStateId);
-        const content = document.getElementById(contentId);
-        emptyState.style.display = hasContent ? 'none' : 'flex';
-        content.style.display = hasContent ? 'grid' : 'none';
-      }
-  
-      // Update UI with fetched data
-      updateUI(userData);
-  
-      // Add logout functionality
-      document.querySelector('.user-profile').addEventListener('click', () => {
-        if (userData.isLoggedIn) {
-          localStorage.removeItem('username');
-          window.location.href = '/homepage.html';
-        } else {
-          window.location.href = '/login.html';
-        }
-      });
-  
-      // Add event listeners to empty state buttons
-      document.querySelectorAll('.empty-state-btn').forEach(button => {
-        button.addEventListener('click', () => {
-          if (button.textContent.includes('Add Your First Book')) {
-            window.location.href = '/add-book.html';
-          } else if (button.textContent.includes('Explore Previews')) {
-            window.location.href = '/previews.html';
-          } else if (button.textContent.includes('Find Reading Circles')) {
-            window.location.href = '/circles.html';
-          } else if (button.textContent.includes('Find Friends')) {
-            window.location.href = '/friends.html';
-          } else if (button.textContent.includes('Learn How Points Work')) {
-            window.location.href = '/points.html';
-          }
-        });
-      });
-    });
-  </script>
 </body>
 </html>
