@@ -1005,6 +1005,7 @@
                 <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
                 <a href="circles.html" class="nav-item active"><i class="fas fa-users"></i> Reading Circles</a>
                 <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
+                <a href="reviews.html" class="nav-item"><i class="fas fa-star"></i> Reviews</a>
             </div>
         </nav>
         <div class="sidebar-footer">
@@ -1159,7 +1160,9 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-light" id="cancel-create">Cancel</button>
-                <button class="btn btn-primary" id="create-circle-btn">Create Circle</button>
+                <button class="btn btn-primary"ührte
+
+id="create-circle-btn">Create Circle</button>
             </div>
         </div>
     </div>
@@ -1190,6 +1193,32 @@
             setTimeout(() => toast.remove(), duration);
         }
 
+        // Fetch all circles (groups) from books
+        async function fetchCircles() {
+            const books = await loadBooks();
+            const circles = [];
+            for (const book of books) {
+                try {
+                    const response = await fetch(`${baseUrl}/api/book/${book.id}`, {
+                        headers: { 'X-Username': localStorage.getItem('username') }
+                    });
+                    if (!response.ok) throw new Error('Failed to fetch book details');
+                    const bookDetails = await response.json();
+                    bookDetails.groups.forEach(group => {
+                        circles.push({
+                            book_id: book.id,
+                            name: group,
+                            status: 'active', // Placeholder until status is tracked
+                            createdByMe: true // Placeholder until creator info is available
+                        });
+                    });
+                } catch (err) {
+                    console.error(`Error fetching groups for book ${book.id}:`, err);
+                }
+            }
+            return circles;
+        }
+
         // Sidebar update
         async function updateSidebar() {
             const username = localStorage.getItem('username');
@@ -1212,8 +1241,8 @@
             try {
                 usernameEl.textContent = username;
                 avatarEl.textContent = username[0].toUpperCase();
-                statsEl.textContent = 'Loading stats...';
-                // Additional user stats could be fetched here if API supports it
+                const circles = await fetchCircles();
+                statsEl.textContent = `${circles.length} circles`;
             } catch (err) {
                 console.error('Sidebar update error:', err);
                 usernameEl.textContent = username;
@@ -1230,7 +1259,7 @@
             const upcoming = $('#upcoming');
 
             if (activeCircles) activeCircles.textContent = circles.length;
-            if (currentReads) currentReads.textContent = circles.length; // Assuming each circle has a book
+            if (currentReads) currentReads.textContent = new Set(circles.map(c => c.book_id)).size; // Unique books
             if (discussions) discussions.textContent = '0'; // Requires comment counting
             if (upcoming) upcoming.textContent = '0'; // Requires scheduling logic
         }
@@ -1320,25 +1349,42 @@
         }
 
         // Recommendations (placeholder - needs actual recommendation logic)
-        function populateRecommendations() {
+        async function populateRecommendations() {
             const container = $('#recommended-books');
             if (!container) return;
 
-            container.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="fas fa-book"></i></div>
-                    <h3 class="empty-state-title">No Recommendations Yet</h3>
-                    <p class="empty-state-description">
-                        Add books to your library to get personalized recommendations.
-                    </p>
-                    <button class="btn btn-primary" onclick="window.location.href='add-book.html'"><i class="fas fa-plus"></i> Add Books</button>
-                </div>`;
+            const books = await loadBooks();
+            if (books.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-book"></i></div>
+                        <h3 class="empty-state-title">No Recommendations Yet</h3>
+                        <p class="empty-state-description">
+                            Add books to your library to get personalized recommendations.
+                        </p>
+                        <button class="btn btn-primary" onclick="window.location.href='add-book.html'"><i class="fas fa-plus"></i> Add Books</button>
+                    </div>`;
+            } else {
+                container.innerHTML = '';
+                books.slice(0, 4).forEach(book => {
+                    const card = document.createElement('div');
+                    card.className = 'book-card';
+                    card.innerHTML = `
+                        <div class="book-cover">${book.title}</div>
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-author">${book.genre}</div>`;
+                    container.appendChild(card);
+                });
+            }
         }
 
         // Modal handling
         function setupModal() {
             const modal = $('#create-circle-modal');
-            $('#open-create-circle-modal').addEventListener('click', () => modal.style.display = 'flex');
+            $('#open-create-circle-modal').addEventListener('click', async () => {
+                await loadBooks(); // Populate book select
+                modal.style.display = 'flex';
+            });
             $('#close-modal').addEventListener('click', () => modal.style.display = 'none');
             $('#cancel-create').addEventListener('click', () => modal.style.display = 'none');
             $('#create-circle-btn').addEventListener('click', async () => {
@@ -1350,7 +1396,7 @@
                         await addGroup();
                         modal.style.display = 'none';
                         showToast('success', 'Circle Created', 'Your reading circle has been created!');
-                        init();
+                        await init();
                     } catch (err) {
                         showToast('error', 'Error', 'Failed to create circle');
                     }
@@ -1383,20 +1429,20 @@
             });
 
             async function filterCircles(tabFilter, genreFilter) {
-                let filtered = allCircles;
+                let filtered = [...allCircles];
                 if (tabFilter !== 'all') {
-                    // Placeholder logic - enhance with actual status tracking
-                    filtered = filtered.filter(circle => circle.status === tabFilter); // Requires status in API
+                    filtered = filtered.filter(circle => circle.status === tabFilter);
                 }
                 if (genreFilter !== 'all') {
-                    filtered = filtered.filter(async circle => {
+                    filtered = await Promise.all(filtered.map(async circle => {
                         const book = await fetch(`${baseUrl}/api/book/${circle.book_id}`, {
                             headers: { 'X-Username': localStorage.getItem('username') }
                         }).then(res => res.json());
-                        return book.genre === genreFilter;
-                    });
+                        return book.genre === genreFilter ? circle : null;
+                    }));
+                    filtered = filtered.filter(c => c !== null);
                 }
-                populateCircles(filtered);
+                await populateCircles(filtered);
             }
 
             return { setCircles: circles => allCircles = circles };
@@ -1405,13 +1451,13 @@
         // Initialization
         async function init() {
             await updateSidebar();
-            
+            const circles = await fetchCircles();
             updateStats(circles);
             const filterHandler = setupFilters();
             filterHandler.setCircles(circles);
             await populateCircles(circles);
             populateReadingGoal();
-            populateRecommendations();
+            await populateRecommendations();
             setupModal();
         }
 
