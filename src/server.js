@@ -43,27 +43,20 @@ app.post('/api/auth/login', userController.login);
 
 // User Data
 app.get('/api/user', requireLogin, async (req, res) => {
-  try {
-    const user = req.user;
-    const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(member_ids)', [user.id]);
-    const achievementsResult = await query('SELECT COUNT(*) FROM achievements WHERE user_id = $1', [user.id]);
-    res.json({
-      isLoggedIn: true,
-      displayName: user.name,
-      currentlyReading: user.currently_reading || 0,
-      completedBooks: user.completed_books || 0,
-      readingStreak: user.reading_streak || 0,
-      badges: parseInt(achievementsResult.rows[0].count, 10),
-      hasRecommendations: user.genres && user.genres.length > 0,
-      hasPreviews: user.currently_reading > 0 || user.completed_books > 0,
-      hasCircles: parseInt(circlesResult.rows[0].count, 10) > 0,
-      hasFriends: false,
-      hasPoints: user.points > 0,
-    });
-  } catch (err) {
-    console.error('User Data Error:', err);
-    res.status(500).json({ error: 'Failed to fetch user data' });
-  }
+  const user = req.user;
+  const circlesResult = await query('SELECT COUNT(*) FROM circles WHERE $1 = ANY(member_ids)', [user.id]);
+  const achievementsResult = await query('SELECT COUNT(*) FROM achievements WHERE user_id = $1', [user.id]);
+  res.json({
+    isLoggedIn: true,
+    displayName: user.username, // Adjusted to match table
+    currentlyReading: user.currently_reading || 0,
+    completedBooks: user.completed_books || 0,
+    readingStreak: user.reading_streak || 0,
+    badges: parseInt(achievementsResult.rows[0].count, 10),
+    points: user.points || 0,
+    goals: user.goals || [],
+    recommendations: user.recommendations || []
+  });
 });
 
 app.patch('/api/user', requireLogin, async (req, res) => {

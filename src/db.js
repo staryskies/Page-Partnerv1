@@ -8,8 +8,9 @@ const pool = new Pool({
 module.exports = {
   connectDB: async () => {
     try {
-      await pool.connect();
+      const client = await pool.connect();
       console.log('Connected to PostgreSQL database');
+      client.release(); // Release the client back to the pool
     } catch (err) {
       console.error('Database connection error:', err);
       throw err;
@@ -18,67 +19,124 @@ module.exports = {
 
   initDB: async () => {
     try {
+      // Users Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS users (
           id SERIAL PRIMARY KEY,
           username VARCHAR(255) UNIQUE NOT NULL,
           password VARCHAR(255) NOT NULL,
+          profile_picture TEXT,
+          user_location VARCHAR(255),
+          genres TEXT[] DEFAULT '{}',
+          favorite_authors TEXT[] DEFAULT '{}',
+          reading_pace INT DEFAULT 0,
+          goals TEXT[] DEFAULT '{}', -- e.g., ["10 books this year"]
+          to_read_list TEXT[] DEFAULT '{}',
+          book_length VARCHAR(50),
           currently_reading INT DEFAULT 0,
           completed_books INT DEFAULT 0,
           reading_streak INT DEFAULT 0,
           badges INT DEFAULT 0,
-          recommendations JSON DEFAULT '[]',
-          previews JSON DEFAULT '[]',
-          circles JSON DEFAULT '[]',
-          friends JSON DEFAULT '[]',
-          points INT DEFAULT 0
+          recommendations JSON DEFAULT '[]', -- e.g., [{"title": "Book", "author": "Author"}]
+          previews JSON DEFAULT '[]', -- e.g., [{"book_id": 1, "preview": "text"}]
+          circles JSON DEFAULT '[]', -- Deprecated, using circles table instead
+          friends JSON DEFAULT '[]', -- Placeholder for future friend system
+          points INT DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
+
+      // Books Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS books (
           id SERIAL PRIMARY KEY,
           title VARCHAR(255) NOT NULL,
           genre VARCHAR(255) NOT NULL,
-          user_id INT REFERENCES users(id),
-          excerpt TEXT, -- Added excerpt column
-          groups TEXT[] DEFAULT '{}',
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          user_id INT REFERENCES users(id) ON DELETE CASCADE,
+          excerpt TEXT,
+          groups TEXT[] DEFAULT '{}', -- e.g., ["Chapter 1", "Chapter 2"]
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          completed_at TIMESTAMP -- When the user marks it as completed
         )
       `);
+
+      // Comments Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS comments (
           id SERIAL PRIMARY KEY,
-          book_id INT REFERENCES books(id),
-          group_name VARCHAR(255),
+          book_id INT REFERENCES books(id) ON DELETE CASCADE,
+          group_name VARCHAR(255), -- e.g., "Chapter 1"
           message TEXT NOT NULL,
-          user_id INT REFERENCES users(id),
+          user_id INT REFERENCES users(id) ON DELETE CASCADE,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
+
+      // Circles Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS circles (
           id SERIAL PRIMARY KEY,
           name VARCHAR(255) NOT NULL,
-          book_id INT REFERENCES books(id),
-          member_ids INT[] DEFAULT '{}'
+          description TEXT, -- Added for circle description
+          book_id INT REFERENCES books(id) ON DELETE SET NULL,
+          member_ids INT[] DEFAULT '{}', -- Array of user IDs
+          is_public BOOLEAN DEFAULT TRUE, -- Public or private circle
+          created_by INT REFERENCES users(id) ON DELETE SET NULL, -- Creator of the circle
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          status VARCHAR(50) DEFAULT 'active' -- e.g., 'active', 'upcoming', 'past'
         )
       `);
+
+      // Achievements Table
       await pool.query(`
         CREATE TABLE IF NOT EXISTS achievements (
           id SERIAL PRIMARY KEY,
-          user_id INT REFERENCES users(id),
+          user_id INT REFERENCES users(id) ON DELETE CASCADE,
           name VARCHAR(255) NOT NULL,
           description TEXT,
           icon VARCHAR(255),
           earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
       `);
-      console.log('Database initialized');
+
+      // Friendships Table (for future friend system)
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS friendships (
+          id SERIAL PRIMARY KEY,
+          user_id INT REFERENCES users(id) ON DELETE CASCADE,
+          friend_id INT REFERENCES users(id) ON DELETE CASCADE,
+          status VARCHAR(50) DEFAULT 'pending', -- e.g., 'pending', 'accepted'
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE (user_id, friend_id)
+        )
+      `);
+
+      // Reading Sessions Table (for live reading feature)
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS reading_sessions (
+          id SERIAL PRIMARY KEY,
+          circle_id INT REFERENCES circles(id) ON DELETE CASCADE,
+          start_time TIMESTAMP,
+          end_time TIMESTAMP,
+          is_active BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      console.log('Database initialized successfully');
     } catch (err) {
       console.error('Error initializing database:', err);
       throw err;
     }
   },
 
-  query: (text, params) => pool.query(text, params),
+  query: async (text, params) => {
+    try {
+      const result = await pool.query(text, params);
+      return result;
+    } catch (err) {
+      console.error('Query error:', err);
+      throw err;
+    }
+  },
 };

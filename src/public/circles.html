@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
+        /* [Previous CSS remains unchanged] */
         :root {
             --color-primary: #37BBAE;
             --color-primary-light: rgba(55, 187, 174, 0.1);
@@ -794,7 +795,6 @@
             height: 100%;
             background-color: var(--color-primary);
             border-radius: 4px;
-            width: 35%;
         }
 
         .goal-labels {
@@ -970,62 +970,33 @@
        
         <div class="nav-section">
             <div class="nav-section-title">MAIN</div>
-            <a href="#" class="nav-item">
-                <i class="fas fa-home"></i>
-                Dashboard
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-book"></i>
-                My Library
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-compass"></i>
-                Discover
-            </a>
+            <a href="/index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="#" class="nav-item"><i class="fas fa-book"></i> My Library</a>
+            <a href="/discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
         </div>
        
         <div class="nav-section">
             <div class="nav-section-title">SOCIAL</div>
-            <a href="#" class="nav-item">
-                <i class="fas fa-user-friends"></i>
-                Friends
-            </a>
-            <a href="#" class="nav-item active">
-                <i class="fas fa-users"></i>
-                Reading Circles
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-chart-line"></i>
-                Activity
-            </a>
+            <a href="#" class="nav-item"><i class="fas fa-user-friends"></i> Friends</a>
+            <a href="/circles.html" class="nav-item active"><i class="fas fa-users"></i> Reading Circles</a>
+            <a href="#" class="nav-item"><i class="fas fa-chart-line"></i> Activity</a>
         </div>
        
         <div class="nav-section">
             <div class="nav-section-title">PERSONAL</div>
-            <a href="#" class="nav-item">
-                <i class="fas fa-trophy"></i>
-                Achievements
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-star"></i>
-                Reviews
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-chart-bar"></i>
-                Statistics
-            </a>
+            <a href="/achievements.html" class="nav-item"><i class="fas fa-trophy"></i> Achievements</a>
+            <a href="#" class="nav-item"><i class="fas fa-star"></i> Reviews</a>
+            <a href="#" class="nav-item"><i class="fas fa-chart-bar"></i> Statistics</a>
         </div>
        
         <div class="sidebar-footer">
             <div class="user-info">
-                <div class="user-avatar">
-                    <i class="fas fa-user"></i>
-                </div>
+                <div class="user-avatar" id="user-avatar"></div>
                 <div class="user-details">
-                    <div class="user-name">Sign In</div>
-                    <div class="user-role">Create an account</div>
+                    <div class="user-name" id="user-name">Loading...</div>
+                    <div class="user-role" id="user-stats">Loading...</div>
                 </div>
-                <i class="fas fa-sign-in-alt"></i>
+                <i class="fas fa-sign-out-alt" id="logout-btn" style="cursor: pointer;"></i>
             </div>
         </div>
     </aside>
@@ -1050,33 +1021,30 @@
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-users"></i></div>
                 <div class="stat-title">Active Circles</div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="active-circles">0</div>
                 <div class="stat-description">Circles you're participating in</div>
             </div>
-           
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-book-open"></i></div>
                 <div class="stat-title">Current Reads</div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="current-reads">0</div>
                 <div class="stat-description">Books you're reading in circles</div>
             </div>
-           
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-comment"></i></div>
                 <div class="stat-title">Discussions</div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="discussions">0</div>
                 <div class="stat-description">Active discussions this week</div>
             </div>
-           
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-calendar"></i></div>
                 <div class="stat-title">Upcoming</div>
-                <div class="stat-value">0</div>
+                <div class="stat-value" id="upcoming">0</div>
                 <div class="stat-description">Scheduled reading sessions</div>
             </div>
         </div>
 
-        <!-- Empty State for Live Reading -->
+        <!-- Live Reading (Placeholder - requires real-time implementation) -->
         <div class="section">
             <div class="section-header">
                 <h2 class="section-title">Live Reading</h2>
@@ -1091,7 +1059,7 @@
                     <p class="empty-state-description">
                         Join a reading circle or create your own to experience live reading sessions with friends and fellow book lovers.
                     </p>
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" id="join-circle-btn">
                         <i class="fas fa-plus"></i> Join a Circle
                     </button>
                 </div>
@@ -1099,93 +1067,54 @@
         </div>
 
         <!-- Reading Circles Section -->
-        <section class="section">
+        <section class="section" id="circles-section">
             <div class="section-header">
                 <h2 class="section-title">Your Reading Circles</h2>
                 <a href="#" class="section-action">View all <i class="fas fa-chevron-right"></i></a>
             </div>
-           
             <div class="section-body">
                 <div class="tab-bar">
-                    <div class="tab active">All Circles</div>
-                    <div class="tab">Active</div>
-                    <div class="tab">Upcoming</div>
-                    <div class="tab">Past</div>
-                    <div class="tab">Created by Me</div>
+                    <div class="tab active" data-filter="all">All Circles</div>
+                    <div class="tab" data-filter="active">Active</div>
+                    <div class="tab" data-filter="upcoming">Upcoming</div>
+                    <div class="tab" data-filter="past">Past</div>
+                    <div class="tab" data-filter="created">Created by Me</div>
                 </div>
-               
-                <div class="filters">
-                    <div class="filter-pill active">All</div>
-                    <div class="filter-pill">Fiction</div>
-                    <div class="filter-pill">Non-Fiction</div>
-                    <div class="filter-pill">Fantasy</div>
-                    <div class="filter-pill">Science Fiction</div>
-                    <div class="filter-pill">Mystery</div>
-                    <div class="filter-pill">Biography</div>
+                <div class="filters" id="genre-filters">
+                    <div class="filter-pill active" data-genre="all">All</div>
+                    <div class="filter-pill" data-genre="Fiction">Fiction</div>
+                    <div class="filter-pill" data-genre="Non-Fiction">Non-Fiction</div>
+                    <div class="filter-pill" data-genre="Fantasy">Fantasy</div>
+                    <div class="filter-pill" data-genre="Science Fiction">Science Fiction</div>
+                    <div class="filter-pill" data-genre="Mystery">Mystery</div>
+                    <div class="filter-pill" data-genre="Biography">Biography</div>
                 </div>
-               
-                <!-- Empty State for Reading Circles -->
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <h3 class="empty-state-title">No Reading Circles Yet</h3>
-                    <p class="empty-state-description">
-                        Join or create a reading circle to connect with fellow book lovers and discover new reads together.
-                    </p>
-                    <div style="display: flex; gap: 12px;">
-                        <button class="btn btn-primary" id="create-circle-card">
-                            <i class="fas fa-plus"></i> Create Circle
-                        </button>
-                        <button class="btn btn-outline">
-                            <i class="fas fa-search"></i> Find Circles
-                        </button>
-                    </div>
+                <div class="circles-grid" id="circles-grid">
+                    <!-- Circles will be populated dynamically -->
                 </div>
             </div>
         </section>
 
-        <!-- Reading Goal Progress - Empty State -->
-        <div class="section">
+        <!-- Reading Goal Progress -->
+        <div class="section" id="reading-goal-section">
             <div class="section-header">
                 <h2 class="section-title">Reading Goal</h2>
                 <a href="#" class="section-action">Set a goal <i class="fas fa-plus"></i></a>
             </div>
-            <div class="section-body">
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <h3 class="empty-state-title">No Reading Goal Set</h3>
-                    <p class="empty-state-description">
-                        Challenge yourself by setting a reading goal. Track your progress and celebrate your achievements.
-                    </p>
-                    <button class="btn btn-primary">
-                        <i class="fas fa-bullseye"></i> Set Reading Goal
-                    </button>
-                </div>
+            <div class="section-body" id="reading-goal-body">
+                <!-- Populated dynamically -->
             </div>
         </div>
 
-        <!-- Recommended Books Section - Empty State -->
-        <section class="section">
+        <!-- Recommended Books Section -->
+        <section class="section" id="recommendations-section">
             <div class="section-header">
                 <h2 class="section-title">Recommendations</h2>
-                <a href="#" class="section-action">Explore <i class="fas fa-compass"></i></a>
+                <a href="/discover.html" class="section-action">Explore <i class="fas fa-compass"></i></a>
             </div>
-           
             <div class="section-body">
-                <div class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="fas fa-book"></i>
-                    </div>
-                    <h3 class="empty-state-title">No Recommendations Yet</h3>
-                    <p class="empty-state-description">
-                        Add books to your library and join reading circles to get personalized recommendations.
-                    </p>
-                    <button class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Add Books to Library
-                    </button>
+                <div class="recommended-books" id="recommended-books">
+                    <!-- Populated dynamically -->
                 </div>
             </div>
         </section>
@@ -1201,76 +1130,347 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label class="form-label">Circle Name</label>
-                    <input type="text" class="form-input" placeholder="e.g., Fantasy Book Club">
+                    <input type="text" class="form-input" id="circle-name" placeholder="e.g., Fantasy Book Club">
                 </div>
-               
                 <div class="form-group">
                     <label class="form-label">Current Book</label>
-                    <input type="text" class="form-input" placeholder="Search for a book">
+                    <select class="form-input" id="circle-book">
+                        <option value="">Select a book from your library</option>
+                        <!-- Populated dynamically -->
+                    </select>
                     <div class="form-help">What book will your circle start with?</div>
                 </div>
-               
                 <div class="form-group">
                     <label class="form-label">Circle Description</label>
-                    <input type="text" class="form-input" placeholder="Describe what your circle is about">
+                    <input type="text" class="form-input" id="circle-description" placeholder="Describe what your circle is about">
                 </div>
-               
                 <div class="form-group">
                     <label class="form-label">Privacy</label>
-                    <select class="form-input">
-                        <option>Public - Anyone can join</option>
-                        <option>Private - Invitation only</option>
+                    <select class="form-input" id="circle-privacy">
+                        <option value="public">Public - Anyone can join</option>
+                        <option value="private">Private - Invitation only</option>
                     </select>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-light" id="cancel-create">Cancel</button>
-                <button class="btn btn-primary">Create Circle</button>
+                <button class="btn btn-primary" id="create-circle-btn">Create Circle</button>
             </div>
         </div>
     </div>
 
     <script>
+        const username = localStorage.getItem('username'); // Set during login
+        if (!username) window.location.href = '/';
+
+        async function fetchUserData() {
+            try {
+                const response = await fetch('/api/user', {
+                    headers: { 'X-Username': username }
+                });
+                if (!response.ok) throw new Error('Failed to fetch user data');
+                const data = await response.json();
+                return {
+                    username: data.displayName || username,
+                    currentlyReading: data.currentlyReading,
+                    completedBooks: data.completedBooks,
+                    readingStreak: data.readingStreak,
+                    badges: data.badges,
+                    points: data.hasPoints ? 100 : 0, // Assuming points aren't returned directly
+                    recommendations: [] // Need to fetch from /api/user if updated
+                };
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                return null;
+            }
+        }
+
+        async function fetchCircles() {
+            try {
+                const response = await fetch('/api/circles', {
+                    headers: { 'X-Username': username }
+                });
+                if (!response.ok) throw new Error('Failed to fetch circles');
+                const circles = await response.json();
+                const booksResponse = await fetch('/api/books', {
+                    headers: { 'X-Username': username }
+                });
+                const books = await booksResponse.json();
+                return circles.map(circle => {
+                    const book = books.find(b => b.id === circle.book_id) || {};
+                    return { ...circle, bookTitle: book.title, bookGenre: book.genre };
+                });
+            } catch (error) {
+                console.error('Error fetching circles:', error);
+                return [];
+            }
+        }
+
+        async function fetchBooks() {
+            try {
+                const response = await fetch('/api/books', {
+                    headers: { 'X-Username': username }
+                });
+                if (!response.ok) throw new Error('Failed to fetch books');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching books:', error);
+                return [];
+            }
+        }
+
+        function updateSidebar(userData) {
+            const avatar = document.getElementById('user-avatar');
+            const name = document.getElementById('user-name');
+            const stats = document.getElementById('user-stats');
+            if (userData) {
+                avatar.textContent = userData.username.charAt(0).toUpperCase();
+                name.textContent = userData.username;
+                stats.textContent = `${userData.completedBooks} books • ${userData.badges} badges`;
+            } else {
+                avatar.textContent = 'G';
+                name.textContent = 'Guest';
+                stats.textContent = '0 books • 0 badges';
+            }
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.removeItem('username');
+                window.location.href = '/';
+            });
+        }
+
+        function updateStats(circles, userData) {
+            document.getElementById('active-circles').textContent = circles.length;
+            document.getElementById('current-reads').textContent = userData.currentlyReading;
+            document.getElementById('discussions').textContent = '0'; // Placeholder - needs comments count
+            document.getElementById('upcoming').textContent = '0'; // Placeholder - needs scheduling logic
+        }
+
+        function populateCircles(circles) {
+            const grid = document.getElementById('circles-grid');
+            grid.innerHTML = '';
+            if (circles.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-users"></i></div>
+                        <h3 class="empty-state-title">No Reading Circles Yet</h3>
+                        <p class="empty-state-description">
+                            Join or create a reading circle to connect with fellow book lovers and discover new reads together.
+                        </p>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="btn btn-primary" id="create-circle-card"><i class="fas fa-plus"></i> Create Circle</button>
+                            <button class="btn btn-outline"><i class="fas fa-search"></i> Find Circles</button>
+                        </div>
+                    </div>`;
+                document.getElementById('create-circle-card').addEventListener('click', openModal);
+            } else {
+                circles.forEach(circle => {
+                    const card = document.createElement('div');
+                    card.className = 'circle-card';
+                    card.innerHTML = `
+                        <div class="circle-cover">
+                            <div class="circle-book-image">${circle.bookTitle || 'Unknown'}</div>
+                        </div>
+                        <div class="circle-content">
+                            <div class="circle-name">${circle.name}</div>
+                            <div class="circle-book">${circle.bookTitle || 'No book selected'}</div>
+                            <div class="circle-members">
+                                ${circle.member_ids.slice(0, 3).map((_, i) => `<div class="circle-member">${i + 1}</div>`).join('')}
+                                ${circle.member_ids.length > 3 ? `<div class="circle-member more">+${circle.member_ids.length - 3}</div>` : ''}
+                            </div>
+                            <div class="circle-progress">
+                                <div class="progress-title">
+                                    <span>Progress</span>
+                                    <span>0%</span> <!-- Placeholder -->
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="circle-footer">
+                            <div class="circle-status"><i class="fas fa-circle"></i> Active</div>
+                            <div class="circle-actions">
+                                <button class="circle-action"><i class="fas fa-comment"></i></button>
+                                <button class="circle-action"><i class="fas fa-share"></i></button>
+                            </div>
+                        </div>`;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        function populateReadingGoal(userData) {
+            const body = document.getElementById('reading-goal-body');
+            if (!userData.goals || userData.goals.length === 0) {
+                body.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-trophy"></i></div>
+                        <h3 class="empty-state-title">No Reading Goal Set</h3>
+                        <p class="empty-state-description">
+                            Challenge yourself by setting a reading goal. Track your progress and celebrate your achievements.
+                        </p>
+                        <button class="btn btn-primary"><i class="fas fa-bullseye"></i> Set Reading Goal</button>
+                    </div>`;
+            } else {
+                const goal = userData.goals[0]; // Assuming first goal is active
+                const progress = Math.min((userData.completedBooks / goal) * 100, 100);
+                body.innerHTML = `
+                    <div class="reading-goal">
+                        <div class="reading-goal-header">
+                            <div class="reading-goal-title">Reading Goal</div>
+                            <div class="reading-goal-value">${userData.completedBooks}/${goal}</div>
+                        </div>
+                        <div class="goal-progress-bar">
+                            <div class="goal-progress-value" style="width: ${progress}%"></div>
+                        </div>
+                        <div class="goal-labels">
+                            <span>Start</span>
+                            <span>Goal</span>
+                        </div>
+                    </div>`;
+            }
+        }
+
+        function populateRecommendations(recommendations) {
+            const container = document.getElementById('recommended-books');
+            if (!recommendations || recommendations.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-book"></i></div>
+                        <h3 class="empty-state-title">No Recommendations Yet</h3>
+                        <p class="empty-state-description">
+                            Add books to your library and join reading circles to get personalized recommendations.
+                        </p>
+                        <button class="btn btn-primary"><i class="fas fa-plus"></i> Add Books to Library</button>
+                    </div>`;
+            } else {
+                recommendations.forEach(book => {
+                    const card = document.createElement('div');
+                    card.className = 'book-card';
+                    card.innerHTML = `
+                        <div class="book-cover">${book.title || 'Unknown'}</div>
+                        <div class="book-title">${book.title || 'Unknown'}</div>
+                        <div class="book-author">${book.author || 'Unknown'}</div>`;
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        async function populateBookDropdown() {
+            const books = await fetchBooks();
+            const select = document.getElementById('circle-book');
+            books.forEach(book => {
+                const option = document.createElement('option');
+                option.value = book.id;
+                option.textContent = book.title;
+                select.appendChild(option);
+            });
+        }
+
+        async function createCircle() {
+            const name = document.getElementById('circle-name').value;
+            const bookId = document.getElementById('circle-book').value;
+            const description = document.getElementById('circle-description').value; // Not stored in DB yet
+            const privacy = document.getElementById('circle-privacy').value; // Not stored in DB yet
+
+            if (!name || !bookId) {
+                alert('Circle name and book are required');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/circles', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Username': username
+                    },
+                    body: JSON.stringify({ name, bookId })
+                });
+                if (!response.ok) throw new Error('Failed to create circle');
+                const data = await response.json();
+                closeModalFunction();
+                init(); // Refresh the page
+            } catch (error) {
+                console.error('Error creating circle:', error);
+                alert('Failed to create circle');
+            }
+        }
+
         // Modal functionality
         const createCircleModal = document.getElementById('create-circle-modal');
         const openCreateCircleModal = document.getElementById('open-create-circle-modal');
-        const createCircleCard = document.getElementById('create-circle-card');
         const closeModal = document.getElementById('close-modal');
         const cancelCreate = document.getElementById('cancel-create');
-       
+        const createCircleBtn = document.getElementById('create-circle-btn');
+
         function openModal() {
             createCircleModal.style.display = 'flex';
         }
-       
+
         function closeModalFunction() {
             createCircleModal.style.display = 'none';
+            document.getElementById('circle-name').value = '';
+            document.getElementById('circle-book').value = '';
+            document.getElementById('circle-description').value = '';
         }
-       
+
         openCreateCircleModal.addEventListener('click', openModal);
-        createCircleCard.addEventListener('click', openModal);
         closeModal.addEventListener('click', closeModalFunction);
         cancelCreate.addEventListener('click', closeModalFunction);
-       
-        // Tabs functionality
+        createCircleBtn.addEventListener('click', createCircle);
+
+        // Tabs and Filters
         const tabs = document.querySelectorAll('.tab');
+        const filterPills = document.querySelectorAll('.filter-pill');
+        let allCircles = [];
+
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 tabs.forEach(t => t.classList.remove('active'));
                 tab.classList.add('active');
+                filterCircles(tab.dataset.filter, document.querySelector('.filter-pill.active').dataset.genre);
             });
         });
-       
-        // Filter pills functionality
-        const filterPills = document.querySelectorAll('.filter-pill');
+
         filterPills.forEach(pill => {
             pill.addEventListener('click', () => {
                 filterPills.forEach(p => p.classList.remove('active'));
                 pill.classList.add('active');
+                filterCircles(document.querySelector('.tab.active').dataset.filter, pill.dataset.genre);
             });
         });
-       
-        // Set reading goal progress width
-        document.querySelector('.goal-progress-value').style.width = '35%';
+
+        function filterCircles(tabFilter, genreFilter) {
+            let filtered = allCircles;
+            if (tabFilter !== 'all') {
+                // Placeholder logic - enhance with actual status tracking
+                filtered = filtered.filter(circle => {
+                    if (tabFilter === 'active') return true; // No status in DB yet
+                    if (tabFilter === 'upcoming') return false;
+                    if (tabFilter === 'past') return false;
+                    if (tabFilter === 'created') return true; // No creator info in DB yet
+                    return true;
+                });
+            }
+            if (genreFilter !== 'all') {
+                filtered = filtered.filter(circle => circle.bookGenre === genreFilter);
+            }
+            populateCircles(filtered);
+        }
+
+        async function init() {
+            const userData = await fetchUserData();
+            allCircles = await fetchCircles();
+            updateSidebar(userData);
+            updateStats(allCircles, userData);
+            populateCircles(allCircles);
+            populateReadingGoal(userData);
+            populateRecommendations(userData.recommendations); // Update if recommendations are fetched separately
+            await populateBookDropdown();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
