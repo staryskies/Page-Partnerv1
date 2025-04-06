@@ -737,12 +737,13 @@
     document.addEventListener('DOMContentLoaded', () => {
       const username = localStorage.getItem('username');
 
-      // Redirect to login page if not signed in
+      // Redirect to homepage if not logged in
       if (!username) {
         window.location.href = 'homepage.html';
-        return;
+        return; // Stop further execution
       }
 
+      // Initialize other functionality if the user is logged in
       const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
       const sidebar = document.querySelector('.sidebar');
       const logoutBtn = document.getElementById('logout-btn');
