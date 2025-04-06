@@ -871,10 +871,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            $('#mobile-nav-toggle').addEventListener('click', () => $('#sidebar').classList.toggle('active'));
-            $('#simulate-activity-btn').addEventListener('click', simulateActivity);
-            $('#close-toast').addEventListener('click', () => $('#toast').classList.remove('show'));
-
+            
             populateBadges();
             updateStats();
             setupTabs();
