@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,10 +7,8 @@
   <title>Book Discovery App</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* Import Google Fonts */
+    /* [Previous CSS remains unchanged] */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-    /* Root Variables */
     :root {
       --primary-color: #1e3a5f;
       --secondary-color: #ff6b6b;
@@ -25,16 +24,12 @@
       --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
       --hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
     }
-
-    /* Global Reset */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
       font-family: 'Inter', sans-serif;
     }
-
-    /* Body */
     body {
       background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
       color: var(--light-text);
@@ -42,8 +37,6 @@
       min-height: 100vh;
       overflow-x: hidden;
     }
-
-    /* Sidebar */
     .sidebar {
       width: 280px;
       background: var(--card-bg);
@@ -57,38 +50,32 @@
       display: flex;
       flex-direction: column;
     }
-
     .logo {
       display: flex;
       align-items: center;
       margin-bottom: 30px;
       padding: 0 10px;
     }
-
     .logo img {
       width: 40px;
       height: 40px;
       margin-right: 12px;
       object-fit: contain;
     }
-
     .logo-text {
       font-weight: 700;
       font-size: 1.4rem;
       color: var(--primary-color);
       letter-spacing: -0.5px;
     }
-
     .nav-links {
       flex: 1;
       overflow-y: auto;
       padding-right: 5px;
     }
-
     .nav-section {
       margin-bottom: 25px;
     }
-
     .nav-section-title {
       font-size: 0.75rem;
       text-transform: uppercase;
@@ -98,7 +85,6 @@
       font-weight: 600;
       padding: 0 10px;
     }
-
     .nav-item {
       display: flex;
       align-items: center;
@@ -110,7 +96,6 @@
       transition: all 0.3s;
       font-weight: 500;
     }
-
     .nav-item i {
       margin-right: 12px;
       font-size: 1.1rem;
@@ -119,27 +104,21 @@
       color: var(--muted-text);
       transition: color 0.3s;
     }
-
     .nav-item:hover {
       background: rgba(56, 178, 172, 0.1);
       color: var(--accent-color);
     }
-
     .nav-item:hover i {
       color: var(--accent-color);
     }
-
     .nav-item.active {
       background: rgba(56, 178, 172, 0.15);
       color: var(--accent-color);
       font-weight: 600;
     }
-
     .nav-item.active i {
       color: var(--accent-color);
     }
-
-    /* User Profile */
     .user-profile {
       display: flex;
       align-items: center;
@@ -147,7 +126,6 @@
       margin-top: 20px;
       border-top: 1px solid var(--border-color);
     }
-
     .user-avatar {
       width: 40px;
       height: 40px;
@@ -160,31 +138,25 @@
       font-weight: 600;
       margin-right: 12px;
     }
-
     .user-info {
       flex: 1;
     }
-
     .user-name {
       font-weight: 600;
       font-size: 0.95rem;
       color: var(--light-text);
       margin-bottom: 2px;
     }
-
     .user-status {
       font-size: 0.8rem;
       color: var(--muted-text);
     }
-
-    /* Main Content */
     .main-content {
       flex: 1;
       padding: 30px;
       margin-left: 280px;
       width: calc(100% - 280px);
     }
-
     h1 {
       color: var(--primary-color);
       text-align: center;
@@ -192,14 +164,12 @@
       font-size: 1.8rem;
       font-weight: 700;
     }
-
     .genre-container {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 20px;
     }
-
     .genre-button {
       padding: 12px 20px;
       background: var(--card-bg);
@@ -210,19 +180,16 @@
       font-weight: 500;
       color: var(--light-text);
     }
-
     .genre-button:hover {
       background: rgba(56, 178, 172, 0.1);
       color: var(--accent-color);
       transform: translateY(-2px);
     }
-
     .genre-button.selected {
       background: var(--accent-color);
       color: white;
       font-weight: 600;
     }
-
     .results-area {
       min-height: 200px;
       border: 1px solid var(--border-color);
@@ -231,31 +198,26 @@
       background: var(--card-bg);
       box-shadow: var(--card-shadow);
     }
-
     .loading-indicator {
       text-align: center;
       padding: 40px;
       color: var(--muted-text);
     }
-
     .placeholder {
       text-align: center;
       padding: 60px;
       color: var(--muted-text);
     }
-
     .no-results {
       text-align: center;
       padding: 40px;
       color: var(--secondary-color);
     }
-
     .books-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
     }
-
     .book-card {
       border: 1px solid var(--border-color);
       border-radius: 12px;
@@ -265,25 +227,20 @@
       background: var(--card-bg);
       box-shadow: var(--card-shadow);
     }
-
     .book-card:hover {
       transform: translateY(-5px);
       box-shadow: var(--hover-shadow);
     }
-
     .book-author {
       color: var(--muted-text);
       font-style: italic;
       margin: 4px 0 12px;
     }
-
     .book-description {
       color: var(--light-text);
       font-size: 0.9em;
       line-height: 1.4;
     }
-
-    /* Mobile Navigation Toggle */
     .mobile-nav-toggle {
       display: none;
       position: fixed;
@@ -300,34 +257,27 @@
       align-items: center;
       justify-content: center;
     }
-
-    /* Responsive Design */
     @media (max-width: 992px) {
       .sidebar {
         transform: translateX(-100%);
         width: 260px;
       }
-      
       .sidebar.open {
         transform: translateX(0);
       }
-      
       .main-content {
         margin-left: 0;
         width: 100%;
         padding: 20px;
       }
-      
       .mobile-nav-toggle {
         display: flex;
       }
     }
-
     @media (max-width: 576px) {
       .main-content {
         padding: 15px;
       }
-      
       .books-grid {
         grid-template-columns: 1fr;
       }
@@ -372,10 +322,14 @@
   </div>
 
   <script>
-    // Magic Loops API call function
+    // Magic Loops API call function with timeout
     async function callMagicLoops(genre) {
       try {
-        const response = await fetch('https://magicloops.dev/api/loop/31478684-0d4c-4202-be61-3e75f0e55fa3/run', {
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('API request timed out')), 15000); // Increased to 15s
+        });
+
+        const fetchPromise = fetch('https://magicloops.dev/api/loop/31478684-0d4c-4202-be61-3e75f0e55fa3/run', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -384,16 +338,21 @@
             instruction: `Generate a list of 5 book suggestions in the ${genre} genre in JSON format with title, author, and description for each book.`
           })
         });
+
+        const response = await Promise.race([fetchPromise, timeoutPromise]);
         
         if (!response.ok) {
-          throw new Error('Magic Loops API request failed');
+          throw new Error(`Magic Loops API request failed with status: ${response.status}`);
         }
         
         const data = await response.json();
-        return data.books || []; // Adjust this based on actual Magic Loops response structure
+        console.log('API Response:', data); // Debug log
+        
+        // Extract suggestions array from the response
+        return data.suggestions || [];
       } catch (error) {
         console.error('Error fetching book recommendations:', error);
-        return [];
+        throw error;
       }
     }
 
@@ -434,7 +393,6 @@
         this.resultsArea.className = 'results-area';
         this.container.appendChild(this.resultsArea);
         
-        // Add initial placeholder
         const placeholderElement = document.createElement('div');
         placeholderElement.className = 'placeholder';
         placeholderElement.textContent = 'Select a genre to discover books';
@@ -442,26 +400,28 @@
       }
       
       async handleGenreClick(genre) {
-        // Update selected genre and highlight the button
         this.selectedGenre = genre;
         this.updateGenreButtons(genre);
         
-        // Update UI to show loading state
         this.isLoading = true;
         this.updateResultsArea();
         
-        // Make API call to get book recommendations
         try {
-          const books = await callMagicLoops(genre);
+          const suggestions = await callMagicLoops(genre);
           
-          // If no books were returned, create some mock data for testing
-          if (books.length === 0) {
+          if (!Array.isArray(suggestions) || suggestions.length === 0) {
+            console.warn('No valid suggestions received from API, using mock data');
             this.bookResults = this.getMockBooks(genre);
           } else {
-            this.bookResults = books;
+            // Map suggestions to ensure consistent format
+            this.bookResults = suggestions.map(book => ({
+              title: book.title,
+              author: book.author,
+              description: book.description
+            }));
           }
         } catch (error) {
-          console.error('Failed to get book recommendations:', error);
+          console.error('API call failed:', error);
           this.bookResults = this.getMockBooks(genre);
         } finally {
           this.isLoading = false;
@@ -515,15 +475,15 @@
           bookCard.className = 'book-card';
           
           const title = document.createElement('h3');
-          title.textContent = book.title;
+          title.textContent = book.title || 'Unknown Title';
           
           const author = document.createElement('p');
           author.className = 'book-author';
-          author.textContent = `By ${book.author}`;
+          author.textContent = `By ${book.author || 'Unknown Author'}`;
           
           const description = document.createElement('p');
           description.className = 'book-description';
-          description.textContent = book.description;
+          description.textContent = book.description || 'No description available';
           
           bookCard.appendChild(title);
           bookCard.appendChild(author);
@@ -531,7 +491,7 @@
           
           bookCard.addEventListener('click', () => {
             console.log('Selected book:', book.title);
-            alert(`You selected "${book.title}" by ${book.author}`);
+            alert(`You selected "${book.title || 'Unknown Title'}" by ${book.author || 'Unknown Author'}`);
           });
           
           booksGrid.appendChild(bookCard);
@@ -543,46 +503,46 @@
       getMockBooks(genre) {
         const mockBooksByGenre = {
           'Fantasy': [
-            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
-            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
-            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
-            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
-            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+            { title: 'The Name of the Wind', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'The Way of Kings', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'A Wizard of Earthsea', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'The Fifth Season', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'Piranesi', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
           ],
           'Science Fiction': [
-            { title: 'NONE', author: 'Frank Herbert', description: 'A complex tale of politics, religion, ecology, and human evolution set in a distant feudal interstellar society.' },
-            { title: 'NONE', author: 'Andy Weir', description: 'A lone astronaut must save Earth from disaster, with no memory of how he got there or what his mission is.' },
-            { title: 'NONE', author: 'William Gibson', description: 'A washed-up computer hacker is hired for one last job, which brings him up against a powerful artificial intelligence.' },
-            { title: 'NONE', author: 'Liu Cixin', description: 'Chinas Cultural Revolution sets in motion a contact with alien civilization that will reshape humanitys future.' },
-            { title: 'NONE', author: 'Dan Simmons', description: 'Seven pilgrims journey to the time tombs on Hyperion, each with a tale of how they came to be there.' }
+            { title: 'Dune', author: 'Frank Herbert', description: 'A complex tale of politics, religion, ecology, and human evolution set in a distant feudal interstellar society.' },
+            { title: 'Project Hail Mary', author: 'Andy Weir', description: 'A lone astronaut must save Earth from disaster, with no memory of how he got there or what his mission is.' },
+            { title: 'Neuromancer', author: 'William Gibson', description: 'A washed-up computer hacker is hired for one last job, which brings him up against a powerful artificial intelligence.' },
+            { title: 'The Three-Body Problem', author: 'Liu Cixin', description: 'Chinas Cultural Revolution sets in motion a contact with alien civilization that will reshape humanitys future.' },
+            { title: 'Hyperion', author: 'Dan Simmons', description: 'Seven pilgrims journey to the time tombs on Hyperion, each with a tale of how they came to be there.' }
           ],
           'Mystery': [
-            { title: 'NONE', author: 'Alex Michaelides', description: 'A famous painter shoots her husband and then never speaks another word.' },
-            { title: 'NONE', author: 'Gillian Flynn', description: 'A woman disappears on her wedding anniversary, and her husband becomes the prime suspect.' },
-            { title: 'NONE', author: 'Richard Osman', description: 'Four friends in a retirement village meet weekly to solve cold cases, until a real murder occurs nearby.' },
-            { title: 'NONE', author: 'Tana French', description: 'A detective with a traumatic past investigates the murder of a young girl in the same woods where he experienced tragedy.' },
-            { title: 'NONE', author: 'Jane Harper', description: 'A federal agent returns to his drought-stricken hometown to attend the funeral of his childhood friend, who allegedly killed his family.' }
+            { title: 'The Silent Patient', author: 'Alex Michaelides', description: 'A famous painter shoots her husband and then never speaks another word.' },
+            { title: 'Gone Girl', author: 'Gillian Flynn', description: 'A woman disappears on her wedding anniversary, and her husband becomes the prime suspect.' },
+            { title: 'The Thursday Murder Club', author: 'Richard Osman', description: 'Four friends in a retirement village meet weekly to solve cold cases, until a real murder occurs nearby.' },
+            { title: 'In the Woods', author: 'Tana French', description: 'A detective with a traumatic past investigates the murder of a young girl in the same woods where he experienced tragedy.' },
+            { title: 'The Dry', author: 'Jane Harper', description: 'A federal agent returns to his drought-stricken hometown to attend the funeral of his childhood friend, who allegedly killed his family.' }
           ],
           'Romance': [
-            { title: 'NONE', author: 'Jane Austen', description: 'The story of Elizabeth Bennet and her complicated relationship with the proud Mr. Darcy.' },
-            { title: 'NONE', author: 'Casey McQuiston', description: 'The First Son of the United States falls in love with the Prince of Wales after an incident forces them to pretend to be friends.' },
-            { title: 'NONE', author: 'Sally Thorne', description: 'Two executive assistants who hate each other compete for the same promotion while fighting their mutual attraction.' },
-            { title: 'NONE', author: 'Emily Henry', description: 'A romance writer and a literary fiction author, both suffering from writers block, decide to swap genres for a summer.' },
-            { title: 'NONE', author: 'Helen Hoang', description: 'A woman with Aspergers hires a male escort to teach her about relationships , but ends up getting more than she bargained for.' }
+            { title: 'Pride and Prejudice', author: 'Jane Austen', description: 'The story of Elizabeth Bennet and her complicated relationship with the proud Mr. Darcy.' },
+            { title: 'Red, White & Royal Blue', author: 'Casey McQuiston', description: 'The First Son of the United States falls in love with the Prince of Wales after an incident forces them to pretend to be friends.' },
+            { title: 'The Hating Game', author: 'Sally Thorne', description: 'Two executive assistants who hate each other compete for the same promotion while fighting their mutual attraction.' },
+            { title: 'Beach Read', author: 'Emily Henry', description: 'A romance writer and a literary fiction author, both suffering from writers block, decide to swap genres for a summer.' },
+            { title: 'The Kiss Quotient', author: 'Helen Hoang', description: 'A woman with Aspergers hires a male escort to teach her about relationships , but ends up getting more than she bargained for.' }
           ],
           'Historical Fiction': [
-            { title: 'NONE', author: 'Anthony Doerr', description: 'The paths of a blind French girl and a German boy collide in occupied France during World War II.' },
-            { title: 'NONE', author: 'Markus Zusak', description: 'Death narrates the story of Liesel, a young girl living with a foster family in Nazi Germany.' },
-            { title: 'NONE', author: 'Hilary Mantel', description: 'Thomas Cromwells rise to power in the court of Henry VIII.' },
-            { title: 'NONE', author: 'Min Jin Lee', description: 'An epic tale following four generations of a Korean family who move to Japan.' },
-            { title: 'NONE', author: 'Kristin Hannah', description: 'Two sisters in France must survive and resist during the German occupation in World War II.' }
+            { title: 'All the Light We Cannot See', author: 'Anthony Doerr', description: 'The paths of a blind French girl and a German boy collide in occupied France during World War II.' },
+            { title: 'The Book Thief', author: 'Markus Zusak', description: 'Death narrates the story of Liesel, a young girl living with a foster family in Nazi Germany.' },
+            { title: 'Wolf Hall', author: 'Hilary Mantel', description: 'Thomas Cromwells rise to power in the court of Henry VIII.' },
+            { title: 'Pachinko', author: 'Min Jin Lee', description: 'An epic tale following four generations of a Korean family who move to Japan.' },
+            { title: 'The Nightingale', author: 'Kristin Hannah', description: 'Two sisters in France must survive and resist during the German occupation in World War II.' }
           ],
           'Non-Fiction': [
-            { title: 'NONE', author: 'Yuval Noah Harari', description: 'A survey of the history of humankind from the evolution of archaic human species to the 21st century.' },
-            { title: 'NONE', author: 'Tara Westover', description: 'A memoir about growing up in a survivalist family in Idaho and the pursuit of education that followed.' },
-            { title: 'NONE', author: 'Rebecca Skloot', description: 'The story of Henrietta Lacks, whose cells were used for medical research without her knowledge.' },
-            { title: 'NONE', author: 'Daniel Kahneman', description: 'An examination of the two systems that drive the way we think: fast, intuitive thinking and slow, deliberate thinking.' },
-            { title: 'NONE', author: 'Walter Isaacson', description: 'The story of Jennifer Doudna, Nobel Prize winner for her work on CRISPR gene editing.' }
+            { title: 'Sapiens: A Brief History of Humankind', author: 'Yuval Noah Harari', description: 'A survey of the history of humankind from the evolution of archaic human species to the 21st century.' },
+            { title: 'Educated', author: 'Tara Westover', description: 'A memoir about growing up in a survivalist family in Idaho and the pursuit of education that followed.' },
+            { title: 'The Immortal Life of Henrietta Lacks', author: 'Rebecca Skloot', description: 'The story of Henrietta Lacks, whose cells were used for medical research without her knowledge.' },
+            { title: 'Thinking, Fast and Slow', author: 'Daniel Kahneman', description: 'An examination of the two systems that drive the way we think: fast, intuitive thinking and slow, deliberate thinking.' },
+            { title: 'The Code Breaker', author: 'Walter Isaacson', description: 'The story of Jennifer Doudna, Nobel Prize winner for her work on CRISPR gene editing.' }
           ]
         };
         
@@ -606,7 +566,6 @@
         const bookDiscovery = new BookDiscovery(container);
       }
 
-      // Basic user profile initialization
       const userAvatar = document.getElementById('user-avatar-initials');
       const userName = document.getElementById('user-display-name');
       const userStats = document.getElementById('user-stats');
