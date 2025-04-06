@@ -21,18 +21,24 @@ module.exports = {
     }
   },
   getBookDetails: async (req, res) => {
-    const { bookId } = req.params;
-    console.log('Fetching book:', bookId);
     try {
-      const book = await getBook(bookId);
-      if (!book) {
-        console.log('Book not found:', bookId);
-        return res.status(404).json({ error: 'Book not found' });
-      }
-      res.json(book);
-    } catch (err) {
-      console.error('Get Book Details Error:', err);
-      res.status(500).json({ error: 'Failed to fetch book details' });
+        const bookId = req.params.bookId;
+
+        // Validate bookId
+        if (!bookId || isNaN(bookId)) {
+            return res.status(400).json({ error: 'Invalid book ID' });
+        }
+
+        const result = await db.query('SELECT * FROM books WHERE id = $1', [bookId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Book not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Get Book Details Error:', error);
+        res.status(500).json({ error: 'Failed to fetch book details' });
     }
   }
 };
