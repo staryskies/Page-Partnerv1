@@ -33,7 +33,7 @@ app.get('/add-book.html', requireLogin, (req, res) => res.sendFile(path.join(__d
 app.get('/achievements.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'achievements.html')));
 app.get('/read.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'read.html')));
 app.get('/discover.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'discover.html')));
-app.get('/suggested-circles.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'suggested-circles.html'))); // New route
+
 
 app.post('/api/auth/register', userController.signup);
 app.post('/api/auth/login', userController.login);
