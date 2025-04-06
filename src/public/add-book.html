@@ -7,25 +7,157 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    :root { /* Assuming same vars as index.html */ }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { background: #121212; color: #ffffff; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-    .container { background: #1e1e1e; padding: 40px; border-radius: 10px; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3); width: 100%; max-width: 400px; }
-    h1 { font-size: 2rem; margin-bottom: 20px; color: #38b2ac; }
-    input, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #2a2a2a; border-radius: 5px; background: #121212; color: #ffffff; }
-    textarea { height: 150px; resize: vertical; }
-    button { background: #38b2ac; color: #ffffff; border: none; border-radius: 5px; padding: 12px; cursor: pointer; width: 100%; margin-top: 10px; }
-    button:hover { background: #2a9d98; }
-    .error { color: #ff6b6b; margin-top: 10px; }
+    
+    :root {
+      --primary-color: #1e3a5f;
+      --secondary-color: #ff6b6b;
+      --accent-color: #38b2ac;
+      --number-color: #2196f3;
+      --dark-bg: #ffffff;
+      --card-bg: #ffffff;
+      --light-text: #212529;
+      --muted-text: #8a8a8a;
+      --border-color: #f0f0f0;
+      --gradient-start: #ffffff;
+      --gradient-end: #f8f9fa;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    }
+    
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Inter', sans-serif; 
+    }
+    
+    body { 
+      background: var(--gradient-start);
+      color: var(--light-text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .container { 
+      background: var(--card-bg); 
+      padding: 40px; 
+      border-radius: 15px; 
+      box-shadow: var(--card-shadow); 
+      width: 100%; 
+      max-width: 500px;
+      border: 1px solid var(--border-color);
+    }
+    
+    h1 { 
+      font-size: 2rem; 
+      margin-bottom: 25px; 
+      color: var(--primary-color);
+      font-weight: 700;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--light-text);
+    }
+    
+    input, textarea { 
+      width: 100%; 
+      padding: 12px 15px; 
+      margin-bottom: 10px; 
+      border: 1px solid var(--border-color); 
+      border-radius: 8px; 
+      background: var(--dark-bg); 
+      color: var(--light-text);
+      transition: border-color 0.3s;
+    }
+    
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(56, 178, 172, 0.1);
+    }
+    
+    textarea { 
+      height: 150px; 
+      resize: vertical; 
+    }
+    
+    button { 
+      background: var(--accent-color); 
+      color: white; 
+      border: none; 
+      border-radius: 8px; 
+      padding: 12px 20px; 
+      cursor: pointer; 
+      width: 100%; 
+      margin-top: 15px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    button:hover { 
+      background: #2a9d98;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(56, 178, 172, 0.2);
+    }
+    
+    .error { 
+      color: var(--secondary-color); 
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      background-color: rgba(255, 107, 107, 0.05);
+      border: 1px solid rgba(255, 107, 107, 0.2);
+      display: none;
+    }
+    
+    .header-link {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .back-link {
+      color: var(--accent-color);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+    
+    .back-link:hover {
+      color: #2a9d98;
+    }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="header-link">
+      <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
     <h1>Add a New Book</h1>
-    <input type="text" id="title" placeholder="Book Title" required>
-    <input type="text" id="genre" placeholder="Genre" required>
-    <textarea id="excerpt" placeholder="Book Excerpt (optional, 300+ words for preview)"></textarea>
-    <button onclick="addBook()">Add Book</button>
+    <div class="form-group">
+      <label for="title">Book Title</label>
+      <input type="text" id="title" placeholder="Enter book title" required>
+    </div>
+    <div class="form-group">
+      <label for="genre">Genre</label>
+      <input type="text" id="genre" placeholder="Enter genre" required>
+    </div>
+    <div class="form-group">
+      <label for="excerpt">Book Excerpt (optional)</label>
+      <textarea id="excerpt" placeholder="300+ words for preview generation"></textarea>
+    </div>
+    <button onclick="addBook()">Add to My Library</button>
     <p id="error" class="error"></p>
   </div>
   <script>
@@ -36,16 +168,21 @@
       const genre = document.getElementById('genre').value;
       const excerpt = document.getElementById('excerpt').value || '';
       const errorElement = document.getElementById('error');
+      
+      // Reset error state
+      errorElement.style.display = 'none';
       errorElement.textContent = '';
 
       const username = localStorage.getItem('username');
       if (!username) {
         errorElement.textContent = 'You must be logged in to add a book.';
+        errorElement.style.display = 'block';
         return;
       }
 
       if (!title || !genre) {
         errorElement.textContent = 'Title and genre are required.';
+        errorElement.style.display = 'block';
         return;
       }
 
@@ -65,27 +202,9 @@
       } catch (err) {
         console.error('Add Book Error:', err);
         errorElement.textContent = err.message;
+        errorElement.style.display = 'block';
       }
     }
-
-    const createBook = async (req, res) => {
-      const { title, genre, excerpt } = req.body;
-
-      if (!title || !genre) {
-        return res.status(400).json({ error: 'Title and genre are required.' });
-      }
-
-      try {
-        const result = await db.query(
-          'INSERT INTO books (title, genre, excerpt) VALUES ($1, $2, $3) RETURNING id',
-          [title, genre, excerpt]
-        );
-        res.status(201).json({ success: true, bookId: result.rows[0].id });
-      } catch (err) {
-        console.error('Create Book Error:', err);
-        res.status(500).json({ error: 'Failed to add book.' });
-      }
-    };
   </script>
 </body>
 </html>

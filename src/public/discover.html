@@ -7,18 +7,229 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    :root { /* Assuming same vars as index.html */ }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { background: #121212; color: #ffffff; display: flex; min-height: 100vh; overflow-x: hidden; }
-    .sidebar { width: 260px; background: #1e1e1e; padding: 20px; position: fixed; height: 100%; }
-    .main-content { flex: 1; padding: 30px; margin-left: 260px; }
-    .topics-grid, .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-    .topic-card, .book-card { background: #1e1e1e; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; border: 1px solid #2a2a2a; }
-    .topic-card:hover, .book-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4); border-color: #38b2ac; }
-    .topic-icon { font-size: 2rem; color: #38b2ac; margin-bottom: 15px; }
-    .topic-name, .book-title { font-weight: 600; }
-    .preview-text { margin-top: 10px; font-size: 0.9rem; color: #a0a0a0; }
-    @media (max-width: 992px) { .sidebar { transform: translateX(-100%); } .sidebar.open { transform: translateX(0); } .main-content { margin-left: 0; } }
+
+    :root {
+      --primary-color: #1e3a5f;
+      --secondary-color: #ff6b6b;
+      --accent-color: #38b2ac;
+      --number-color: #2196f3;
+      --dark-bg: #ffffff;
+      --card-bg: #ffffff;
+      --light-text: #212529;
+      --muted-text: #8a8a8a;
+      --border-color: #f0f0f0;
+      --gradient-start: #ffffff;
+      --gradient-end: #f8f9fa;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      --hover-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+      font-family: 'Inter', sans-serif; 
+    }
+
+    body {
+      background: var(--gradient-start);
+      color: var(--light-text);
+      display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .mobile-nav-toggle {
+      display: none;
+      background: transparent;
+      border: none;
+      color: var(--light-text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+
+    .sidebar {
+      width: 250px;
+      background: var(--dark-bg);
+      padding: 20px;
+      position: fixed;
+      height: 100%;
+      border-right: 1px solid var(--border-color);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      height: 32px;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+
+    .nav-links {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .nav-section {
+      margin-bottom: 15px;
+    }
+
+    .nav-section-title {
+      color: var(--muted-text);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 5px;
+      text-decoration: none;
+      color: var(--light-text);
+      transition: background-color 0.3s;
+    }
+
+    .nav-item:hover, .nav-item.active {
+      background-color: var(--accent-color);
+      color: white;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 30px;
+      margin-left: 250px;
+    }
+
+    .section-header {
+      margin-bottom: 30px;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--light-text);
+    }
+
+    .topics-grid, .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .topic-card, .book-card {
+      background: var(--card-bg);
+      border-radius: 15px;
+      padding: 25px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: var(--card-shadow);
+      border: 1px solid var(--border-color);
+    }
+
+    .topic-card:hover, .book-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--hover-shadow);
+      border-color: var(--accent-color);
+    }
+
+    .topic-icon {
+      font-size: 2rem;
+      color: var(--accent-color);
+      margin-bottom: 15px;
+    }
+
+    .topic-name, .book-title {
+      font-weight: 600;
+      color: var(--light-text);
+    }
+
+    .preview-text {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: var(--muted-text);
+    }
+
+    .user-profile {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      background: var(--card-bg);
+      box-shadow: var(--card-shadow);
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .user-status {
+      font-size: 0.8rem;
+      color: var(--muted-text);
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        transform: translateX(-100%);
+        z-index: 99;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+      }
+      .mobile-nav-toggle {
+        display: block;
+      }
+    }
   </style>
 </head>
 <body>
@@ -90,7 +301,7 @@
         <div class="topic-name">Historical</div>
       </div>
     </div>
-    <div class="books-grid" id="books-grid" style="margin-top: 20px;"></div>
+    <div class="books-grid" id="books-grid" style="margin-top: 30px;"></div>
   </div>
   <script>
     const baseUrl = window.location.origin;
@@ -103,6 +314,11 @@
 
       document.querySelectorAll('.topic-card').forEach(card => {
         card.addEventListener('click', () => loadBooksByGenre(card.dataset.genre));
+      });
+      
+      // Mobile nav toggle functionality
+      document.querySelector('.mobile-nav-toggle').addEventListener('click', () => {
+        document.querySelector('.sidebar').classList.toggle('open');
       });
     });
 
