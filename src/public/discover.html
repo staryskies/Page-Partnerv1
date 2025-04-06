@@ -315,479 +315,320 @@
       </div>
     </div>
   </div>
-  <!-- Main Content -->
-  <main class="main-content">
-    <div class="page-header">
-        <h1 class="page-title">Reading Circles</h1>
-        <div class="header-actions">
-            <button id="open-create-circle-modal" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Create Circle
-            </button>
-            <button id="open-find-circle-modal" class="btn btn-light">
-                <i class="fas fa-search"></i> Find Circles
-            </button>
-        </div>
-    </div>
+  <div class="main-content">
+    <h1>Book Discovery</h1>
+    <div id="book-discovery-container"></div>
+  </div>
 
-    <!-- Dashboard Stats (unchanged) -->
-    <div class="stats-grid">
-        <!-- ... (previous stats grid content) -->
-    </div>
+  <script>
+    // Get username from local storage or some auth mechanism
+    const username = localStorage.getItem('username') || 'testuser'; // Adjust based on your auth system
 
-    <!-- Live Reading -->
-    <div class="section">
-        <div class="section-header">
-            <h2 class="section-title">Live Reading</h2>
-            <a href="#" class="section-action">How it works <i class="fas fa-question-circle"></i></a>
-        </div>
-        <div class="section-body">
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i class="fas fa-book-reader"></i>
-                </div>
-                <h3 class="empty-state-title">No Live Sessions Right Now</h3>
-                <p class="empty-state-description">
-                    Join a reading circle or create your own to experience live reading sessions with friends and fellow book lovers.
-                </p>
-                <button class="btn btn-primary" id="join-circle-btn">
-                    <i class="fas fa-plus"></i> Join a Circle
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Reading Circles Section -->
-    <section class="section" id="circles-section">
-        <!-- ... (previous circles section content) -->
-    </section>
-
-    <!-- Reading Goal Progress -->
-    <div class="section" id="reading-goal-section">
-        <div class="section-header">
-            <h2 class="section-title">Reading Goal</h2>
-            <a href="#" class="section-action" id="open-set-goal-modal">Set a goal <i class="fas fa-plus"></i></a>
-        </div>
-        <div class="section-body" id="reading-goal-body">
-            <!-- Populated dynamically -->
-        </div>
-    </div>
-
-    <!-- Recommended Books Section -->
-    <section class="section" id="recommendations-section">
-        <!-- ... (previous recommendations section content) -->
-    </section>
-</main>
-
-<!-- Create Circle Modal -->
-<div class="modal" id="create-circle-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">Create Reading Circle</div>
-            <button class="modal-close" id="close-modal"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label class="form-label">Circle Name</label>
-                <input type="text" class="form-input" id="circle-name" placeholder="e.g., Fantasy Book Club">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Current Book (Optional)</label>
-                <select class="form-input" id="circle-book">
-                    <option value="">No book selected</option>
-                    <!-- Populated dynamically -->
-                </select>
-                <div class="form-help">What book will your circle start with?</div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Circle Description</label>
-                <input type="text" class="form-input" id="circle-description" placeholder="Describe what your circle is about">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Privacy</label>
-                <select class="form-input" id="circle-privacy">
-                    <option value="true">Public - Anyone can join</option>
-                    <option value="false">Private - Invitation only</option>
-                </select>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-light" id="cancel-create">Cancel</button>
-            <button class="btn btn-primary" id="create-circle-btn">Create Circle</button>
-        </div>
-    </div>
-</div>
-
-<!-- Find Circle Modal -->
-<div class="modal" id="find-circle-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">Find a Reading Circle</div>
-            <button class="modal-close" id="close-find-modal"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label class="form-label">Search Circles</label>
-                <input type="text" class="form-input" id="circle-search" placeholder="Search by name or description">
-            </div>
-            <div id="circle-results" style="max-height: 300px; overflow-y: auto;">
-                <!-- Populated dynamically -->
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-light" id="cancel-find">Cancel</button>
-        </div>
-    </div>
-</div>
-
-<!-- Set Reading Goal Modal -->
-<div class="modal" id="set-goal-modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <div class="modal-title">Set Reading Goal</div>
-            <button class="modal-close" id="close-goal-modal"><i class="fas fa-times"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label class="form-label">Target Number of Books</label>
-                <input type="number" class="form-input" id="goal-target" min="1" placeholder="e.g., 10">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Timeframe</label>
-                <select class="form-input" id="goal-timeframe">
-                    <option value="month">This Month</option>
-                    <option value="year">This Year</option>
-                </select>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-light" id="cancel-goal">Cancel</button>
-            <button class="btn btn-primary" id="set-goal-btn">Set Goal</button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const username = localStorage.getItem('username');
-    if (!username) window.location.href = '/';
-
-    // Fetch Functions
-    async function fetchUserData() {
-        const response = await fetch('/api/user', { headers: { 'X-Username': username } });
-        if (!response.ok) throw new Error('Failed to fetch user data');
+    // Function to get user data from backend
+    async function getUserData() {
+      try {
+        const response = await fetch('/api/user', {
+          headers: {
+            'X-Username': username // Match your backend's expected header
+          }
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
-        const goals = await fetch('/api/reading-goals', { headers: { 'X-Username': username } }).then(res => res.json());
-        return { ...data, goals };
+        return {
+          username: data.displayName,
+          currently_reading: data.currentlyReading,
+          completed_books: data.completedBooks,
+          reading_streak: data.readingStreak,
+          badges: data.badges,
+          points: data.hasPoints ? data.points : 0 // Your endpoint doesn't return points directly
+        };
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        // Fallback data
+        return {
+          username: "Guest",
+          currently_reading: 0,
+          completed_books: 0,
+          reading_streak: 0,
+          badges: 0,
+          points: 0
+        };
+      }
     }
 
-    async function fetchCircles() {
-        const response = await fetch('/api/circles', { headers: { 'X-Username': username } });
-        if (!response.ok) throw new Error('Failed to fetch circles');
-        const circles = await response.json();
-        const books = await fetch('/api/books', { headers: { 'X-Username': username } }).then(res => res.json());
-        return circles.map(circle => {
-            const book = books.find(b => b.id === circle.book_id) || {};
-            return { ...circle, bookTitle: book.title, bookGenre: book.genre };
+    // Magic Loops API call function with user parameters
+    async function callMagicLoops(genre, userData) {
+      try {
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('API request timed out')), 15000);
         });
-    }
 
-    async function fetchBooks() {
-        const response = await fetch('/api/books', { headers: { 'X-Username': username } });
-        if (!response.ok) throw new Error('Failed to fetch books');
-        return await response.json();
-    }
+        const instruction = `Generate a list of 5 book suggestions in the ${genre} genre in JSON format with title, author, and description for each book. 
+          Personalize recommendations based on this user data:
+          - Username: ${userData.username}
+          - Currently reading: ${userData.currently_reading} books
+          - Completed books: ${userData.completed_books}
+          - Reading streak: ${userData.reading_streak} days
+          - Badges: ${userData.badges}
+          - Points: ${userData.points}`;
 
-    async function fetchPublicCircles(search = '') {
-        const response = await fetch(`/api/circles/public${search ? `?search=${encodeURIComponent(search)}` : ''}`);
-        if (!response.ok) throw new Error('Failed to fetch public circles');
-        return await response.json();
-    }
-
-    // UI Updates
-    function updateSidebar(userData) {
-        const avatar = document.getElementById('user-avatar');
-        const name = document.getElementById('user-name');
-        const stats = document.getElementById('user-stats');
-        avatar.textContent = userData.displayName.charAt(0).toUpperCase();
-        name.textContent = userData.displayName;
-        stats.textContent = `${userData.completedBooks} books • ${userData.badges} badges`;
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('username');
-            window.location.href = '/';
+        const fetchPromise = fetch('https://magicloops.dev/api/loop/31478684-0d4c-4202-be61-3e75f0e55fa3/run', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            instruction: instruction
+          })
         });
-    }
 
-    function updateStats(circles, userData) {
-        document.getElementById('active-circles').textContent = circles.length;
-        document.getElementById('current-reads').textContent = userData.currentlyReading;
-        document.getElementById('discussions').textContent = '0'; // Placeholder
-        document.getElementById('upcoming').textContent = '0'; // Placeholder
-    }
-
-    function populateCircles(circles) {
-        const grid = document.getElementById('circles-grid');
-        grid.innerHTML = '';
-        if (circles.length === 0) {
-            grid.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="fas fa-users"></i></div>
-                    <h3 class="empty-state-title">No Reading Circles Yet</h3>
-                    <p class="empty-state-description">
-                        Join or create a reading circle to connect with fellow book lovers and discover new reads together.
-                    </p>
-                    <div style="display: flex; gap: 12px;">
-                        <button class="btn btn-primary" id="create-circle-card"><i class="fas fa-plus"></i> Create Circle</button>
-                        <button class="btn btn-outline" id="find-circle-btn"><i class="fas fa-search"></i> Find Circles</button>
-                    </div>
-                </div>`;
-            document.getElementById('create-circle-card').addEventListener('click', openCreateModal);
-            document.getElementById('find-circle-btn').addEventListener('click', openFindModal);
-        } else {
-            circles.forEach(circle => {
-                const card = document.createElement('div');
-                card.className = 'circle-card';
-                card.innerHTML = `
-                    <div class="circle-cover">
-                        <div class="circle-book-image">${circle.bookTitle || 'No Book'}</div>
-                    </div>
-                    <div class="circle-content">
-                        <div class="circle-name">${circle.name}</div>
-                        <div class="circle-book">${circle.bookTitle || 'No book selected'}</div>
-                        <div class="circle-members">
-                            ${circle.member_ids.slice(0, 3).map((_, i) => `<div class="circle-member">${i + 1}</div>`).join('')}
-                            ${circle.member_ids.length > 3 ? `<div class="circle-member more">+${circle.member_ids.length - 3}</div>` : ''}
-                        </div>
-                        <div class="circle-progress">
-                            <div class="progress-title"><span>Progress</span><span>0%</span></div>
-                            <div class="progress-bar-container"><div class="progress-bar" style="width: 0%;"></div></div>
-                        </div>
-                    </div>
-                    <div class="circle-footer">
-                        <div class="circle-status"><i class="fas fa-circle"></i> ${circle.status}</div>
-                        <div class="circle-actions">
-                            <button class="circle-action"><i class="fas fa-comment"></i></button>
-                            <button class="circle-action"><i class="fas fa-share"></i></button>
-                        </div>
-                    </div>`;
-                grid.appendChild(card);
-            });
+        const response = await Promise.race([fetchPromise, timeoutPromise]);
+        
+        if (!response.ok) {
+          throw new Error(`Magic Loops API request failed with status: ${response.status}`);
         }
+        
+        const data = await response.json();
+        console.log('API Response:', data);
+        
+        return data.suggestions || [];
+      } catch (error) {
+        console.error('Error fetching book recommendations:', error);
+        throw error;
+      }
     }
 
-    function populateReadingGoal(userData) {
-        const body = document.getElementById('reading-goal-body');
-        if (!userData.goals || userData.goals.length === 0) {
-            body.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-state-icon"><i class="fas fa-trophy"></i></div>
-                    <h3 class="empty-state-title">No Reading Goal Set</h3>
-                    <p class="empty-state-description">
-                        Challenge yourself by setting a reading goal. Track your progress and celebrate your achievements.
-                    </p>
-                    <button class="btn btn-primary" id="set-goal-btn-placeholder"><i class="fas fa-bullseye"></i> Set Reading Goal</button>
-                </div>`;
-            document.getElementById('set-goal-btn-placeholder').addEventListener('click', openGoalModal);
-        } else {
-            const goal = userData.goals[0]; // Active goal
-            const progress = Math.min((goal.progress / goal.target_books) * 100, 100);
-            body.innerHTML = `
-                <div class="reading-goal">
-                    <div class="reading-goal-header">
-                        <div class="reading-goal-title">Reading Goal (${goal.timeframe})</div>
-                        <div class="reading-goal-value">${goal.progress}/${goal.target_books}</div>
-                    </div>
-                    <div class="goal-progress-bar">
-                        <div class="goal-progress-value" style="width: ${progress}%"></div>
-                    </div>
-                    <div class="goal-labels">
-                        <span>Start</span>
-                        <span>Goal</span>
-                    </div>
-                </div>`;
-        }
-    }
-
-    function populateFindCircles(circles) {
-        const results = document.getElementById('circle-results');
-        results.innerHTML = '';
-        if (circles.length === 0) {
-            results.innerHTML = '<p>No public circles found.</p>';
-        } else {
-            circles.forEach(circle => {
-                const div = document.createElement('div');
-                div.style = 'margin-bottom: 1rem; padding: 1rem; border: 1px solid #dee2e6; border-radius: 0.5rem;';
-                div.innerHTML = `
-                    <strong>${circle.name}</strong><br>
-                    <span>${circle.description || 'No description'}</span><br>
-                    <span>Book: ${circle.bookTitle || 'None'}</span><br>
-                    <button class="btn btn-primary join-circle-btn" data-id="${circle.id}" style="margin-top: 0.5rem;">
-                        Join
-                    </button>`;
-                results.appendChild(div);
-            });
-            document.querySelectorAll('.join-circle-btn').forEach(btn => {
-                btn.addEventListener('click', () => joinCircle(btn.dataset.id));
-            });
-        }
-    }
-
-    async function joinCircle(circleId) {
+    // Book discovery UI component
+    class BookDiscovery {
+      constructor(containerElement) {
+        this.container = containerElement;
+        this.genres = ['Fantasy', 'Science Fiction', 'Mystery', 'Romance', 'Historical Fiction', 'Non-Fiction'];
+        this.selectedGenre = null;
+        this.bookResults = [];
+        this.isLoading = false;
+        this.userData = null;
+        
+        this.init();
+      }
+      
+      async init() {
+        this.userData = await getUserData();
+        this.renderGenres();
+        this.createResultsArea();
+        this.updateUserProfile();
+      }
+      
+      renderGenres() {
+        const genreContainer = document.createElement('div');
+        genreContainer.className = 'genre-container';
+        
+        this.genres.forEach(genre => {
+          const genreButton = document.createElement('button');
+          genreButton.textContent = genre;
+          genreButton.className = 'genre-button';
+          genreButton.addEventListener('click', () => this.handleGenreClick(genre));
+          genreContainer.appendChild(genreButton);
+        });
+        
+        this.container.appendChild(genreContainer);
+      }
+      
+      createResultsArea() {
+        this.resultsArea = document.createElement('div');
+        this.resultsArea.className = 'results-area';
+        this.container.appendChild(this.resultsArea);
+        
+        const placeholderElement = document.createElement('div');
+        placeholderElement.className = 'placeholder';
+        placeholderElement.textContent = 'Select a genre to discover books';
+        this.resultsArea.appendChild(placeholderElement);
+      }
+      
+      async handleGenreClick(genre) {
+        this.selectedGenre = genre;
+        this.updateGenreButtons(genre);
+        
+        this.isLoading = true;
+        this.updateResultsArea();
+        
         try {
-            const response = await fetch(`/api/circles/${circleId}/join`, {
-                method: 'POST',
-                headers: { 'X-Username': username }
-            });
-            if (!response.ok) throw new Error('Failed to join circle');
-            closeFindModal();
-            init(); // Refresh page
+          const suggestions = await callMagicLoops(genre, this.userData);
+          
+          if (!Array.isArray(suggestions) || suggestions.length === 0) {
+            console.warn('No valid suggestions received from API, using mock data');
+            this.bookResults = this.getMockBooks(genre);
+          } else {
+            this.bookResults = suggestions.map(book => ({
+              title: book.title,
+              author: book.author,
+              description: book.description
+            }));
+          }
         } catch (error) {
-            console.error('Error joining circle:', error);
-            alert('Failed to join circle');
+          console.error('API call failed:', error);
+          this.bookResults = this.getMockBooks(genre);
+        } finally {
+          this.isLoading = false;
+          this.updateResultsArea();
         }
-    }
-
-    async function createCircle() {
-        const name = document.getElementById('circle-name').value;
-        const bookId = document.getElementById('circle-book').value || null;
-        const description = document.getElementById('circle-description').value;
-        const isPublic = document.getElementById('circle-privacy').value === 'true';
-
-        if (!name) {
-            alert('Circle name is required');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/circles', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Username': username
-                },
-                body: JSON.stringify({ name, bookId, description, isPublic })
-            });
-            if (!response.ok) throw new Error('Failed to create circle');
-            closeCreateModal();
-            init();
-        } catch (error) {
-            console.error('Error creating circle:', error);
-            alert('Failed to create circle');
-        }
-    }
-
-    async function setReadingGoal() {
-        const targetBooks = parseInt(document.getElementById('goal-target').value, 10);
-        const timeframe = document.getElementById('goal-timeframe').value;
-
-        if (!targetBooks || targetBooks <= 0) {
-            alert('Please enter a valid number of books');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/reading-goals', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Username': username
-                },
-                body: JSON.stringify({ targetBooks, timeframe })
-            });
-            if (!response.ok) throw new Error('Failed to set goal');
-            closeGoalModal();
-            init();
-        } catch (error) {
-            console.error('Error setting goal:', error);
-            alert('Failed to set reading goal');
-        }
-    }
-
-    // Modal Functions
-    const createCircleModal = document.getElementById('create-circle-modal');
-    const findCircleModal = document.getElementById('find-circle-modal');
-    const setGoalModal = document.getElementById('set-goal-modal');
-
-    function openCreateModal() { createCircleModal.style.display = 'flex'; }
-    function closeCreateModal() { createCircleModal.style.display = 'none'; }
-    function openFindModal() { findCircleModal.style.display = 'flex'; populateFindCircles([]); }
-    function closeFindModal() { findCircleModal.style.display = 'none'; }
-    function openGoalModal() { setGoalModal.style.display = 'flex'; }
-    function closeGoalModal() { setGoalModal.style.display = 'none'; }
-
-    document.getElementById('open-create-circle-modal').addEventListener('click', openCreateModal);
-    document.getElementById('close-modal').addEventListener('click', closeCreateModal);
-    document.getElementById('cancel-create').addEventListener('click', closeCreateModal);
-    document.getElementById('create-circle-btn').addEventListener('click', createCircle);
-
-    document.getElementById('open-find-circle-modal').addEventListener('click', openFindModal);
-    document.getElementById('close-find-modal').addEventListener('click', closeFindModal);
-    document.getElementById('cancel-find').addEventListener('click', closeFindModal);
-    document.getElementById('circle-search').addEventListener('input', async (e) => {
-        const circles = await fetchPublicCircles(e.target.value);
-        populateFindCircles(circles);
-    });
-
-    document.getElementById('open-set-goal-modal').addEventListener('click', openGoalModal);
-    document.getElementById('close-goal-modal').addEventListener('click', closeGoalModal);
-    document.getElementById('cancel-goal').addEventListener('click', closeGoalModal);
-    document.getElementById('set-goal-btn').addEventListener('click', setReadingGoal);
-
-    document.getElementById('join-circle-btn').addEventListener('click', openFindModal);
-
-    // Tabs and Filters (unchanged)
-    const tabs = document.querySelectorAll('.tab');
-    const filterPills = document.querySelectorAll('.filter-pill');
-    let allCircles = [];
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            filterCircles(tab.dataset.filter, document.querySelector('.filter-pill.active').dataset.genre);
+      }
+      
+      updateGenreButtons(selectedGenre) {
+        const buttons = this.container.querySelectorAll('.genre-button');
+        buttons.forEach(button => {
+          if (button.textContent === selectedGenre) {
+            button.classList.add('selected');
+          } else {
+            button.classList.remove('selected');
+          }
         });
-    });
-
-    filterPills.forEach(pill => {
-        pill.addEventListener('click', () => {
-            filterPills.forEach(p => p.classList.remove('active'));
-            pill.classList.add('active');
-            filterCircles(document.querySelector('.tab.active').dataset.filter, pill.dataset.genre);
-        });
-    });
-
-    function filterCircles(tabFilter, genreFilter) {
-        let filtered = allCircles;
-        if (tabFilter !== 'all') {
-            filtered = filtered.filter(circle => circle.status === tabFilter || (tabFilter === 'created' && circle.created_by === username));
+      }
+      
+      updateResultsArea() {
+        this.resultsArea.innerHTML = '';
+        
+        if (this.isLoading) {
+          const loadingElement = document.createElement('div');
+          loadingElement.className = 'loading-indicator';
+          loadingElement.textContent = `Loading ${this.selectedGenre} book recommendations...`;
+          this.resultsArea.appendChild(loadingElement);
+          return;
         }
-        if (genreFilter !== 'all') {
-            filtered = filtered.filter(circle => circle.bookGenre === genreFilter);
+        
+        if (!this.selectedGenre) {
+          const placeholderElement = document.createElement('div');
+          placeholderElement.className = 'placeholder';
+          placeholderElement.textContent = 'Select a genre to discover books';
+          this.resultsArea.appendChild(placeholderElement);
+          return;
         }
-        populateCircles(filtered);
-    }
-
-    async function init() {
-        const userData = await fetchUserData();
-        allCircles = await fetchCircles();
-        updateSidebar(userData);
-        updateStats(allCircles, userData);
-        populateCircles(allCircles);
-        populateReadingGoal(userData);
-        populateRecommendations(userData.recommendations);
-        await populateBookDropdown();
-    }
-
-    async function populateBookDropdown() {
-        const books = await fetchBooks();
-        const select = document.getElementById('circle-book');
-        books.forEach(book => {
-            const option = document.createElement('option');
-            option.value = book.id;
-            option.textContent = book.title;
-            select.appendChild(option);
+        
+        if (this.bookResults.length === 0) {
+          const noResultsElement = document.createElement('div');
+          noResultsElement.className = 'no-results';
+          noResultsElement.textContent = `No ${this.selectedGenre} books found. Please try again.`;
+          this.resultsArea.appendChild(noResultsElement);
+          return;
+        }
+        
+        const booksGrid = document.createElement('div');
+        booksGrid.className = 'books-grid';
+        
+        this.bookResults.forEach(book => {
+          const bookCard = document.createElement('div');
+          bookCard.className = 'book-card';
+          
+          const title = document.createElement('h3');
+          title.textContent = book.title || 'Unknown Title';
+          
+          const author = document.createElement('p');
+          author.className = 'book-author';
+          author.textContent = `By ${book.author || 'Unknown Author'}`;
+          
+          const description = document.createElement('p');
+          description.className = 'book-description';
+          description.textContent = book.description || 'No description available';
+          
+          bookCard.appendChild(title);
+          bookCard.appendChild(author);
+          bookCard.appendChild(description);
+          
+          bookCard.addEventListener('click', () => {
+            console.log('Selected book:', book.title);
+            alert(`You selected "${book.title || 'Unknown Title'}" by ${book.author || 'Unknown Author'}`);
+          });
+          
+          booksGrid.appendChild(bookCard);
         });
+        
+        this.resultsArea.appendChild(booksGrid);
+      }
+      
+      updateUserProfile() {
+        const userAvatar = document.getElementById('user-avatar-initials');
+        const userName = document.getElementById('user-display-name');
+        const userStats = document.getElementById('user-stats');
+        
+        if (this.userData && this.userData.username) {
+          const initials = this.userData.username.charAt(0).toUpperCase();
+          userAvatar.textContent = initials;
+          userName.textContent = this.userData.username;
+          userStats.textContent = `${this.userData.completed_books} books • ${this.userData.badges} badges`;
+        } else {
+          userAvatar.textContent = 'G';
+          userName.textContent = 'Guest';
+          userStats.textContent = '0 books • 0 badges';
+        }
+      }
+      
+      getMockBooks(genre) {
+        const mockBooksByGenre = {
+          'Fantasy': [
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+          ],
+          'Science Fiction': [
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+          ],
+          'Mystery': [
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+          ],
+          'Romance': [
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+          ],
+          'Historical Fiction': [
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+          ],
+          'Non-Fiction': [
+            { title: 'NONE', author: 'Patrick Rothfuss', description: 'A tale about a legendary musician and arcanist who recounts his path from childhood tragedy to the present.' },
+            { title: 'NONE', author: 'Brandon Sanderson', description: 'Epic fantasy set in a world of stone and storms, following multiple characters in a complex magical system.' },
+            { title: 'NONE', author: 'Ursula K. Le Guin', description: 'The story of a young mage who must face the consequences of his hubris and overcome a shadow of his own making.' },
+            { title: 'NONE', author: 'N.K. Jemisin', description: 'In a world constantly devastated by seismic activity, certain people have the power to control earth and stone.' },
+            { title: 'NONE', author: 'Susanna Clarke', description: 'A man lives in a vast house with countless halls filled with statues, with the ocean contained in some of its lower halls.' }
+          ],
+        };
+        
+        return mockBooksByGenre[genre] || [];
+      }
     }
 
-    document.addEventListener('DOMContentLoaded', init);
-</script>
+    // Initialize everything
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+      const sidebar = document.querySelector('.sidebar');
+      const container = document.getElementById('book-discovery-container');
+      
+      if (mobileNavToggle) {
+        mobileNavToggle.addEventListener('click', () => {
+          sidebar.classList.toggle('open');
+        });
+      }
+
+      if (container) {
+        const bookDiscovery = new BookDiscovery(container);
+      }
+    });
+  </script>
 </body>
 </html>
