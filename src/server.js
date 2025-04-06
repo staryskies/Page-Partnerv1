@@ -33,6 +33,7 @@ app.get('/add-book.html', requireLogin, (req, res) => res.sendFile(path.join(__d
 app.get('/achievements.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'achievements.html')));
 app.get('/read.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'read.html')));
 app.get('/discover.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'discover.html')));
+app.get('/suggested-circles.html', requireLogin, (req, res) => res.sendFile(path.join(__dirname, 'public', 'suggested-circles.html'))); // New route
 
 app.post('/api/auth/register', userController.signup);
 app.post('/api/auth/login', userController.login);
@@ -66,7 +67,7 @@ app.get('/api/user', requireLogin, async (req, res) => {
 // Book Routes
 app.get('/api/books', requireLogin, bookController.getBooks);
 app.post('/api/book', requireLogin, bookController.createBook);
-app.get('/api/book/:bookId', requireLogin, bookController.getBookDetails); // New route
+app.get('/api/book/:bookId', requireLogin, bookController.getBookDetails);
 
 // Circles Routes
 app.get('/api/circles', requireLogin, async (req, res) => {
@@ -99,6 +100,43 @@ app.post('/api/circles', requireLogin, async (req, res) => {
   } catch (err) {
     console.error('Create Circle Error:', err);
     res.status(500).json({ error: 'Failed to create circle' });
+  }
+});
+
+// Circle Suggestion Endpoint
+app.get('/api/suggest-circles/:genre', requireLogin, async (req, res) => {
+  const genre = req.params.genre;
+  try {
+    const result = await db.query(`
+      SELECT c.id, c.name, c.book_id AS "bookId", c.creator, c.status, c.members, c.description, c.privacy,
+             b.genre AS "bookGenre", b.title AS "bookTitle", b.author AS "bookAuthor"
+      FROM circles c
+      JOIN books b ON c.book_id = b.id
+      WHERE b.genre = $1 AND c.privacy = 'public'
+      ORDER BY random()
+      LIMIT 3
+    `, [genre]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Circle Suggestion Error:', err);
+    res.status(500).json({ error: 'Failed to suggest circles' });
+  }
+});
+
+// Delete Circle Endpoint
+app.delete('/api/circles/:id', requireLogin, async (req, res) => {
+  const circleId = req.params.id;
+  try {
+    const checkResult = await db.query('SELECT creator FROM circles WHERE id = $1', [circleId]);
+    if (checkResult.rows.length === 0) return res.status(404).json({ error: 'Circle not found' });
+    if (checkResult.rows[0].creator !== req.user.username) {
+      return res.status(403).json({ error: 'Only the creator can delete a circle' });
+    }
+    await db.query('DELETE FROM circles WHERE id = $1', [circleId]);
+    res.json({ success: true, message: 'Circle deleted successfully' });
+  } catch (err) {
+    console.error('Delete Circle Error:', err);
+    res.status(500).json({ error: 'Failed to delete circle' });
   }
 });
 

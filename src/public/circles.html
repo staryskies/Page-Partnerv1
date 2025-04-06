@@ -989,6 +989,56 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .genre-magic-loop {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .genre-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .magic-loop {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+            box-shadow: 0 4px 15px rgba(56, 178, 172, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .magic-loop:hover {
+            transform: scale(1.1) rotate(45deg);
+            box-shadow: 0 6px 20px rgba(56, 178, 172, 0.4);
+        }
+
+        .magic-loop i {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(56, 178, 172, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(56, 178, 172, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(56, 178, 172, 0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -1103,6 +1153,26 @@
                     <div class="filter-pill" data-genre="Science Fiction">Science Fiction</div>
                     <div class="filter-pill" data-genre="Mystery">Mystery</div>
                     <div class="filter-pill" data-genre="Biography">Biography</div>
+                </div>
+                <div class="genre-magic-loop">
+                    <div class="genre-form">
+                        <div class="form-group">
+                            <select class="form-select" id="magic-genre-select">
+                                <option value="">Find circles by genre</option>
+                                <option value="Fiction">Fiction</option>
+                                <option value="Non-Fiction">Non-Fiction</option>
+                                <option value="Fantasy">Fantasy</option>
+                                <option value="Science Fiction">Science Fiction</option>
+                                <option value="Mystery">Mystery</option>
+                                <option value="Biography">Biography</option>
+                                <option value="History">History</option>
+                                <option value="Self-Help">Self-Help</option>
+                            </select>
+                        </div>
+                        <div class="magic-loop" id="magic-genre-button" title="Find Circles by Genre">
+                            <i class="fas fa-magic"></i>
+                        </div>
+                    </div>
                 </div>
                 <div class="circles-grid" id="circles-grid"></div>
             </div>
@@ -1565,6 +1635,88 @@
             return { setCircles: circles => allCircles = circles };
         }
 
+        // Add these functions to handle the magic loop and circle deletion
+        function setupMagicLoop() {
+            const magicButton = document.getElementById('magic-genre-button');
+            if (!magicButton) return;
+            
+            magicButton.addEventListener('click', () => {
+                const genre = document.getElementById('magic-genre-select').value;
+                if (!genre) {
+                    showToast('error', 'Error', 'Please select a genre first');
+                    return;
+                }
+                
+                // Redirect to the suggested circles page with the selected genre
+                window.location.href = `/suggested-circles.html?genre=${encodeURIComponent(genre)}`;
+            });
+        }
+
+        async function deleteCircle(circleId) {
+            if (!confirm('Are you sure you want to delete this circle? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${baseUrl}/api/circles/${circleId}`, {
+                    method: 'DELETE',
+                    headers: { 'X-Username': localStorage.getItem('username') }
+                });
+                
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Failed to delete circle');
+                }
+                
+                showToast('success', 'Success', 'Circle deleted successfully');
+                // Refresh the circles after deletion
+                setTimeout(() => init(), 1500);
+            } catch (err) {
+                console.error('Delete Circle Error:', err);
+                showToast('error', 'Error', err.message);
+            }
+        }
+
+        // Modify the populateCircles function to add delete buttons
+        function addDeleteButton(circleCard, circle) {
+            if (circle.creator === localStorage.getItem('username')) {
+                const actionsDiv = circleCard.querySelector('.circle-actions');
+                if (actionsDiv) {
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'circle-action delete-btn';
+                    deleteButton.title = 'Delete Circle';
+                    deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                    deleteButton.dataset.circleId = circle.id;
+                    deleteButton.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteCircle(circle.id);
+                    });
+                    actionsDiv.appendChild(deleteButton);
+                }
+            }
+        }
+
+        // Add this to your original init() function
+        function updateInit() {
+            setupMagicLoop();
+            
+            // Update the original populateCircles function to add delete buttons
+            const originalPopulateCircles = populateCircles;
+            populateCircles = async function(circles) {
+                await originalPopulateCircles(circles);
+                
+                // After populating circles, add delete buttons to the cards
+                if (circles && circles.length > 0) {
+                    const cards = document.querySelectorAll('.circle-card');
+                    circles.forEach((circle, index) => {
+                        if (index < cards.length) {
+                            addDeleteButton(cards[index], circle);
+                        }
+                    });
+                }
+            };
+        }
+
         // Initialization
         async function init() {
             if (window.location.pathname === '/homepage.html' && localStorage.getItem('username')) {
@@ -1601,7 +1753,10 @@
         }
 
         // Start the application
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            updateInit();
+        });
     </script>
 </body>
 </html>
