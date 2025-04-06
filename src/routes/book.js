@@ -1,11 +1,11 @@
 const express = require('express');
-const db = require('../db');
+const pool = require('../db'); // Assuming you are using a PostgreSQL pool instance
 const router = express.Router();
 
 // Get all books
 router.get('/books', async (req, res) => {
   try {
-    const result = await db.query('SELECT * FROM books');
+    const result = await pool.query('SELECT * FROM books');
     res.json(result.rows);
   } catch (err) {
     console.error(err);
@@ -14,17 +14,23 @@ router.get('/books', async (req, res) => {
 });
 
 // Add a new book
-router.post('/book', async (req, res) => {
-  const { title, genre } = req.body;
-  if (!title || !genre) return res.status(400).json({ error: 'Title and genre are required' });
+router.post('/api/book', async (req, res) => {
+  const { title, author, genre, excerpt } = req.body;
+  const userId = req.user.id; // Assuming user ID is set from auth middleware
+
+  // Validate required fields
+  if (!title || !author || !genre) {
+    return res.status(400).json({ error: 'Title, author, and genre are required' });
+  }
+
   try {
-    await db.query(
-      'INSERT INTO books (title, genre) VALUES ($1, $2)',
-      [title, genre]
+    const result = await pool.query(
+      'INSERT INTO books (title, author, genre, user_id, excerpt) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [title, author, genre, userId, excerpt]
     );
-    res.status(201).json({ success: true });
+    res.status(201).json(result.rows[0]); // Return the newly created book
   } catch (err) {
-    console.error(err);
+    console.error('Error adding book:', err);
     res.status(500).json({ error: 'Failed to add book' });
   }
 });
@@ -33,7 +39,7 @@ router.post('/book', async (req, res) => {
 router.get('/book/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const result = await db.query('SELECT * FROM books WHERE id = $1', [id]);
+    const result = await pool.query('SELECT * FROM books WHERE id = $1', [id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Book not found' });
     res.json(result.rows[0]);
   } catch (err) {
@@ -48,7 +54,7 @@ router.post('/book/:id/group', async (req, res) => {
   const { name } = req.body;
   if (!name) return res.status(400).json({ error: 'Group name is required' });
   try {
-    await db.query(
+    await pool.query(
       'UPDATE books SET groups = array_append(groups, $1) WHERE id = $2 AND NOT ($1 = ANY(groups))',
       [name, id]
     );
@@ -63,7 +69,7 @@ router.post('/book/:id/group', async (req, res) => {
 router.get('/book/:id/group/:groupName/comments', async (req, res) => {
   const { id, groupName } = req.params;
   try {
-    const result = await db.query(
+    const result = await pool.query(
       'SELECT * FROM comments WHERE book_id = $1 AND group_name = $2 ORDER BY created_at',
       [id, groupName]
     );
@@ -80,7 +86,7 @@ router.post('/book/:id/group/:groupName/comments', async (req, res) => {
   const { message } = req.body;
   if (!message) return res.status(400).json({ error: 'Message is required' });
   try {
-    await db.query(
+    await pool.query(
       'INSERT INTO comments (book_id, group_name, message) VALUES ($1, $2, $3)',
       [id, groupName, message]
     );

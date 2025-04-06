@@ -130,18 +130,28 @@ async function loadBooks() {
 // Add a new book
 async function addBook() {
   const title = document.getElementById('book-title').value;
+  const author = document.getElementById('book-author').value; // New field for author
   const genre = document.getElementById('book-genre').value;
-  if (!title || !genre) return;
+  const excerpt = document.getElementById('book-excerpt').value; // Optional field for excerpt
+
+  if (!title || !author || !genre) {
+    document.getElementById('error').innerText = 'Title, author, and genre are required.';
+    return;
+  }
+
   try {
     const response = await fetch(`${baseUrl}/api/book`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Username': localStorage.getItem('username') },
-      body: JSON.stringify({ title, genre }),
+      body: JSON.stringify({ title, author, genre, excerpt }),
     });
+
     if (!response.ok) throw new Error(`Failed to add book: ${response.status}`);
     document.getElementById('book-title').value = '';
+    document.getElementById('book-author').value = ''; // Clear the author field
     document.getElementById('book-genre').value = '';
-    loadBooks();
+    document.getElementById('book-excerpt').value = ''; // Clear the excerpt field
+    loadBooks(); // Reload the books list
   } catch (err) {
     console.error('Add Book Error:', err);
     document.getElementById('error').innerText = err.message;

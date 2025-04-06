@@ -35,30 +35,37 @@
   </div>
   <div class="main-content">
     <div class="container">
-      <h1>Add a New Book</h1>
-      <div class="form-group">
-        <label for="title">Book Title</label>
-        <input type="text" id="title" placeholder="Enter book title" required>
-      </div>
-      <div class="form-group">
-        <label for="genre">Genre</label>
-        <input type="text" id="genre" placeholder="Enter genre" required>
-      </div>
-      <div class="form-group">
-        <label for="excerpt">Book Excerpt (optional)</label>
-        <textarea id="excerpt" placeholder="300+ words for preview generation"></textarea>
-      </div>
-      <button onclick="addBook()">Add to My Library</button>
-      <p id="error" class="error"></p>
+      <section class="add-book-section">
+        <h2>Add a New Book</h2>
+        <div class="form-group">
+          <label for="book-title">Book Title</label>
+          <input type="text" id="book-title" placeholder="Enter book title" required>
+        </div>
+        <div class="form-group">
+          <label for="book-author">Author</label>
+          <input type="text" id="book-author" placeholder="Enter author name" required>
+        </div>
+        <div class="form-group">
+          <label for="book-genre">Genre</label>
+          <input type="text" id="book-genre" placeholder="Enter book genre" required>
+        </div>
+        <div class="form-group">
+          <label for="book-excerpt">Excerpt (Optional)</label>
+          <textarea id="book-excerpt" placeholder="Enter a short excerpt"></textarea>
+        </div>
+        <button onclick="addBook()">Add Book</button>
+        <p id="error" class="error"></p>
+      </section>
     </div>
   </div>
   <script>
     const baseUrl = window.location.origin;
 
     async function addBook() {
-      const title = document.getElementById('title').value;
-      const genre = document.getElementById('genre').value;
-      const excerpt = document.getElementById('excerpt').value || '';
+      const title = document.getElementById('book-title').value;
+      const author = document.getElementById('book-author').value;
+      const genre = document.getElementById('book-genre').value;
+      const excerpt = document.getElementById('book-excerpt').value || '';
       const errorElement = document.getElementById('error');
       
       // Reset error state
@@ -72,8 +79,8 @@
         return;
       }
 
-      if (!title || !genre) {
-        errorElement.textContent = 'Title and genre are required.';
+      if (!title || !author || !genre) {
+        errorElement.textContent = 'Title, author, and genre are required.';
         errorElement.style.display = 'block';
         return;
       }
@@ -85,7 +92,7 @@
             'Content-Type': 'application/json', 
             'X-Username': username 
           },
-          body: JSON.stringify({ title, genre, excerpt }),
+          body: JSON.stringify({ title, author, genre, excerpt }),
         });
         const bookResult = await bookResponse.json();
         if (!bookResponse.ok) throw new Error(bookResult.error || 'Failed to add book');
