@@ -1,4 +1,3 @@
-// server.js
 require('dotenv').config(); // Add dotenv for environment variables
 const express = require('express');
 const path = require('path');
@@ -146,6 +145,10 @@ app.get('/discover.html', requireLogin, (req, res) => res.sendFile(path.join(__d
 // Authentication Routes
 app.post('/api/auth/register', userController.signup);
 app.post('/api/auth/login', userController.login);
+app.post('/api/auth/logout', (req, res) => {
+  // Since authentication is header-based with no server-side session, just confirm logout
+  res.status(200).json({ success: true, message: 'Logged out successfully' });
+});
 
 // User Data
 app.get('/api/user', requireLogin, async (req, res) => {
@@ -309,7 +312,7 @@ app.get('/api/book/:bookId/group/:groupName/comments', requireLogin, async (req,
 
 app.post('/api/book/:bookId/group/:groupName/comments', requireLogin, async (req, res) => {
   const { bookId, groupName } = req.params;
-  const { message } = req.body; // Fixed: Extracted message from req.body
+  const { message } = req.body;
   if (!message) {
     return res.status(400).json({ error: 'Message is required' });
   }
