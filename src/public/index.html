@@ -660,12 +660,12 @@
         const username = localStorage.getItem('username');
         if (!username) throw new Error('No username found in localStorage');
         
-        const response = await fetch(`${baseUrl}/api/books?page=1&limit=10`, {
+        const response = await fetch(`${baseUrl}/api/books`, {
           headers: { 'X-Username': username }
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        return data.books || [];
+        return data; // Ensure the API returns an array of books
       } catch (error) {
         console.error('Failed to fetch books:', error);
         return [];
@@ -727,7 +727,7 @@
           
           const author = document.createElement('p');
           author.className = 'book-author';
-          author.textContent = 'Author Unknown'; // Adjust if API provides author later
+          author.textContent = book.author || 'Author Unknown';
           
           const genre = document.createElement('p');
           genre.className = 'book-genre';
