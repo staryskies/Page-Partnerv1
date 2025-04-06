@@ -35,11 +35,89 @@
       background: var(--gradient-start);
       color: var(--light-text);
       display: flex;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: var(--card-bg);
+      padding: 30px 20px;
+      height: 100vh;
+      position: fixed;
+      border-right: 1px solid var(--border-color);
+      z-index: 10;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s ease;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 1.3rem;
+      color: var(--primary-color);
+    }
+
+    .nav-section {
+      margin-bottom: 25px;
+    }
+
+    .nav-section-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted-text);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      margin-bottom: 5px;
+      border-radius: 8px;
+      color: var(--light-text);
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .nav-item i {
+      margin-right: 10px;
+      font-size: 1rem;
+    }
+
+    .nav-item:hover {
+      background: rgba(56, 178, 172, 0.1);
+      color: var (--accent-color);
+    }
+
+    .nav-item.active {
+      background: rgba(56, 178, 172, 0.1);
+      color: var(--accent-color);
+      font-weight: 500;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 30px;
+      margin-left: 260px;
+      display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
     }
-    
+
     .container { 
       background: var(--card-bg); 
       padding: 40px; 
@@ -118,47 +196,50 @@
       border: 1px solid rgba(255, 107, 107, 0.2);
       display: none;
     }
-    
-    .header-link {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    
-    .back-link {
-      color: var(--accent-color);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      font-weight: 500;
-      transition: color 0.3s;
-    }
-    
-    .back-link:hover {
-      color: #2a9d98;
-    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header-link">
-      <a href="index.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+  <div class="sidebar">
+    <div class="logo">
+      <img src="logo.png" alt="PagePartner Logo">
+      <span class="logo-text">PagePartner</span>
     </div>
-    <h1>Add a New Book</h1>
-    <div class="form-group">
-      <label for="title">Book Title</label>
-      <input type="text" id="title" placeholder="Enter book title" required>
+    <nav class="nav-links">
+      <div class="nav-section">
+        <div class="nav-section-title">Main</div>
+        <a href="index.html" class="nav-item"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="add-book.html" class="nav-item active"><i class="fas fa-plus"></i> Add Book</a>
+        <a href="discover.html" class="nav-item"><i class="fas fa-compass"></i> Discover</a>
+        <a href="read.html" class="nav-item"><i class="fas fa-book"></i> Read</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Social</div>
+        <a href="circles.html" class="nav-item"><i class="fas fa-users"></i> Reading Circles</a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Personal</div>
+        <a href="achievements.html" class="nav-item"><i class="fas fa-award"></i> Achievements</a>
+      </div>
+    </nav>
+  </div>
+  <div class="main-content">
+    <div class="container">
+      <h1>Add a New Book</h1>
+      <div class="form-group">
+        <label for="title">Book Title</label>
+        <input type="text" id="title" placeholder="Enter book title" required>
+      </div>
+      <div class="form-group">
+        <label for="genre">Genre</label>
+        <input type="text" id="genre" placeholder="Enter genre" required>
+      </div>
+      <div class="form-group">
+        <label for="excerpt">Book Excerpt (optional)</label>
+        <textarea id="excerpt" placeholder="300+ words for preview generation"></textarea>
+      </div>
+      <button onclick="addBook()">Add to My Library</button>
+      <p id="error" class="error"></p>
     </div>
-    <div class="form-group">
-      <label for="genre">Genre</label>
-      <input type="text" id="genre" placeholder="Enter genre" required>
-    </div>
-    <div class="form-group">
-      <label for="excerpt">Book Excerpt (optional)</label>
-      <textarea id="excerpt" placeholder="300+ words for preview generation"></textarea>
-    </div>
-    <button onclick="addBook()">Add to My Library</button>
-    <p id="error" class="error"></p>
   </div>
   <script>
     const baseUrl = window.location.origin;
