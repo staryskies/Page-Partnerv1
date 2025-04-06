@@ -1405,15 +1405,7 @@
         // Initialization
         async function init() {
             await updateSidebar();
-            
-            const books = await fetch(`${baseUrl}/api/books`, {
-                headers: { 'X-Username': localStorage.getItem('username') }
-            }).then(res => res.json());
-            const circles = books.flatMap(book => book.groups.map(group => ({
-                book_id: book.id,
-                name: group,
-                member_ids: [localStorage.getItem('username')] // Placeholder
-            })));
+        
             updateStats(circles);
             const filterHandler = setupFilters();
             filterHandler.setCircles(circles);
